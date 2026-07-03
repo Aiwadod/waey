@@ -931,18 +931,18 @@ function RoleSelect() {
             <div style={{ fontSize: 25, fontWeight: 800 }}>{R.title}</div>
             <div style={{ fontSize: 13.5, color: c.muted, marginTop: 8, lineHeight: 1.6 }}>{R.sub}</div>
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 13 }}>
+          <motion.div initial="hidden" animate="visible" variants={revealContainer} style={{ display: "flex", flexDirection: "column", gap: 13 }}>
             {roles.map(([Icon, name, desc, col, go], i) => (
-              <button key={i} type="button" onClick={go} style={{ width: "100%", display: "flex", alignItems: "center", gap: 14, background: c.card, border: `1px solid ${c.line}`, borderRadius: 22, padding: 18, cursor: "pointer", transition: "transform .15s", position: "relative", color: c.text, fontFamily: "inherit", textAlign: "start" }}>
+              <motion.button key={i} type="button" onClick={go} variants={revealItem} whileHover={{ y: -3, boxShadow: "0 24px 60px -34px rgba(15,34,48,0.45)" }} whileTap={{ scale: 0.98 }} style={{ width: "100%", display: "flex", alignItems: "center", gap: 14, background: c.card, border: `1px solid ${c.line}`, borderRadius: 22, padding: 18, cursor: "pointer", position: "relative", color: c.text, fontFamily: "inherit", textAlign: "start" }}>
                 <IconBubble icon={Icon} color={col} bg={col + "22"} size={27} box={54} radius={16} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontWeight: 800, fontSize: 16 }}>{name}</div>
                   <div style={{ fontSize: 12, color: c.muted, lineHeight: 1.6, marginTop: 2 }}>{desc}</div>
                 </div>
                 <Fwd size={18} color={col} style={{ flexShrink: 0 }} />
-              </button>
+              </motion.button>
             ))}
-          </div>
+          </motion.div>
         </div>
       </div>
     </div>
@@ -1354,7 +1354,7 @@ function Assessment() {
         <div style={body}><div style={inner}>
           <div style={{ height: 6, borderRadius: 9, background: c.card2, overflow: "hidden", marginBottom: 8 }}><div style={{ height: "100%", width: `${pct}%`, background: c.accent, borderRadius: 9, transition: "width .3s" }} /></div>
           <div style={{ fontSize: 12, color: c.muted, marginBottom: 26 }}>{A.qOf(qi + 1, ASSESS_Q.length)}</div>
-          <div style={{ fontSize: 22, fontWeight: 800, lineHeight: 1.5, marginBottom: 26 }}>{q.q[lang]}</div>
+          <motion.div key={qi} initial={{ opacity: 0, x: dir === "rtl" ? -16 : 16 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.28, ease: easeOut }} style={{ fontSize: 22, fontWeight: 800, lineHeight: 1.5, marginBottom: 26 }}>{q.q[lang]}</motion.div>
           <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
             {q.o.map((o) => {
               const on = answers[qi] === o.k;
@@ -1385,29 +1385,29 @@ function Assessment() {
   return (
     <div dir={dir} style={wrap}><AsTopBar />
       <div style={body}><div style={{ ...inner, gap: 14 }}>
-        <div style={{ textAlign: "center", animation: "wPop .4s ease both" }}>
+        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4, ease: easeOut }} style={{ textAlign: "center" }}>
           <div style={{ width: 76, height: 76, borderRadius: 24, background: `linear-gradient(135deg, ${c.accent}, ${c.terra})`, display: "grid", placeItems: "center", margin: "0 auto 12px" }}><Brain size={36} color="#fff" /></div>
           <div style={{ fontSize: 12.5, color: c.muted }}>{A.identity}</div>
           <div style={{ fontSize: 26, fontWeight: 800 }}>{name}</div>
           <div style={{ fontSize: 12.5, color: c.muted }}>{altName}</div>
           <div style={{ fontSize: 13.5, color: c.textSoft, marginTop: 8, lineHeight: 1.7 }}>{desc}</div>
-        </div>
-        <div style={{ background: `linear-gradient(135deg, ${c.accent}, ${c.terra})`, color: c.onAccent, borderRadius: 20, padding: "16px 18px", textAlign: "center", animation: "wPop .5s ease .1s both" }}>
-          <div style={{ fontSize: 34, fontWeight: 800 }}>{Math.min(94, 55 + Math.round(result.dna.planning * 0.35))}%</div>
+        </motion.div>
+        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5, delay: 0.1, ease: easeOut }} style={{ background: `linear-gradient(135deg, ${c.accent}, ${c.terra})`, color: c.onAccent, borderRadius: 20, padding: "16px 18px", textAlign: "center" }}>
+          <div style={{ fontSize: 34, fontWeight: 800 }}><AnimatedNumber value={Math.min(94, 55 + Math.round(result.dna.planning * 0.35))} formatter={(n) => `${fmt(n)}%`} /></div>
           <div style={{ fontSize: 13, fontWeight: 600, opacity: 0.95 }}>{A.betterThan(Math.min(94, 55 + Math.round(result.dna.planning * 0.35)))}</div>
-        </div>
+        </motion.div>
         <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18 }}>
           <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 14 }}>{A.dna}</div>
-          {bars.map(([lab, key, col]) => (
+          {bars.map(([lab, key, col], i) => (
             <div key={key} style={{ marginBottom: 12 }}>
               <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, marginBottom: 5 }}><span style={{ color: c.textSoft }}>{A[lab]}</span><span style={{ fontWeight: 700 }}>{result.dna[key]}%</span></div>
-              <div style={{ height: 8, borderRadius: 9, background: c.card2, overflow: "hidden" }}><div style={{ height: "100%", width: `${result.dna[key]}%`, background: col, borderRadius: 9, transition: "width .6s ease" }} /></div>
+              <div style={{ height: 8, borderRadius: 9, background: c.card2, overflow: "hidden" }}><motion.div initial={{ scaleX: 0 }} animate={{ scaleX: result.dna[key] / 100 }} transition={{ duration: 0.7, delay: 0.15 + i * 0.08, ease: easeOut }} style={{ height: "100%", width: "100%", background: col, borderRadius: 9, transformOrigin: dir === "rtl" ? "right center" : "left center" }} /></div>
             </div>
           ))}
         </div>
         <div style={{ display: "flex", gap: 12 }}>
-          <div style={{ flex: 1, background: c.card, border: `1px solid ${c.line}`, borderRadius: 18, padding: 16, textAlign: "center" }}><div style={{ fontSize: 11.5, color: c.muted }}>{A.awareness}</div><div style={{ fontSize: 30, fontWeight: 800, color: c.accent }}>{result.score}<span style={{ fontSize: 15, color: c.muted }}>/100</span></div></div>
-          <div style={{ flex: 1, background: c.card, border: `1px solid ${c.line}`, borderRadius: 18, padding: 16, textAlign: "center" }}><div style={{ fontSize: 11.5, color: c.muted }}>{A.confidence}</div><div style={{ fontSize: 30, fontWeight: 800, color: c.terra }}>{result.confidence}%</div></div>
+          <div style={{ flex: 1, background: c.card, border: `1px solid ${c.line}`, borderRadius: 18, padding: 16, textAlign: "center" }}><div style={{ fontSize: 11.5, color: c.muted }}>{A.awareness}</div><div style={{ fontSize: 30, fontWeight: 800, color: c.accent }}><AnimatedNumber value={result.score} formatter={(n) => fmt(n)} /><span style={{ fontSize: 15, color: c.muted }}>/100</span></div></div>
+          <div style={{ flex: 1, background: c.card, border: `1px solid ${c.line}`, borderRadius: 18, padding: 16, textAlign: "center" }}><div style={{ fontSize: 11.5, color: c.muted }}>{A.confidence}</div><div style={{ fontSize: 30, fontWeight: 800, color: c.terra }}><AnimatedNumber value={result.confidence} formatter={(n) => `${fmt(n)}%`} /></div></div>
         </div>
         <div style={{ background: `linear-gradient(135deg, ${c.accent}, ${c.accentText})`, color: c.onAccent, borderRadius: 20, padding: 18 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 800, fontSize: 14, marginBottom: 6 }}><Sparkles size={17} />{A.decisionTitle}</div>
