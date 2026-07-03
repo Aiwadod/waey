@@ -119,6 +119,18 @@ test("landing opens in Waey light mode by default", async ({ page }) => {
   expect(bg).toContain("241, 239, 233");
 });
 
+test("reduced motion keeps Waey usable without transform-heavy motion", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/#/landing");
+
+  await expect(page.locator("[data-waey-shell]")).toBeVisible();
+  const motionScale = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--waey-motion-scale").trim());
+  expect(motionScale).toBe("0");
+
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
+  expect(overflow).toBe(false);
+});
+
 async function enterAsGuest(page) {
   await page.goto("/#/landing");
   await page.getByRole("button", { name: /تسجيل الدخول|Sign in/ }).first().click();

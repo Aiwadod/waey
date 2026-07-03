@@ -531,16 +531,15 @@ function injectAssets() {
   document.head.appendChild(l);
   const s = document.createElement("style");
   s.id = "waey-assets";
+  // Reduced-motion is handled by src/styles/waey-theme.css + Framer/GSAP guards.
+  // Only loader/overlay keyframes still in use remain here (wUp/wPop/wDot/wSpin/wLoad).
   s.textContent = `*{-webkit-tap-highlight-color:transparent;box-sizing:border-box}
     @keyframes wUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
     @keyframes wPop{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:none}}
-    @keyframes wSheet{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:none}}
     @keyframes wDot{0%,80%,100%{opacity:.2}40%{opacity:1}}
-    @keyframes wBar{from{transform:scaleY(0)}to{transform:scaleY(1)}}
     @keyframes wSpin{to{transform:rotate(360deg)}}
     @keyframes wLoad{from{width:0}to{width:100%}}
-    .wscroll::-webkit-scrollbar{width:0;height:0}.whz::-webkit-scrollbar{height:0}
-    @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}`;
+    .wscroll::-webkit-scrollbar{width:0;height:0}.whz::-webkit-scrollbar{height:0}`;
   document.head.appendChild(s);
 }
 
