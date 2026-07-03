@@ -1725,16 +1725,16 @@ function InvestCalc() {
       <div style={{ display: "flex", gap: 10 }}>
         <div style={{ flex: 1, background: c.accent + "1A", borderRadius: 14, padding: "12px 10px", textAlign: "center" }}>
           <div style={{ fontSize: 10.5, color: c.muted, marginBottom: 3 }}>{K.withWaey}</div>
-          <div style={{ fontSize: 19, fontWeight: 800, color: c.accentText }}>{fmt(invested)}</div>
+          <div style={{ fontSize: 19, fontWeight: 800, color: c.accentText }}><AnimatedNumber value={invested} formatter={(n) => fmt(n)} duration={0.4} /></div>
           <div style={{ fontSize: 9.5, color: c.muted }}><RS size="0.8em" /></div>
         </div>
         <div style={{ flex: 1, background: c.card2, borderRadius: 14, padding: "12px 10px", textAlign: "center" }}>
           <div style={{ fontSize: 10.5, color: c.muted, marginBottom: 3 }}>{K.noInvest}</div>
-          <div style={{ fontSize: 19, fontWeight: 800, color: c.muted }}>{fmt(contributed)}</div>
+          <div style={{ fontSize: 19, fontWeight: 800, color: c.muted }}><AnimatedNumber value={contributed} formatter={(n) => fmt(n)} duration={0.4} /></div>
           <div style={{ fontSize: 9.5, color: c.muted }}><RS size="0.8em" /></div>
         </div>
       </div>
-      <div style={{ textAlign: "center", marginTop: 12, background: c.green + "1A", color: c.green, borderRadius: 12, padding: "9px", fontSize: 13, fontWeight: 700 }}>{K.diff}: +{fmt(diff)} <RS size="0.85em" /></div>
+      <div style={{ textAlign: "center", marginTop: 12, background: c.green + "1A", color: c.green, borderRadius: 12, padding: "9px", fontSize: 13, fontWeight: 700 }}>{K.diff}: +<AnimatedNumber value={diff} formatter={(n) => fmt(n)} duration={0.4} /> <RS size="0.85em" /></div>
       <div style={{ fontSize: 10, color: c.muted, textAlign: "center", marginTop: 8 }}>{K.note}</div>
     </div>
   );
@@ -2388,7 +2388,7 @@ function Detail({ icon: Icon, text, c }) { return <div style={{ display: "flex",
 
 /* ===================== التحليلات ===================== */
 function Analytics() {
-  const { c, s, lang, spent, available, savings, cats, tx, addSpend, setLoanOffer, flash } = useCtx();
+  const { c, s, lang, dir, spent, available, savings, cats, tx, addSpend, setLoanOffer, flash } = useCtx();
   const [period, setPeriod] = useState(s.seg[2]);
   const [amt, setAmt] = useState(""); const [why, setWhy] = useState("");
   const list = [{ k: "food", col: c.terra }, { k: "transport", col: c.accent }, { k: "fun", col: c.accentText }, { k: "other", col: c.green }];
@@ -2406,13 +2406,13 @@ function Analytics() {
     else flash(s.noBal);
   }
   return (
-    <div style={{ animation: "wUp .5s ease both" }}>
+    <div>
       <ScreenHead title={s.analytics} />
       <Seg options={s.seg} value={period} onChange={setPeriod} />
       <div style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 14 }}>
       <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 24, padding: 18 }}>
         <div style={{ fontSize: 12.5, color: c.muted }}>{s.totalSavings}</div>
-        <div style={{ fontSize: 30, fontWeight: 700 }}>{fmt(savings)}.00 <RS size="0.6em" color={c.muted} /></div>
+        <div style={{ fontSize: 30, fontWeight: 700 }}><AnimatedNumber value={savings} formatter={(n) => `${fmt(n)}.00`} /> <RS size="0.6em" color={c.muted} /></div>
         <div style={{ color: c.accentText, fontSize: 13, fontWeight: 600 }}>▲ +1,560.00 {s.thisTerm}</div>
         <Spark data={trend} />
       </div>
@@ -2422,10 +2422,10 @@ function Analytics() {
       </div>
       <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 24, padding: 18 }}>
         <div style={{ fontWeight: 700, marginBottom: 12 }}>{lang === "ar" ? <>أين صرفت {fmt(spent)} <RS />؟</> : <>Where did {fmt(spent)} <RS /> go?</>}</div>
-        {list.map((x) => (
+        {list.map((x, i) => (
           <div key={x.k} style={{ marginBottom: 12 }}>
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 5 }}><span>{s.cats[x.k]}</span><span style={{ color: c.muted }}>{cats[x.k]} <RS /></span></div>
-            <div style={{ height: 7, background: c.inputBg, borderRadius: 9 }}><div style={{ width: `${(cats[x.k] / maxV) * 100}%`, height: "100%", background: x.col, borderRadius: 9, transition: "width .4s" }} /></div>
+            <div style={{ height: 7, background: c.inputBg, borderRadius: 9 }}><motion.div initial={{ scaleX: 0 }} whileInView={{ scaleX: cats[x.k] / maxV }} viewport={{ once: true, amount: 0.5 }} transition={{ duration: 0.55, delay: i * 0.06, ease: easeOut }} style={{ width: "100%", height: "100%", background: x.col, borderRadius: 9, transformOrigin: dir === "rtl" ? "right center" : "left center" }} /></div>
           </div>
         ))}
       </div>
@@ -2555,7 +2555,7 @@ USER SNAPSHOT (amounts in SAR): ${JSON.stringify(snapshot)}`;
   }
   const [coachSheet, setCoachSheet] = useState(null);
   return (
-    <div style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0, height: "100%", animation: "wUp .5s ease both" }}>
+    <div style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0, height: "100%" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 11, padding: "10px 2px 14px" }}>
         <div style={{ width: 40, height: 40, borderRadius: 13, background: `linear-gradient(135deg, ${c.accent}, ${c.terra})`, display: "grid", placeItems: "center" }}><Sparkles size={20} color="#fff" /></div>
         <div><div style={{ fontWeight: 700, fontSize: 17 }}>{s.coach.title}</div><div style={{ fontSize: 11.5, color: c.muted }}>{s.coach.sub}</div></div>
@@ -2616,7 +2616,7 @@ function Invest() {
   const { c, s, lang, savings, invested, setSavings, setInvested, flash } = useCtx();
   function put(a) { if (a > savings) return flash(s.tooMuch); setSavings((x) => x - a); setInvested((v) => v + a); flash(s.invested(a)); }
   return (
-    <div style={{ animation: "wUp .5s ease both" }}>
+    <div>
       <ScreenHead title={s.nav.invest} />
       <div style={{ borderRadius: 24, padding: 20, marginTop: 6, background: `linear-gradient(135deg, ${c.accent} 0%, ${c.accentText} 100%)`, color: c.onAccent }}>
         <div style={{ fontSize: 12.5, fontWeight: 600, opacity: .85 }}>{s.portfolio}</div>
@@ -2656,7 +2656,7 @@ function MoreScreen() {
   ];
   const Chevron = lang === "ar" ? ChevronLeft : ChevronRight;
   return (
-    <div style={{ animation: "wUp .5s ease both" }}>
+    <div>
       <ScreenHead title={s.more} />
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 6 }}>
         <div style={{ width: 54, height: 54, borderRadius: 999, background: `linear-gradient(135deg, ${c.accent}, ${c.terra})`, display: "grid", placeItems: "center", fontSize: 22, fontWeight: 700, color: "#fff" }}>{lang === "ar" ? "و" : "W"}</div>
@@ -2922,11 +2922,16 @@ function Sheet({ title, subtitle, icon: Icon, children, onClose }) {
   );
 }
 function Bubble({ role, text, widget }) {
-  const { c } = useCtx(); const me = role === "user";
+  const { c, dir } = useCtx(); const me = role === "user";
   return (
-    <div style={{ alignSelf: me ? "flex-end" : "flex-start", maxWidth: "86%", background: me ? c.accent : c.card, color: me ? c.onAccent : c.textSoft, padding: "11px 14px", borderRadius: 18, borderEndStartRadius: me ? 18 : 5, borderEndEndRadius: me ? 5 : 18, fontSize: 14, lineHeight: 1.75, whiteSpace: "pre-wrap", animation: "wPop .3s ease both", border: me ? "none" : `1px solid ${c.line}` }}>
+    <motion.div
+      initial={{ opacity: 0, y: 10, x: me ? (dir === "rtl" ? -10 : 10) : (dir === "rtl" ? 10 : -10), scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, x: 0, scale: 1 }}
+      transition={{ duration: 0.24, ease: easeOut }}
+      style={{ alignSelf: me ? "flex-end" : "flex-start", maxWidth: "86%", background: me ? c.accent : c.card, color: me ? c.onAccent : c.textSoft, padding: "11px 14px", borderRadius: 18, borderEndStartRadius: me ? 18 : 5, borderEndEndRadius: me ? 5 : 18, fontSize: 14, lineHeight: 1.75, whiteSpace: "pre-wrap", border: me ? "none" : `1px solid ${c.line}` }}
+    >
       {riyalText(text)}{widget && <ChatWidget w={widget} />}
-    </div>
+    </motion.div>
   );
 }
 function InvestWidget({ w }) {
