@@ -912,15 +912,20 @@ function Splash() {
 }
 /* ===================== اختيار الدور + لوحات الجامعة والبنك ===================== */
 function RoleShell({ title, sub, onBack, children }) {
-  const { c, lang, dir, s } = useCtx();
+  const { c, lang, dir, s, theme } = useCtx();
   const Back = lang === "ar" ? ChevronRight : ChevronLeft;
+  const scope = useRef(null);
+  useGsap(scope, (gsap, { reduce }) => {
+    if (reduce || !scope.current) return;
+    gsap.from(Array.from(scope.current.children), { y: 16, opacity: 0, stagger: 0.06, duration: 0.5, ease: "power3.out", clearProps: "transform,opacity" });
+  }, []);
   return (
-    <div dir={dir} style={{ fontFamily: "'IBM Plex Sans Arabic',system-ui,sans-serif", background: c.bg0, color: c.text, height: "100dvh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+    <div dir={dir} data-waey-theme={theme} data-waey-shell style={{ fontFamily: "'IBM Plex Sans Arabic',system-ui,sans-serif", background: c.page, color: c.text, height: "100dvh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "calc(env(safe-area-inset-top,0px) + 16px) 18px 12px", flexShrink: 0 }}>
         {onBack && <button onClick={onBack} style={{ width: 38, height: 38, borderRadius: 12, background: c.card, border: `1px solid ${c.line}`, color: c.text, display: "grid", placeItems: "center", cursor: "pointer" }}><Back size={20} /></button>}
         <div><div style={{ fontSize: 19, fontWeight: 800 }}>{title}</div>{sub && <div style={{ fontSize: 11.5, color: c.muted }}>{sub}</div>}</div>
       </div>
-      <div className="wscroll" style={{ flex: 1, overflowY: "auto", padding: "4px 18px 28px" }}><div style={{ maxWidth: 560, margin: "0 auto" }}>{children}</div></div>
+      <div className="wscroll" style={{ flex: 1, overflowY: "auto", padding: "4px 18px 28px" }}><div ref={scope} style={{ maxWidth: 560, margin: "0 auto" }}>{children}</div></div>
     </div>
   );
 }
