@@ -13,6 +13,13 @@ import {
   Laptop, Palette, Camera, School, Fuel, ShoppingCart, Pill, Lightbulb, Briefcase,
   GraduationCap, Building2, Medal, CircleDollarSign, Search, Utensils,
 } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import AnimatedNumber from "./components/motion/AnimatedNumber.jsx";
+import ScreenTransition from "./components/motion/ScreenTransition.jsx";
+import ScrollReveal from "./components/motion/ScrollReveal.jsx";
+import WaeyFlowField from "./components/motion/WaeyFlowField.jsx";
+import { easeOut, hoverLift, pressProps, revealContainer, revealItem, sheetVariants, toastVariants } from "./motion/presets.js";
+import { useGsap } from "./motion/gsap.js";
 
 /*  وعي (Waey) — تطبيق الوعي المالي لطلاب الجامعات
     متجاوب لكل الأجهزة · عربي/إنجليزي · ألوان المسابقة: كحلي #002134 / بنفسجي #8685D8 / تراكوتا #CA6C46  */
@@ -28,6 +35,7 @@ const themes = {
     accent: "#8685D8", accentText: "#A8A6F2", onAccent: "#0A1822",
     terra: "#CA6C46", terraText: "#E08A63", onTerra: "#FFFFFF", green: "#5FCB8E",
     inputBg: "rgba(255,255,255,0.05)", statusText: "#FFFFFF", bezel1: "#04161F", bezel2: "#0A2A3D",
+    shadow: "0 24px 70px -48px rgba(0,0,0,0.9)",
   },
   light: {
     page: "radial-gradient(120% 80% at 50% 0%, #FFFFFF 0%, #ECEAE3 70%)",
@@ -36,6 +44,7 @@ const themes = {
     accent: "#6F6DD0", accentText: "#5F5DBE", onAccent: "#FFFFFF",
     terra: "#C2603A", terraText: "#A84E2C", onTerra: "#FFFFFF", green: "#2E9E68",
     inputBg: "#F1EFE9", statusText: "#0F2230", bezel1: "#DAD7CF", bezel2: "#C7C3BA",
+    shadow: "0 24px 70px -48px rgba(15,34,48,0.45)",
   },
 };
 
@@ -674,7 +683,7 @@ function completeChallenge(score, points = 15) { const nw = Math.min(100, score 
 
 /* ===================== التطبيق ===================== */
 export default function App() {
-  const [theme, setTheme] = useState("dark");
+  const [theme, setTheme] = useState("light");
   const [lang, setLang] = useState("ar");
   const [tab, setTab] = useState("home");
   const [entries, setEntries] = useState(seedEntries());
@@ -780,8 +789,9 @@ export default function App() {
 
   return (
     <Ctx.Provider value={value}>
+      <ScreenTransition screenKey={screen}>
       {screen === "splash" ? <Splash /> : screen === "role" ? <RoleSelect /> : screen === "uniDash" ? <UniDashScreen /> : screen === "bankDash" ? <BankDashScreen /> : screen === "assess" ? <Assessment /> : screen !== "app" ? <Marketing /> : (
-      <div style={{ fontFamily: "'IBM Plex Sans Arabic',system-ui,sans-serif", background: appBg, minHeight: "100dvh", display: "flex", justifyContent: "center", color: c.text, transition: "background .3s" }}>
+      <div data-waey-theme={theme} data-waey-shell style={{ fontFamily: "'IBM Plex Sans Arabic',system-ui,sans-serif", background: appBg, minHeight: "100dvh", display: "flex", justifyContent: "center", color: c.text, transition: "background .3s" }}>
         <div dir={dir} style={{ width: "100%", height: "100dvh", position: "relative", overflow: "hidden", color: c.text, display: "flex", flexDirection: "row", background: appBg, transition: "background .3s" }}>
           {sidebar && <Sidebar />}
           <div style={{ flex: 1, minWidth: 0, position: "relative", display: "flex", flexDirection: "column", overflow: "hidden" }}>
@@ -808,6 +818,7 @@ export default function App() {
         </div>
       </div>
       )}
+      </ScreenTransition>
     </Ctx.Provider>
   );
 }
@@ -1384,10 +1395,10 @@ function mkBtn(bg, color, border) { return { padding: "13px 26px", borderRadius:
 function mkH2(c) { return { fontSize: "clamp(24px,3.5vw,38px)", fontWeight: 800, textAlign: "center", margin: 0, letterSpacing: "-0.01em" }; }
 
 function Marketing() {
-  const { c, dir, screen } = useCtx();
+  const { c, dir, screen, theme } = useCtx();
   const bg = `linear-gradient(180deg, ${c.bg1} 0%, ${c.bg0} 100%)`;
   return (
-    <div dir={dir} className="wscroll" style={{ fontFamily: "'IBM Plex Sans Arabic',system-ui,sans-serif", background: bg, color: c.text, height: "100dvh", overflowY: "auto" }}>
+    <div dir={dir} data-waey-theme={theme} data-waey-shell className="wscroll" style={{ fontFamily: "'IBM Plex Sans Arabic',system-ui,sans-serif", background: bg, color: c.text, height: "100dvh", overflowY: "auto" }}>
       <MkNav />
       {screen === "landing" && <Landing />}
       {screen === "about" && <AboutPage />}

@@ -115,7 +115,8 @@ test("landing opens in Waey light mode by default", async ({ page }) => {
 
   const bg = await page.locator("[data-waey-shell]").evaluate((node) => getComputedStyle(node).backgroundImage);
   expect(bg).not.toContain("rgb(0, 18, 28)");
-  expect(bg).toContain("236, 234, 227");
+  // Warm-palette lock: shell background carries the warm page tone #F1EFE9.
+  expect(bg).toContain("241, 239, 233");
 });
 
 async function enterAsGuest(page) {
