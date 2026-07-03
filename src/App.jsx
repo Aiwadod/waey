@@ -18,7 +18,7 @@ import AnimatedNumber from "./components/motion/AnimatedNumber.jsx";
 import ScreenTransition from "./components/motion/ScreenTransition.jsx";
 import ScrollReveal from "./components/motion/ScrollReveal.jsx";
 import WaeyFlowField from "./components/motion/WaeyFlowField.jsx";
-import { easeOut, hoverLift, pressProps, revealContainer, revealItem, sheetVariants, toastVariants } from "./motion/presets.js";
+import { easeOut, hoverLift, pressProps, revealContainer, revealItem, sheetVariants, toastVariants, viewportOnce } from "./motion/presets.js";
 import { useGsap } from "./motion/gsap.js";
 
 /*  وعي (Waey) — تطبيق الوعي المالي لطلاب الجامعات
@@ -1468,55 +1468,64 @@ function MkNav() {
 
 function HeroMock() {
   const { c, lang } = useCtx();
+  const scope = useRef(null);
+
+  useGsap(scope, (gsap, { reduce }) => {
+    if (reduce) return;
+    gsap.to(".hero-phone", { y: -10, rotate: -1.5, duration: 2.4, yoyo: true, repeat: -1, ease: "sine.inOut" });
+    gsap.from(".hero-cardlet", { y: 16, opacity: 0, stagger: 0.12, duration: 0.5, ease: "power3.out", clearProps: "transform,opacity" });
+  }, []);
+
   return (
-    <div style={{ width: "clamp(230px,32vw,300px)", borderRadius: 38, padding: 14, background: `linear-gradient(160deg, ${c.card2}, ${c.bg1})`, border: `1px solid ${c.line}`, boxShadow: "0 40px 90px -30px rgba(0,0,0,0.5)", flexShrink: 0 }}>
-      <div style={{ background: `linear-gradient(135deg, ${c.bg1}, ${c.card2})`, border: `1px solid ${c.line}`, borderRadius: 22, padding: 16 }}>
+    <div ref={scope} className="hero-phone" style={{ width: "clamp(230px,32vw,300px)", borderRadius: 38, padding: 14, background: `linear-gradient(160deg, ${c.card2}, ${c.bg1})`, border: `1px solid ${c.line}`, boxShadow: c.shadow, flexShrink: 0, position: "relative", zIndex: 1 }}>
+      <div className="hero-cardlet" style={{ background: `linear-gradient(135deg, ${c.bg1}, ${c.card2})`, border: `1px solid ${c.line}`, borderRadius: 22, padding: 16 }}>
         <div style={{ fontSize: 11, color: c.muted }}>{lang === "ar" ? "رصيد الحساب" : "Balance"}</div>
-        <div style={{ fontSize: 26, fontWeight: 800 }}>1,240 <RS size="0.58em" color={c.muted} /></div>
+        <div style={{ fontSize: 26, fontWeight: 800 }}><AnimatedNumber value={1240} formatter={(n) => fmt(n)} /> <RS size="0.58em" color={c.muted} /></div>
       </div>
-      <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 18, padding: 14, marginTop: 12 }}>
+      <div className="hero-cardlet" style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 18, padding: 14, marginTop: 12 }}>
         <Spark data={[40, 46, 44, 52, 50, 58, 62, 70]} />
         <div style={{ fontSize: 11, color: c.muted, textAlign: "center", marginTop: 2 }}>{lang === "ar" ? "نمو مدّخراتك" : "Savings growth"}</div>
       </div>
-      <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-        {[Brain, Target, Trophy].map((Icon, i) => <div key={i} style={{ flex: 1, textAlign: "center", background: c.card, border: `1px solid ${c.line}`, borderRadius: 14, padding: "10px 0" }}><Icon size={20} color={c.accentText} aria-hidden="true" /></div>)}
+      <div className="hero-cardlet" style={{ display: "flex", gap: 8, marginTop: 12 }}>
+        {[Brain, Target, Trophy].map((Icon, i) => <div key={i} style={{ flex: 1, textAlign: "center", background: c.card, border: `1px solid ${c.line}`, borderRadius: 14, padding: "10px 0" }}><Icon size={20} color={i === 1 ? c.green : c.accentText} aria-hidden="true" /></div>)}
       </div>
     </div>
   );
 }
 
 function Landing() {
-  const { c, s, vw, setScreen } = useCtx();
+  const { c, s, vw, setScreen, theme } = useCtx();
   const narrow = vw < 860;
   const cols4 = vw >= 1000 ? 4 : vw >= 620 ? 2 : 1;
   const cols3 = vw >= 820 ? 3 : 1;
   const card = { background: c.card, border: `1px solid ${c.line}`, borderRadius: 22, padding: 22 };
   return (
     <div>
-      <div style={{ maxWidth: 1120, margin: "0 auto", padding: "clamp(32px,6vw,70px) 20px", display: "flex", flexDirection: narrow ? "column" : "row", alignItems: "center", gap: "clamp(28px,5vw,50px)" }}>
-        <div style={{ flex: 1, textAlign: narrow ? "center" : "start" }}>
+      <div style={{ maxWidth: 1120, margin: "0 auto", padding: "clamp(32px,6vw,70px) 20px", display: "flex", flexDirection: narrow ? "column" : "row", alignItems: "center", gap: "clamp(28px,5vw,50px)", position: "relative" }}>
+        <WaeyFlowField tone={theme} />
+        <ScrollReveal style={{ flex: 1, textAlign: narrow ? "center" : "start", position: "relative", zIndex: 1 }}>
           <div style={{ display: "inline-block", fontSize: 12.5, fontWeight: 700, color: c.accentText, background: c.card, border: `1px solid ${c.line}`, borderRadius: 999, padding: "6px 14px", marginBottom: 18 }}>Waey · {s.mk.visionTitle} 2030</div>
           <h1 style={{ fontSize: "clamp(32px,5.5vw,58px)", fontWeight: 800, lineHeight: 1.1, letterSpacing: "-0.02em", margin: 0 }}>{s.mk.heroTitle}</h1>
           <p style={{ fontSize: "clamp(15px,2vw,19px)", color: c.muted, lineHeight: 1.7, marginTop: 18, maxWidth: 520, marginInline: narrow ? "auto" : 0 }}>{s.mk.heroSub}</p>
           <div style={{ display: "flex", gap: 12, marginTop: 26, flexWrap: "wrap", justifyContent: narrow ? "center" : "flex-start" }}>
-            <button onClick={() => setScreen("role")} style={mkBtn(c.accent, c.onAccent)}>{s.mk.ctaPrimary}</button>
-            <button onClick={() => setScreen("about")} style={mkBtn(c.card, c.text, c.line)}>{s.mk.about}</button>
+            <motion.button onClick={() => setScreen("role")} {...pressProps} style={mkBtn(c.accent, c.onAccent)}>{s.mk.ctaPrimary}</motion.button>
+            <motion.button onClick={() => setScreen("about")} {...pressProps} style={mkBtn(c.card, c.text, c.line)}>{s.mk.about}</motion.button>
           </div>
-        </div>
+        </ScrollReveal>
         <HeroMock />
       </div>
 
       <div style={{ maxWidth: 1120, margin: "0 auto", padding: "clamp(30px,5vw,60px) 20px" }}>
         <h2 style={mkH2(c)}>{s.mk.pillarsTitle}</h2>
-        <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols4}, 1fr)`, gap: 16, marginTop: 28 }}>
+        <motion.div initial="hidden" whileInView="visible" viewport={viewportOnce} variants={revealContainer} style={{ display: "grid", gridTemplateColumns: `repeat(${cols4}, 1fr)`, gap: 16, marginTop: 28 }}>
           {s.mk.pillars.map((p, i) => (
-            <div key={i} style={card}>
+            <motion.div key={i} variants={revealItem} whileHover={{ y: -4, boxShadow: "0 24px 60px -34px rgba(15,34,48,0.45)" }} whileTap={{ scale: 0.98 }} style={card}>
               <IconBubble icon={p.icon} color={c.accentText} bg={c.accent + "18"} size={25} box={48} radius={14} />
               <div style={{ fontWeight: 700, fontSize: 17, marginTop: 12 }}>{p.t}</div>
               <div style={{ fontSize: 13.5, color: c.muted, lineHeight: 1.7, marginTop: 6 }}>{p.d}</div>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
 
       <div style={{ maxWidth: 1120, margin: "0 auto", padding: "clamp(30px,5vw,60px) 20px" }}>
@@ -1526,27 +1535,27 @@ function Landing() {
       </div>
 
       <div style={{ background: c.card2, borderTop: `1px solid ${c.line}`, borderBottom: `1px solid ${c.line}` }}>
-        <div style={{ maxWidth: 1120, margin: "0 auto", padding: "clamp(30px,5vw,54px) 20px", display: "flex", flexWrap: "wrap", gap: 24, justifyContent: "space-around", textAlign: "center" }}>
+        <motion.div initial="hidden" whileInView="visible" viewport={viewportOnce} variants={revealContainer} style={{ maxWidth: 1120, margin: "0 auto", padding: "clamp(30px,5vw,54px) 20px", display: "flex", flexWrap: "wrap", gap: 24, justifyContent: "space-around", textAlign: "center" }}>
           {s.mk.stats.map((st, i) => (
-            <div key={i} style={{ flex: "1 1 160px" }}>
+            <motion.div key={i} variants={revealItem} style={{ flex: "1 1 160px" }}>
               <div style={{ fontSize: "clamp(30px,5vw,46px)", fontWeight: 800, color: c.accentText }}>{st.v}</div>
               <div style={{ fontSize: 13.5, color: c.muted, marginTop: 4 }}>{st.l}</div>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
 
       <div style={{ maxWidth: 1120, margin: "0 auto", padding: "clamp(30px,5vw,60px) 20px" }}>
         <h2 style={mkH2(c)}>{s.mk.howTitle}</h2>
-        <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols3}, 1fr)`, gap: 16, marginTop: 28 }}>
+        <motion.div initial="hidden" whileInView="visible" viewport={viewportOnce} variants={revealContainer} style={{ display: "grid", gridTemplateColumns: `repeat(${cols3}, 1fr)`, gap: 16, marginTop: 28 }}>
           {s.mk.steps.map((st, i) => (
-            <div key={i} style={card}>
+            <motion.div key={i} variants={revealItem} whileHover={{ y: -4, boxShadow: "0 24px 60px -34px rgba(15,34,48,0.45)" }} whileTap={{ scale: 0.98 }} style={card}>
               <div style={{ width: 40, height: 40, borderRadius: 12, background: c.accent, color: c.onAccent, display: "grid", placeItems: "center", fontWeight: 800 }}>{i + 1}</div>
               <div style={{ fontWeight: 700, fontSize: 16, marginTop: 12 }}>{st.t}</div>
               <div style={{ fontSize: 13.5, color: c.muted, lineHeight: 1.7, marginTop: 6 }}>{st.d}</div>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
 
       <div style={{ maxWidth: 1120, margin: "0 auto", padding: "clamp(20px,4vw,40px) 20px clamp(40px,6vw,70px)" }}>
