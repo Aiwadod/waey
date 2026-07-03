@@ -107,6 +107,17 @@ test("mobile viewport renders the student app", async ({ page }) => {
   expect(overflow).toBe(false);
 });
 
+test("landing opens in Waey light mode by default", async ({ page }) => {
+  await page.goto("/#/landing");
+
+  await expect(page.locator("[data-waey-theme='light']")).toBeVisible();
+  await expect(page.locator("[data-waey-shell]")).toBeVisible();
+
+  const bg = await page.locator("[data-waey-shell]").evaluate((node) => getComputedStyle(node).backgroundImage);
+  expect(bg).not.toContain("rgb(0, 18, 28)");
+  expect(bg).toContain("236, 234, 227");
+});
+
 async function enterAsGuest(page) {
   await page.goto("/#/landing");
   await page.getByRole("button", { name: /تسجيل الدخول|Sign in/ }).first().click();

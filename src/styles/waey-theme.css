@@ -1,0 +1,99 @@
+:root {
+  color-scheme: light;
+  --waey-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --waey-ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --waey-ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --waey-motion-scale: 1;
+  --waey-page: #f1efe9;
+  --waey-ink: #0f2230;
+  --waey-line: rgba(0, 33, 52, 0.1);
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--waey-page);
+  color: var(--waey-ink);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.waey-pressable {
+  transform: translateZ(0);
+  transition:
+    transform 150ms var(--waey-ease-out),
+    box-shadow 180ms var(--waey-ease-out),
+    border-color 180ms var(--waey-ease-out),
+    background-color 180ms var(--waey-ease-out);
+}
+
+.waey-pressable:active {
+  transform: scale(0.97);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .waey-hover-lift:hover {
+    transform: translateY(calc(-3px * var(--waey-motion-scale)));
+    box-shadow: 0 24px 60px -34px rgba(15, 34, 48, 0.45);
+  }
+
+  .waey-glow:hover {
+    border-color: rgba(111, 109, 208, 0.38);
+  }
+}
+
+.waey-soft-card {
+  box-shadow:
+    0 18px 48px -36px rgba(15, 34, 48, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+.waey-flow-field {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.waey-flow-line,
+.waey-flow-dot,
+.waey-flow-orb {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.waey-no-scrollbar {
+  scrollbar-width: none;
+}
+
+.waey-no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --waey-motion-scale: 0;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 1ms !important;
+  }
+
+  .waey-pressable:active,
+  .waey-hover-lift:hover {
+    transform: none;
+  }
+}
