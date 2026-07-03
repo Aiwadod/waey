@@ -9,6 +9,9 @@ import {
   Users, Target, BookOpen, HelpCircle, Coins, Send, Sun, Moon, Bus, Gamepad2, Coffee,
   MoreHorizontal, FlaskConical, LayoutGrid, ArrowLeftRight, ArrowDownToLine, Gift, Percent,
   MapPin, Clock, Store, ChevronDown, Globe, Check, Users2, BarChart2, Crown, LogOut, Tag, Brain, Zap, ArrowRight, ArrowLeft,
+  Flame, Heart, TriangleAlert, Lock, Landmark, Headphones, Film, Banknote, Tent, Bike,
+  Laptop, Palette, Camera, School, Fuel, ShoppingCart, Pill, Lightbulb, Briefcase,
+  GraduationCap, Building2, Medal, CircleDollarSign, Search, Utensils,
 } from "lucide-react";
 
 /*  وعي (Waey) — تطبيق الوعي المالي لطلاب الجامعات
@@ -36,6 +39,27 @@ const themes = {
   },
 };
 
+function IconBubble({ icon: Icon, color, bg, size = 22, box = 46, radius = 14 }) {
+  return (
+    <div style={{ width: box, height: box, borderRadius: radius, background: bg, color, display: "grid", placeItems: "center", flexShrink: 0 }}>
+      <Icon size={size} color={color} aria-hidden="true" />
+    </div>
+  );
+}
+
+function InlineIcon({ icon: Icon, color, size = 15 }) {
+  return <Icon size={size} color={color} aria-hidden="true" style={{ flexShrink: 0 }} />;
+}
+
+function PrivacyNote({ children, c, style }) {
+  return (
+    <div style={{ background: c.card2, border: `1px dashed ${c.line}`, borderRadius: 16, padding: 14, fontSize: 12, color: c.textSoft, lineHeight: 1.7, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, textAlign: "center", ...style }}>
+      <Lock size={15} color={c.accentText} aria-hidden="true" />
+      <span>{children}</span>
+    </div>
+  );
+}
+
 /* ===================== الترجمة ===================== */
 const L = {
   ar: {
@@ -44,7 +68,7 @@ const L = {
     pts: "نقطة",
     stats: { adhere: "التزام", level: "المستوى", streak: "يوم متتالي" },
     balance: "رصيد الحساب", transfer: "تحويل", deposit: "إيداع", invest: "استثمار",
-    friends: "الأصدقاء", online: "متّصل", keepUp: "واصل! 🔥", keepUpSub: "35 يوم بدون تجاوز ميزانيتك",
+    friends: "الأصدقاء", online: "متّصل", keepUp: "واصل!", keepUpSub: "35 يوم بدون تجاوز ميزانيتك",
     weekly: "مصاريف أسابيع الشهر", tapWeek: "اضغط أسبوع للتفاصيل", week: (n) => `أسبوع ${n}`,
     leftSpend: "متبقّي للصرف", canSave: "ممكن توفّر",
     weekOrd: ["الأول", "الثاني", "الثالث", "الرابع"],
@@ -58,52 +82,52 @@ const L = {
     logExpense: "سجّل مصروف", everyRiyal: "كل ريال له سبب — هذا جوهر الوعي", amount: "المبلغ", reason: "السبب…", log: "تسجيل",
     badAmount: "اكتب مبلغ صحيح", askReason: "وش سبب الصرف؟", logged: (x) => `سُجّل · باقي ${fmt(x)} ر.س`,
     askWaey: "اسأل وعي", advisorSub: "مستشارك المالي · يعرف وضعك الحالي",
-    hello: "هلا وَدود 👋 أنا وعي، ذكاؤك المالي السلوكي. أحلّل شخصيتك الإنفاقية وأساعدك تغيّر عاداتك — مكافأتك 1,000 ر.س. اسألني أي شي: حلّل شخصيتي، وزّع مكافأتي، أو أبي أوفّر وأستثمر.",
+    hello: "هلا وَدود، أنا وعي، ذكاؤك المالي السلوكي. أحلّل شخصيتك الإنفاقية وأساعدك تغيّر عاداتك — مكافأتك 1,000 ر.س. اسألني أي شي: حلّل شخصيتي، وزّع مكافأتي، أو أبي أوفّر وأستثمر.",
     chips: ["وزّع لي المكافأة", "ارسم توقّع ادخاري", "وين راحت فلوسي؟", "أبي أستلف 500 ومعي 200"], msgPlaceholder: "اكتب لوعي…",
     portfolio: "محفظتك الاستثمارية", expRet: (x) => `عائد متوقّع +25% سنوياً ← ${x} ر.س`,
     journey: "رحلتك الجامعية", goal: "الهدف", now2: "الآن", suggested: "فرص مقترحة لك", inYear: (x) => `بعد سنة ≈ ${x} ر.س`, investBtn: "استثمر",
-    invested: (x) => `استثمرت ${fmt(x)} ر.س 🌱`, tooMuch: "المبلغ أكبر من مدّخراتك",
-    more: "المزيد", waeyPoints: "نقاط وعي", offers: "عروض حصرية", getIt: "احصل عليه", offerOn: "تم تفعيل العرض ✅",
-    pointsStore: "متجر النقاط", redeem: "استبدال", redeemed: (t) => `استبدلت «${t}» 🎉`, noPoints: "نقاطك ما تكفي بعد",
+    invested: (x) => `استثمرت ${fmt(x)} ر.س`, tooMuch: "المبلغ أكبر من مدّخراتك",
+    more: "المزيد", waeyPoints: "نقاط وعي", offers: "عروض حصرية", getIt: "احصل عليه", offerOn: "تم تفعيل العرض",
+    pointsStore: "متجر النقاط", redeem: "استبدال", redeemed: (t) => `استبدلت «${t}»`, noPoints: "نقاطك ما تكفي بعد",
     settings: "الإعدادات", demoBtn: "محاكاة عملية دفع (تجريبي)", demoSub: "جرّب كيف يطلب وعي تصنيف كل عملية",
     appearance: "المظهر", dark: "الداكن", light: "الفاتح", language: "اللغة",
     learn: "تعلّم الإدارة المالية", help: "المساعدة", helpSoon: "مركز المساعدة قريباً",
-    paidNow: (x) => `دفعت ${x} ر.س للتو 💳`, categorize: "ساعدني أصنّفها — وش نوع الصرف؟", typeCat: "اكتب نوع الصرف…", confirm: "تأكيد",
-    categorized: (x, l) => `صنّفنا ${fmt(x)} ر.س · ${l} (+5 نقاط) ✅`,
-    transferT: "تحويل", yourBal: (x) => `رصيدك ${x} ر.س`, sendNow: "تحويل الآن", sent: (x, to) => `حوّلت ${fmt(x)} ر.س لـ ${to} ✅`, noBal: "الرصيد لا يكفي",
+    paidNow: (x) => `دفعت ${x} ر.س للتو`, categorize: "ساعدني أصنّفها — وش نوع الصرف؟", typeCat: "اكتب نوع الصرف…", confirm: "تأكيد",
+    categorized: (x, l) => `صنّفنا ${fmt(x)} ر.س · ${l} (+5 نقاط)`,
+    transferT: "تحويل", yourBal: (x) => `رصيدك ${x} ر.س`, sendNow: "تحويل الآن", sent: (x, to) => `حوّلت ${fmt(x)} ر.س لـ ${to}`, noBal: "الرصيد لا يكفي",
     people: ["أحمد", "سارة", "والدتي", "حساب آخر"],
-    depositT: "إيداع", addFunds: "أضف رصيد لحسابك", deposited: (x) => `أودعت ${fmt(x)} ر.س ✅`,
+    depositT: "إيداع", addFunds: "أضف رصيد لحسابك", deposited: (x) => `أودعت ${fmt(x)} ر.س`,
     loanTitle: "مصروفك يتجاوز المتاح", approve: "موافق، اعتمد القرض", noAdjust: "لا، بعدّل صرفي", loanDone: (x) => `اعتمد قرض ${fmt(x)} ر.س`,
     portfolioGrowth: "نمو المحفظة خلال 12 شهر", howSaveMore: "كيف توفّر أكثر:", disclaimer: "* أرقام تقديرية للتوضيح، العوائد غير مضمونة.",
     persona: "شخصيتك المالية", personaBy: "حلّلها وعي بالذكاء الاصطناعي السلوكي", reanalyze: "حلّل من جديد",
     personalities: [
-      { name: "منفق اجتماعي", emoji: "🫂", desc: "أغلب صرفك مع الأصدقاء والمناسبات", traits: ["مطاعم", "ترفيه", "مناسبات"] },
-      { name: "منفق عاطفي", emoji: "💗", desc: "تصرف أكثر وقت التوتر أو الفرح", traits: ["تسوّق مزاجي", "قهوة", "حلويات"] },
-      { name: "منفق اندفاعي", emoji: "⚡", desc: "قرارات شراء سريعة بدون تخطيط", traits: ["عروض", "إلكترونيات", "توصيل"] },
+      { name: "منفق اجتماعي", icon: Users2, desc: "أغلب صرفك مع الأصدقاء والمناسبات", traits: ["مطاعم", "ترفيه", "مناسبات"] },
+      { name: "منفق عاطفي", icon: Heart, desc: "تصرف أكثر وقت التوتر أو الفرح", traits: ["تسوّق مزاجي", "قهوة", "حلويات"] },
+      { name: "منفق اندفاعي", icon: Zap, desc: "قرارات شراء سريعة بدون تخطيط", traits: ["عروض", "إلكترونيات", "توصيل"] },
     ],
     peer: "مقارنتك مع أقرانك", peerDesc: "مقارنة مجهولة — بدون أي بيانات شخصية", peerLine: (p) => `تدّخر أكثر من ${p}% من طلاب جدة بفئتك`, peerYou: "أنت",
     challenges: "تحديات الأسبوع", challengesSub: "مخصّصة لشخصيتك المالية", chProgress: (a, b) => `${a}/${b} مكتمل`,
     challengeList: [{ t: "لا تطلب توصيل طعام 3 أيام", pts: 50 }, { t: "ادّخر 50 ر.س هذا الأسبوع", pts: 40 }, { t: "سجّل كل مصاريفك 5 أيام", pts: 30 }],
-    chDoneMsg: (p) => `أحسنت! +${p} نقطة 🎉`,
+    chDoneMsg: (p) => `أحسنت! +${p} نقطة`,
     leader: "لوحة الالتزام", leaderSub: "التنافس على الالتزام لا على المبالغ · خصوصيتك محفوظة", commit: "التزام",
     stuPrefix: "طالب#", lbMetric: "حسب نسبة إكمال التحديات", periodW: "أسبوعي", periodM: "شهري", viewAll: "عرض اللوحة كاملة",
-    yourRank: "ترتيبك", ofN: (n) => `من ${n}`, lbGap: (d, r) => `يفصلك ${d}% عن المركز ${r}`, lbTop: "أنت في الصدارة! 🏆", chDoneLabel: "تحديات",
+    yourRank: "ترتيبك", ofN: (n) => `من ${n}`, lbGap: (d, r) => `يفصلك ${d}% عن المركز ${r}`, lbTop: "أنت في الصدارة!", chDoneLabel: "تحديات",
     periodY: "سنوي", projTitle: "توقّع الادخار والنمو", breakdownTitle: "توزيع صرفك حسب الفئة",
     projW: (v) => `وفّر 50 ر.س أسبوعياً (قهوة أقل) → خلال شهرين ~${fmt(v)} ر.س.`,
     projM: (v) => `حوّل 200 ر.س ادخار أول كل شهر مع استثمار ~10% → بعد سنة ~${fmt(v)} ر.س.`,
     projY: (v) => `استمر على 200 ر.س شهرياً مستثمرة → عند التخرّج (4 سنوات) ~${fmt(v)} ر.س.`,
     jobsTitle: "وظائف مؤقتة · دخل إضافي", jobsSub: "اشتغل وقت فراغك وادّخر من دخلك", jobsPageSub: "وعي يدّخر لك 20% من كل دخل تلقائياً",
-    jobAvg: "متوسط دخل الطلاب على وعي ~600 ر.س/شهر", jobApply: "اشتغلها", jobEarned: (p, sv) => `كسبت ${fmt(p)} ر.س · ادّخرنا لك ${fmt(sv)} ر.س 🌱`,
+    jobAvg: "متوسط دخل الطلاب على وعي ~600 ر.س/شهر", jobApply: "اشتغلها", jobEarned: (p, sv) => `كسبت ${fmt(p)} ر.س · ادّخرنا لك ${fmt(sv)} ر.س`,
     jobDetails: "التفاصيل", jobAbout: "عن الوظيفة", jobReqs: "المتطلبات", jobHow: "طريقة التقديم", jobLoc: "الموقع", jobSlots: (n) => `${n} مقاعد متاحة`,
     jobSteps: ["أكمل ملفك (الاسم · الجامعة · التخصص)", "أرفق سيرتك أو نماذج أعمالك", "أرسل الطلب — يصلك رد خلال 48 ساعة"],
-    jobApplyNow: "قدّم الآن", jobApplied: "تم إرسال طلبك ✅ بنوافيك خلال 48 ساعة", jobBack: "رجوع للوظائف",
-    roundTitle: "كنز الفكّة 🪙", roundSub: "نقرّب كل عملية ونوفّر الباقي تلقائياً",
-    roundGoal: "🎯 الهدف: توفير بدون ما تحس — لوقت الزنقة",
+    jobApplyNow: "قدّم الآن", jobApplied: "تم إرسال طلبك، بنوافيك خلال 48 ساعة", jobBack: "رجوع للوظائف",
+    roundTitle: "كنز الفكّة", roundSub: "نقرّب كل عملية ونوفّر الباقي تلقائياً",
+    roundGoal: "الهدف: توفير بدون ما تحس — لوقت الزنقة",
     roundHowTitle: "كيف يشتغل؟", roundExA: "تدفع 5.40 ر.س", roundExB: "نسحب 6.00 ر.س", roundExC: "0.60 ر.س تروح لكنزك",
     roundWhy: "الفكّة الصغيرة تتجمّع بدون ما تأثر عليك، وبوقت الحاجة تلقى مبلغ جاهز ادّخرته بنفسك.",
     roundOn: "مفعّل", roundCollected: "تجمّع لك", roundMult: "مضاعف التقريب", roundConvert: "حوّل للادخار",
-    roundConverted: (x) => `حوّلنا ${fmt(x)} ر.س فكّة لمدّخراتك 🌱`, roundEmpty: "ما تجمّع فكّة بعد — اصرف وبتشوفها تكبر",
-    roundAdded: (x) => `+${x.toFixed(2)} ر.س فكّة 🪙`,
+    roundConverted: (x) => `حوّلنا ${fmt(x)} ر.س فكّة لمدّخراتك`, roundEmpty: "ما تجمّع فكّة بعد — اصرف وبتشوفها تكبر",
+    roundAdded: (x) => `+${x.toFixed(2)} ر.س فكّة`,
     cashOffersSub: "العروض المتاحة في هذه الفئة", cashOffersList: "العروض المتاحة", cashOffersCount: "عروض", 
     as: {
       introTitle: ["اكتشف لماذا تنفق — مو بس كم تنفق", "أجب أسئلة بسيطة ← اكتشف شخصيتك ← احصل على قرارك", "بياناتك آمنة — ما نحتاج حساب بنكي"],
@@ -119,7 +143,7 @@ const L = {
       yourPersona: "شخصيتك المالية", dna: "الحمض السلوكي", dnaPlanning: "التخطيط", dnaSocial: "الاجتماعي", dnaEmotional: "العاطفي", dnaImpulsive: "الاندفاع",
       awareness: "درجة وعيك المالي", confidence: "ثقة الذكاء", seeDecision: "شوف قرارك المالي",
       decisionTitle: "قرارك المالي", decisionText: (x) => `تقدر تحوّل ${fmt(x)} ر.س هذا الشهر للادخار بدون ما تغيّر نمط حياتك`,
-      decisionHow: "كيف؟ بتعديل بسيط في عاداتك الأكثر صرفاً", challengeTitle: "تحدّيك الأسبوعي", points: "نقطة وعي", acceptCh: "قبلت التحدي ✓ ابدأ",
+      decisionHow: "كيف؟ بتعديل بسيط في عاداتك الأكثر صرفاً", challengeTitle: "تحدّيك الأسبوعي", points: "نقطة وعي", acceptCh: "قبلت التحدي، ابدأ",
       retake: "أعد التقييم", skip: "تجاوز",
       betterThan: (p) => `أنت أفضل في التخطيط من ${p}% من الطلاب`,
       identity: "تعرّف على هويتك المالية", meetJourney: "أكمل رحلتك",
@@ -138,14 +162,14 @@ const L = {
       analyze: "حلّل سلوكي", save: "ساعدني أوفّر", explain: "فسّر درجتي", suggest: "اقترح تحدّي",
       analyzeR: "شخصيتك المالية اجتماعية-مخطّطة: تخطّط قبل الشراء لكن الإنفاق الاجتماعي يرتفع بالإجازات. ركّز على ميزانية أسبوعية للخروجات.",
       saveR: "قلّل صرف المطاعم 80 ر.س هذا الأسبوع → توفير محتمل 320 ر.س/شهر. فعّل كنز الفكّة عشان يدّخر تلقائياً.",
-      explainR: ["✔ تخطيط ممتاز قبل الشراء", "✔ عادة ادخار جيدة", "⚠ إنفاق عاطفي في الإجازات"],
+      explainR: ["تخطيط ممتاز قبل الشراء", "عادة ادخار جيدة", "إنفاق عاطفي في الإجازات"],
       suggestR: "تحدّي هذا الأسبوع: لا مطاعم بعد 8 مساءً لمدة 3 أيام → +5 نقاط. بسيط ويصنع فرق.",
-      askMore: "أو اكتب سؤالك بالأسفل 👇",
+      askMore: "أو اكتب سؤالك بالأسفل",
     },
     awarenessTitle: "درجة وعيك المالي", dnaTitle: "الحمض السلوكي", aiConf: "ثقة الذكاء",
-    insightTitle: "رؤية اليوم من وعي", insightText: "صرفت على القهوة 3 مرات هالأسبوع — لو نزّلتها مرتين توفّر ~35 ر.س. جرّب تحدّي اليوم 👇",
+    insightTitle: "رؤية اليوم من وعي", insightText: "صرفت على القهوة 3 مرات هالأسبوع — لو نزّلتها مرتين توفّر ~35 ر.س. جرّب تحدّي اليوم",
     progTitle: "تقدّمك", progWeeks: "الأسابيع", progChDone: "تحديات مكتملة", progScoreUp: "نمو الدرجة", progWeekLabel: (n) => `أسبوع ${n}`,
-    rewardsTitle: "مكافآتك", rewLevel: "المستوى", rewBadges: "الشارات", rewFuture: "🎁 قريباً: مكافآت إنماء (Future Alinma Rewards)",
+    rewardsTitle: "مكافآتك", rewLevel: "المستوى", rewBadges: "الشارات", rewFuture: "قريباً: مكافآت إنماء (Future Alinma Rewards)",
     badgeNames: ["أول تحدّي", "موفّر", "منتظم 7 أيام", "مستثمر مبتدئ"],
     plat: {
       title: "منصة وعي", sub: "مو مجرد تطبيق — منصة ذكاء سلوكي مالي بثلاث واجهات",
@@ -157,11 +181,11 @@ const L = {
       pUni: "جامعة جدة", pUniD: "شريك مؤسسي: تطلق البرنامج، وتتابع المشاركة والوعي — كله مجهّل بدون أفراد.",
       pBank: "بنك الإنماء", pBankD: "يحصل على تحليلات سلوكية مجمّعة فقط (أكثر الشخصيات، متوسط الوعي) لتصميم منتجات الشباب — بدون بيانات فردية.",
       uniDash: "لوحة الجامعة (عرض)", uniStudents: "طلاب مشاركون", uniAwareness: "متوسط الوعي المالي", uniComplete: "إكمال التحديات",
-      bankDash: "لوحة البنك (عرض)", bankTopPersona: "أكثر شخصية انتشاراً", bankAvgAware: "متوسط الوعي", bankTopCh: "أنجح تحدّي", bankAnon: "🔒 كل البيانات مجمّعة ومجهّلة الهوية",
+      bankDash: "لوحة البنك (عرض)", bankTopPersona: "أكثر شخصية انتشاراً", bankAvgAware: "متوسط الوعي", bankTopCh: "أنجح تحدّي", bankAnon: "كل البيانات مجمّعة ومجهّلة الهوية",
       apisTitle: "طبقة الـ APIs (خارطة التوسّع)", apiMock: "Mock",
       apis: [["AI API", "يعيد الحمض السلوكي للطالب"], ["University API", "التحقق من الجامعة والكلية (مستقبلاً)"], ["Alinma API", "العمليات والادخار — بعد موافقة المستخدم"], ["Analytics API", "تجميع بيانات مجهّلة للوحات"]],
       legalTitle: "الالتزام القانوني", legal: "أي تكامل مع الأنظمة البنكية يتم فقط بعد موافقة المستخدم ووفق متطلبات الجهات التنظيمية عبر واجهات رسمية. بيانات الاستخدام والتحليل تبقى مجهّلة الهوية.",
-      enter: "🏛️ استعرض المنصة (للمحكّمين)",
+      enter: "استعرض المنصة (للمحكّمين)",
     },
     role: {
       title: "من أنت؟", sub: "وعي منصة بثلاث واجهات — اختر تجربتك",
@@ -183,7 +207,7 @@ const L = {
       habitsTitle: "أكثر العادات السلبية", oppTitle: "فرص للبنك", ageGroup: "الفئة العمرية",
       trend: "الاتجاه", growth: "النمو", vs: "مقابل الفصل السابق",
       detailFor: (n) => `تفاصيل: ${n}`, share: "من الطلاب", back: "رجوع",
-      anon: "🔒 كل البيانات مجمّعة ومجهّلة الهوية — بدون أي معلومة فردية",
+      anon: "كل البيانات مجمّعة ومجهّلة الهوية — بدون أي معلومة فردية",
       insightUni: "معدل الوعي ارتفع 6% بعد إطلاق التحديات الأسبوعية.",
       insightBank: "62% من الطلاب يصرفون على القهوة يومياً — فرصة لمنتج ادخار تلقائي.",
       opps: [["منتج ادخار تلقائي للشباب", "استهداف 62% يصرفون يومياً على القهوة"], ["بطاقة طلابية بمكافآت سلوكية", "تحفيز الالتزام المالي"], ["حملة توعية بالتقسيط", "48% يشترون بالاندفاع عند الخصومات"], ["برنامج أول راتب", "جيل يتخرج بعادات مالية صحية"]],
@@ -196,7 +220,7 @@ const L = {
       unitK: "ألف", unitM: "مليون", uniList: ["جامعة جدة", "الملك عبدالعزيز", "أم القرى", "الملك سعود", "الإمام", "الملك فهد للبترول"],
     },
     cashTitle: "كاش باك وعروض", cashSub: "استرجع جزء من مصاريفك اليومية", cashPageSub: "فعّل فئاتك واسترجع كاش باك مع كل عملية",
-    cashEarned: "كاش باك هذا الشهر", cashActivate: "تفعيل", cashActive: "مفعّل ✓", cashOn: "تم تفعيل الكاش باك ✅", backWord: "كاش باك",
+    cashEarned: "كاش باك هذا الشهر", cashActivate: "تفعيل", cashActive: "مفعّل", cashOn: "تم تفعيل الكاش باك", backWord: "كاش باك",
     mk: {
       home: "الرئيسية", about: "عن وعي", login: "تسجيل الدخول", start: "ابدأ الآن", openApp: "افتح التطبيق",
       heroTitle: "وعيك المالي يبدأ من الجامعة",
@@ -204,10 +228,10 @@ const L = {
       ctaPrimary: "ابدأ مجاناً", ctaSecondary: "عندي حساب",
       pillarsTitle: "أربعة محاور تغيّر علاقتك بالمال",
       pillars: [
-        { e: "🧠", t: "محرك الشخصية الإنفاقية", d: "يحدّد نمطك المالي من أول استخدام: اجتماعي، عاطفي، أو اندفاعي." },
-        { e: "👥", t: "المقارنة المجهولة", d: "اعرف أين أنت مقارنة بطلاب مدينتك — بدون أي بيانات شخصية." },
-        { e: "🎯", t: "تحديات أسبوعية مخصّصة", d: "مبنية على شخصيتك تحديداً، ترفع وعيك المالي تدريجياً." },
-        { e: "🏆", t: "لوحة الالتزام", d: "نافس على إتمام التحديات لا على المبالغ — خصوصيتك محفوظة." },
+        { icon: Brain, t: "محرك الشخصية الإنفاقية", d: "يحدّد نمطك المالي من أول استخدام: اجتماعي، عاطفي، أو اندفاعي." },
+        { icon: Users2, t: "المقارنة المجهولة", d: "اعرف أين أنت مقارنة بطلاب مدينتك — بدون أي بيانات شخصية." },
+        { icon: Target, t: "تحديات أسبوعية مخصّصة", d: "مبنية على شخصيتك تحديداً، ترفع وعيك المالي تدريجياً." },
+        { icon: Trophy, t: "لوحة الالتزام", d: "نافس على إتمام التحديات لا على المبالغ — خصوصيتك محفوظة." },
       ],
       stats: [{ v: "1.6%", l: "معدل ادخار السعوديين" }, { v: "2.2M", l: "طالب جامعي سنوياً" }, { v: "2030", l: "داعم لرؤية المملكة" }],
       howTitle: "كيف يشتغل وعي؟",
@@ -226,7 +250,7 @@ const L = {
     },
     leaderRows: [{ h: "طالب#A12", pct: 94 }, { h: "طالب#K77", pct: 90 }, { you: true, pct: 85 }, { h: "طالب#M03", pct: 81 }, { h: "طالب#R56", pct: 78 }],
     about: "عن وعي", aboutMission: "نرفع وعي جيل كامل بالمال — تجربة مثل Duolingo لكن للمال.", aboutStat: "معدل ادخار السعوديين 1.6% فقط — وعي يغيّر السلوك من الجامعة، دعماً لرؤية 2030.", aboutPartner: "شريك استراتيجي مقترح: بنك إنماء",
-    plus: "وعي بلس", plusSub: "افتح التحليل السلوكي المتقدم والتحديات الحصرية", plusPrice: "20 ر.س / شهر", upgrade: "ترقية", plusDone: "أهلاً بك في وعي بلس 🎉",
+    plus: "وعي بلس", plusSub: "افتح التحليل السلوكي المتقدم والتحديات الحصرية", plusPrice: "20 ر.س / شهر", upgrade: "ترقية", plusDone: "أهلاً بك في وعي بلس",
     revenue: "نموذج الإيراد", revenueText: "Freemium للطلاب · اشتراك 20 ر.س شهرياً للمزايا المتقدمة · شراكة بيانات مجهّلة مع إنماء · توسّع لاحق للمبتعثين.",
     tagline: "وعي لا تخبر الطلاب ماذا يفعلون بأموالهم — تبني الجيل الذي يحتاجه القطاع المصرفي.",
   },
@@ -236,7 +260,7 @@ const L = {
     pts: "pts",
     stats: { adhere: "On budget", level: "Level", streak: "Day streak" },
     balance: "Account Balance", transfer: "Transfer", deposit: "Deposit", invest: "Invest",
-    friends: "Friends", online: "online", keepUp: "Keep it up! 🔥", keepUpSub: "35 days within budget",
+    friends: "Friends", online: "online", keepUp: "Keep it up!", keepUpSub: "35 days within budget",
     weekly: "Weekly spending", tapWeek: "Tap a week for details", week: (n) => `Week ${n}`,
     leftSpend: "Left to spend", canSave: "Can save",
     weekOrd: ["1", "2", "3", "4"],
@@ -250,52 +274,52 @@ const L = {
     logExpense: "Log expense", everyRiyal: "Every riyal has a reason — that's awareness", amount: "Amount", reason: "Reason…", log: "Log",
     badAmount: "Enter a valid amount", askReason: "What's the reason?", logged: (x) => `Logged · ${fmt(x)} ر.س left`,
     askWaey: "Ask Waey", advisorSub: "Your financial advisor · knows your situation",
-    hello: "Hi Wadod 👋 I'm Waey, your behavioral money intelligence. I read your spending personality and help you change habits — stipend 1,000 ر.س. Ask me anything: analyze my personality, split my stipend, or save & invest.",
+    hello: "Hi Wadod, I'm Waey, your behavioral money intelligence. I read your spending personality and help you change habits — stipend 1,000 ر.س. Ask me anything: analyze my personality, split my stipend, or save & invest.",
     chips: ["Split my stipend", "Chart my savings forecast", "Where did my money go?", "Lend me 500, I have 200"], msgPlaceholder: "Message Waey…",
     portfolio: "Your portfolio", expRet: (x) => `Expected +25%/yr → ${x} ر.س`,
     journey: "Your university journey", goal: "Goal", now2: "now", suggested: "Suggested for you", inYear: (x) => `In a year ≈ ${x} ر.س`, investBtn: "Invest",
-    invested: (x) => `Invested ${fmt(x)} ر.س 🌱`, tooMuch: "Amount exceeds your savings",
-    more: "More", waeyPoints: "Waey points", offers: "Exclusive offers", getIt: "Get it", offerOn: "Offer activated ✅",
-    pointsStore: "Points store", redeem: "Redeem", redeemed: (t) => `Redeemed "${t}" 🎉`, noPoints: "Not enough points yet",
+    invested: (x) => `Invested ${fmt(x)} ر.س`, tooMuch: "Amount exceeds your savings",
+    more: "More", waeyPoints: "Waey points", offers: "Exclusive offers", getIt: "Get it", offerOn: "Offer activated",
+    pointsStore: "Points store", redeem: "Redeem", redeemed: (t) => `Redeemed "${t}"`, noPoints: "Not enough points yet",
     settings: "Settings", demoBtn: "Simulate a payment (demo)", demoSub: "See how Waey asks to categorize each payment",
     appearance: "Theme", dark: "Dark", light: "Light", language: "Language",
     learn: "Learn money management", help: "Help", helpSoon: "Help center coming soon",
-    paidNow: (x) => `You just paid ${x} ر.س 💳`, categorize: "Help me categorize it — what type?", typeCat: "Type the category…", confirm: "Confirm",
-    categorized: (x, l) => `Categorized ${fmt(x)} ر.س · ${l} (+5 pts) ✅`,
-    transferT: "Transfer", yourBal: (x) => `Balance ${x} ر.س`, sendNow: "Send now", sent: (x, to) => `Sent ${fmt(x)} ر.س to ${to} ✅`, noBal: "Insufficient balance",
+    paidNow: (x) => `You just paid ${x} ر.س`, categorize: "Help me categorize it — what type?", typeCat: "Type the category…", confirm: "Confirm",
+    categorized: (x, l) => `Categorized ${fmt(x)} ر.س · ${l} (+5 pts)`,
+    transferT: "Transfer", yourBal: (x) => `Balance ${x} ر.س`, sendNow: "Send now", sent: (x, to) => `Sent ${fmt(x)} ر.س to ${to}`, noBal: "Insufficient balance",
     people: ["Ahmed", "Sara", "Mom", "Other account"],
-    depositT: "Deposit", addFunds: "Add funds to your account", deposited: (x) => `Deposited ${fmt(x)} ر.س ✅`,
+    depositT: "Deposit", addFunds: "Add funds to your account", deposited: (x) => `Deposited ${fmt(x)} ر.س`,
     loanTitle: "This exceeds your available balance", approve: "Approve loan", noAdjust: "No, adjust spending", loanDone: (x) => `Loan approved ${fmt(x)} ر.س`,
     portfolioGrowth: "Portfolio growth over 12 months", howSaveMore: "How to save more:", disclaimer: "* Illustrative estimates, returns not guaranteed.",
     persona: "Your money personality", personaBy: "Analyzed by Waey behavioral AI", reanalyze: "Re-analyze",
     personalities: [
-      { name: "Social spender", emoji: "🫂", desc: "Most of your spend is with friends & events", traits: ["Dining", "Fun", "Events"] },
-      { name: "Emotional spender", emoji: "💗", desc: "You spend more under stress or joy", traits: ["Mood shopping", "Coffee", "Sweets"] },
-      { name: "Impulsive spender", emoji: "⚡", desc: "Quick, unplanned buying decisions", traits: ["Deals", "Electronics", "Delivery"] },
+      { name: "Social spender", icon: Users2, desc: "Most of your spend is with friends & events", traits: ["Dining", "Fun", "Events"] },
+      { name: "Emotional spender", icon: Heart, desc: "You spend more under stress or joy", traits: ["Mood shopping", "Coffee", "Sweets"] },
+      { name: "Impulsive spender", icon: Zap, desc: "Quick, unplanned buying decisions", traits: ["Deals", "Electronics", "Delivery"] },
     ],
     peer: "How you compare", peerDesc: "Anonymous — no personal data", peerLine: (p) => `You save more than ${p}% of Jeddah students in your bracket`, peerYou: "You",
     challenges: "This week's challenges", challengesSub: "Tailored to your money personality", chProgress: (a, b) => `${a}/${b} done`,
     challengeList: [{ t: "No food delivery for 3 days", pts: 50 }, { t: "Save 50 ر.س this week", pts: 40 }, { t: "Log all expenses for 5 days", pts: 30 }],
-    chDoneMsg: (p) => `Nice! +${p} pts 🎉`,
+    chDoneMsg: (p) => `Nice! +${p} pts`,
     leader: "Commitment leaderboard", leaderSub: "Compete on commitment, not amounts · privacy kept", commit: "commit",
     stuPrefix: "Student#", lbMetric: "By challenge completion", periodW: "Weekly", periodM: "Monthly", viewAll: "View full leaderboard",
-    yourRank: "Your rank", ofN: (n) => `of ${n}`, lbGap: (d, r) => `${d}% behind rank ${r}`, lbTop: "You're #1! 🏆", chDoneLabel: "challenges",
+    yourRank: "Your rank", ofN: (n) => `of ${n}`, lbGap: (d, r) => `${d}% behind rank ${r}`, lbTop: "You're #1!", chDoneLabel: "challenges",
     periodY: "Yearly", projTitle: "Savings & growth forecast", breakdownTitle: "Your spending by category",
     projW: (v) => `Save 50 ر.س weekly (less coffee) → in two months ~${fmt(v)} ر.س.`,
     projM: (v) => `Auto-save 200 ر.س monthly with ~10% investing → in a year ~${fmt(v)} ر.س.`,
     projY: (v) => `Keep investing 200 ر.س monthly → by graduation (4 years) ~${fmt(v)} ر.س.`,
     jobsTitle: "Side gigs · extra income", jobsSub: "Work your free time and save from it", jobsPageSub: "Waey auto-saves 20% of every income for you",
-    jobAvg: "Students on Waey earn ~600 ر.س/mo on average", jobApply: "Earn it", jobEarned: (p, sv) => `Earned ${fmt(p)} ر.س · saved ${fmt(sv)} ر.س 🌱`,
+    jobAvg: "Students on Waey earn ~600 ر.س/mo on average", jobApply: "Earn it", jobEarned: (p, sv) => `Earned ${fmt(p)} ر.س · saved ${fmt(sv)} ر.س`,
     jobDetails: "Details", jobAbout: "About the role", jobReqs: "Requirements", jobHow: "How to apply", jobLoc: "Location", jobSlots: (n) => `${n} slots open`,
     jobSteps: ["Complete your profile (name · university · major)", "Attach your CV or portfolio", "Submit — you'll hear back within 48 hours"],
-    jobApplyNow: "Apply now", jobApplied: "Application sent ✅ we'll reply within 48 hours", jobBack: "Back to jobs",
-    roundTitle: "Spare-change vault 🪙", roundSub: "We round up each purchase and save the change automatically",
-    roundGoal: "🎯 Goal: save without noticing — for a rainy day",
+    jobApplyNow: "Apply now", jobApplied: "Application sent; we'll reply within 48 hours", jobBack: "Back to jobs",
+    roundTitle: "Spare-change vault", roundSub: "We round up each purchase and save the change automatically",
+    roundGoal: "Goal: save without noticing — for a rainy day",
     roundHowTitle: "How it works", roundExA: "You pay 5.40 ر.س", roundExB: "We take 6.00 ر.س", roundExC: "0.60 ر.س goes to your vault",
     roundWhy: "Tiny change adds up without hurting you, so when you're short you'll find a sum you saved yourself.",
     roundOn: "On", roundCollected: "Collected", roundMult: "Round-up multiplier", roundConvert: "Move to savings",
-    roundConverted: (x) => `Moved ${fmt(x)} ر.س change to your savings 🌱`, roundEmpty: "No change yet — spend and watch it grow",
-    roundAdded: (x) => `+${x.toFixed(2)} ر.س change 🪙`,
+    roundConverted: (x) => `Moved ${fmt(x)} ر.س change to your savings`, roundEmpty: "No change yet — spend and watch it grow",
+    roundAdded: (x) => `+${x.toFixed(2)} ر.س change`,
     cashOffersSub: "Offers available in this category", cashOffersList: "Available offers", cashOffersCount: "offers",
     as: {
       introTitle: ["Discover why you spend — not just how much", "Answer simple questions ← find your type ← get your decision", "Your data is safe — no bank account needed"],
@@ -311,7 +335,7 @@ const L = {
       yourPersona: "Your financial personality", dna: "Behavior DNA", dnaPlanning: "Planning", dnaSocial: "Social", dnaEmotional: "Emotional", dnaImpulsive: "Impulsive",
       awareness: "Financial awareness score", confidence: "AI confidence", seeDecision: "See your decision",
       decisionTitle: "Your money decision", decisionText: (x) => `You can move ${fmt(x)} ر.س to savings this month without changing your lifestyle`,
-      decisionHow: "How? A small tweak to your top spending habit", challengeTitle: "Your weekly challenge", points: "awareness pts", acceptCh: "Accept challenge ✓ Start",
+      decisionHow: "How? A small tweak to your top spending habit", challengeTitle: "Your weekly challenge", points: "awareness pts", acceptCh: "Accept challenge, start",
       retake: "Retake assessment", skip: "Skip",
       betterThan: (p) => `You're better at planning than ${p}% of students`,
       identity: "Meet your financial identity", meetJourney: "Continue your journey",
@@ -330,14 +354,14 @@ const L = {
       analyze: "Analyze my behavior", save: "Help me save", explain: "Explain my score", suggest: "Suggest a challenge",
       analyzeR: "Your money personality is social-planner: you plan before buying but social spending rises on holidays. Set a weekly outings budget.",
       saveR: "Cut restaurant spending by 80 ر.س this week → potential saving 320 ر.س/month. Turn on the spare-change vault to auto-save.",
-      explainR: ["✔ Great planning before buying", "✔ Good saving habit", "⚠ Emotional spending on holidays"],
+      explainR: ["Great planning before buying", "Good saving habit", "Emotional spending on holidays"],
       suggestR: "This week's challenge: no restaurants after 8 PM for 3 days → +5 pts. Simple but effective.",
-      askMore: "Or type your question below 👇",
+      askMore: "Or type your question below",
     },
     awarenessTitle: "Financial awareness score", dnaTitle: "Behavior DNA", aiConf: "AI confidence",
-    insightTitle: "Today's insight from Waey", insightText: "You spent on coffee 3× this week — drop it to twice and save ~35 ر.س. Try today's challenge 👇",
+    insightTitle: "Today's insight from Waey", insightText: "You spent on coffee 3× this week — drop it to twice and save ~35 ر.س. Try today's challenge",
     progTitle: "Your progress", progWeeks: "Weeks", progChDone: "Challenges done", progScoreUp: "Score growth", progWeekLabel: (n) => `Week ${n}`,
-    rewardsTitle: "Your rewards", rewLevel: "Level", rewBadges: "Badges", rewFuture: "🎁 Coming soon: Future Alinma Rewards",
+    rewardsTitle: "Your rewards", rewLevel: "Level", rewBadges: "Badges", rewFuture: "Coming soon: Future Alinma Rewards",
     badgeNames: ["First challenge", "Saver", "7-day streak", "First investor"],
     plat: {
       title: "Waey Platform", sub: "Not just an app — a behavioral finance platform with three interfaces",
@@ -349,11 +373,11 @@ const L = {
       pUni: "University of Jeddah", pUniD: "Institutional partner: launches the program, tracks participation & awareness — all anonymized, no individuals.",
       pBank: "Bank Alinma", pBankD: "Receives only aggregated behavior analytics (top personas, avg awareness) to design youth products — no individual data.",
       uniDash: "University dashboard (demo)", uniStudents: "Participating students", uniAwareness: "Avg financial awareness", uniComplete: "Challenge completion",
-      bankDash: "Bank dashboard (demo)", bankTopPersona: "Most common persona", bankAvgAware: "Avg awareness", bankTopCh: "Top challenge", bankAnon: "🔒 All data aggregated & anonymized",
+      bankDash: "Bank dashboard (demo)", bankTopPersona: "Most common persona", bankAvgAware: "Avg awareness", bankTopCh: "Top challenge", bankAnon: "All data aggregated & anonymized",
       apisTitle: "API layer (scale roadmap)", apiMock: "Mock",
       apis: [["AI API", "Returns the student's Behavior DNA"], ["University API", "Verify university & college (future)"], ["Alinma API", "Transactions & savings — after user consent"], ["Analytics API", "Aggregate anonymized data for dashboards"]],
       legalTitle: "Legal compliance", legal: "Any banking integration happens only after user consent and per regulatory requirements via official APIs. Usage and analysis data stays anonymized.",
-      enter: "🏛️ Explore the platform (for judges)",
+      enter: "Explore the platform (for judges)",
     },
     role: {
       title: "Who are you?", sub: "Waey is a platform with three interfaces — pick your experience",
@@ -375,7 +399,7 @@ const L = {
       habitsTitle: "Most common negative habits", oppTitle: "Opportunities for the bank", ageGroup: "Age group",
       trend: "Trend", growth: "Growth", vs: "vs last term",
       detailFor: (n) => `Details: ${n}`, share: "of students", back: "Back",
-      anon: "🔒 All data aggregated & anonymized — no individual info",
+      anon: "All data aggregated & anonymized — no individual info",
       insightUni: "Awareness rose 6% after weekly challenges launched.",
       insightBank: "62% of students spend on coffee daily — a chance for an auto-savings product.",
       opps: [["Youth auto-savings product", "Target the 62% who spend daily on coffee"], ["Student card with behavior rewards", "Incentivize financial commitment"], ["Installment awareness campaign", "48% buy impulsively on discounts"], ["First-salary program", "A generation graduating with healthy habits"]],
@@ -388,7 +412,7 @@ const L = {
       unitK: "K", unitM: "M", uniList: ["Univ. of Jeddah", "King Abdulaziz", "Umm Al-Qura", "King Saud", "Imam", "KFUPM"],
     },
     cashTitle: "Cashback & offers", cashSub: "Get part of your daily spending back", cashPageSub: "Activate your categories and earn cashback on every purchase",
-    cashEarned: "Cashback this month", cashActivate: "Activate", cashActive: "Active ✓", cashOn: "Cashback activated ✅", backWord: "cashback",
+    cashEarned: "Cashback this month", cashActivate: "Activate", cashActive: "Active", cashOn: "Cashback activated", backWord: "cashback",
     mk: {
       home: "Home", about: "About", login: "Sign in", start: "Get started", openApp: "Open app",
       heroTitle: "Money awareness starts at university",
@@ -396,10 +420,10 @@ const L = {
       ctaPrimary: "Start free", ctaSecondary: "I have an account",
       pillarsTitle: "Four pillars that reshape your money habits",
       pillars: [
-        { e: "🧠", t: "Spending personality engine", d: "Identifies your money type from day one: social, emotional, or impulsive." },
-        { e: "👥", t: "Anonymous peer comparison", d: "See where you stand vs students in your city — no personal data." },
-        { e: "🎯", t: "Personalized weekly challenges", d: "Built for your personality, raising your money awareness step by step." },
-        { e: "🏆", t: "Commitment leaderboard", d: "Compete on completing challenges, not amounts — privacy kept." },
+        { icon: Brain, t: "Spending personality engine", d: "Identifies your money type from day one: social, emotional, or impulsive." },
+        { icon: Users2, t: "Anonymous peer comparison", d: "See where you stand vs students in your city — no personal data." },
+        { icon: Target, t: "Personalized weekly challenges", d: "Built for your personality, raising your money awareness step by step." },
+        { icon: Trophy, t: "Commitment leaderboard", d: "Compete on completing challenges, not amounts — privacy kept." },
       ],
       stats: [{ v: "1.6%", l: "Saudi savings rate" }, { v: "2.2M", l: "students yearly" }, { v: "2030", l: "supports the Vision" }],
       howTitle: "How Waey works",
@@ -418,22 +442,22 @@ const L = {
     },
     leaderRows: [{ h: "Student#A12", pct: 94 }, { h: "Student#K77", pct: 90 }, { you: true, pct: 85 }, { h: "Student#M03", pct: 81 }, { h: "Student#R56", pct: 78 }],
     about: "About Waey", aboutMission: "Raising a generation's money awareness — a Duolingo for money.", aboutStat: "Saudi savings rate is just 1.6% — Waey changes behavior from university, supporting Vision 2030.", aboutPartner: "Proposed strategic partner: Bank Alinma",
-    plus: "Waey Plus", plusSub: "Unlock advanced behavioral insights & exclusive challenges", plusPrice: "20 ر.س / mo", upgrade: "Upgrade", plusDone: "Welcome to Waey Plus 🎉",
+    plus: "Waey Plus", plusSub: "Unlock advanced behavioral insights & exclusive challenges", plusPrice: "20 ر.س / mo", upgrade: "Upgrade", plusDone: "Welcome to Waey Plus ",
     revenue: "Revenue model", revenueText: "Freemium for students · 20 ر.س/mo for advanced features · anonymized data partnership with Alinma · later expansion to scholarship students.",
     tagline: "Waey doesn't tell students what to do with their money — it builds the generation banking needs.",
   },
 };
 const offersData = [
-  { ar: "قهوة وكافيهات", en: "Coffee & cafés", off: { ar: "خصم 15%", en: "15% off" }, emoji: "☕", ck: "terra" },
-  { ar: "توصيل طعام", en: "Food delivery", off: { ar: "خصم 25%", en: "25% off" }, emoji: "🍔", ck: "accent" },
-  { ar: "كتب وقرطاسية", en: "Books & stationery", off: { ar: "خصم 20%", en: "20% off" }, emoji: "📚", ck: "green" },
-  { ar: "إلكترونيات", en: "Electronics", off: { ar: "خصم 10%", en: "10% off" }, emoji: "🎧", ck: "accentText" },
+  { ar: "قهوة وكافيهات", en: "Coffee & cafés", off: { ar: "خصم 15%", en: "15% off" }, icon: Coffee, ck: "terra" },
+  { ar: "توصيل طعام", en: "Food delivery", off: { ar: "خصم 25%", en: "25% off" }, icon: Utensils, ck: "accent" },
+  { ar: "كتب وقرطاسية", en: "Books & stationery", off: { ar: "خصم 20%", en: "20% off" }, icon: BookOpen, ck: "green" },
+  { ar: "إلكترونيات", en: "Electronics", off: { ar: "خصم 10%", en: "10% off" }, icon: Headphones, ck: "accentText" },
 ];
 const storeData = [
-  { ar: "قسيمة قهوة", en: "Coffee voucher", cost: 300, emoji: "☕" },
-  { ar: "بطاقة متجر 50 ر.س", en: "50 ر.س gift card", cost: 1200, emoji: "🎁" },
-  { ar: "اشتراك شهر", en: "1-month subscription", cost: 800, emoji: "🎬" },
-  { ar: "خصم رسوم تحويل", en: "Transfer-fee discount", cost: 200, emoji: "💸" },
+  { ar: "قسيمة قهوة", en: "Coffee voucher", cost: 300, icon: Coffee },
+  { ar: "بطاقة متجر 50 ر.س", en: "50 ر.س gift card", cost: 1200, icon: Gift },
+  { ar: "اشتراك شهر", en: "1-month subscription", cost: 800, icon: Film },
+  { ar: "خصم رسوم تحويل", en: "Transfer-fee discount", cost: 200, icon: Banknote },
 ];
 const LB = [
   { id: "A12", pct: 94, done: 5 }, { id: "L09", pct: 92, done: 5 }, { id: "K77", pct: 90, done: 4 },
@@ -443,32 +467,32 @@ const LB = [
 ];
 const LB_COLORS = ["#8685D8", "#CA6C46", "#5FCB8E", "#A8A6F2", "#E08A63"];
 const JOBS = [
-  { e: "🎪", t: { ar: "مساعد فعالية جامعية", en: "Campus event assistant" }, org: { ar: "نادي طلابي", en: "Student club" }, pay: 50, unit: { ar: "/ساعة", en: "/hr" }, dur: { ar: "4 ساعات · هذا الأسبوع", en: "4 hrs · this week" }, mode: { ar: "حضوري", en: "On-site" }, loc: { ar: "جامعة جدة", en: "University of Jeddah" },
+  { icon: Tent, t: { ar: "مساعد فعالية جامعية", en: "Campus event assistant" }, org: { ar: "نادي طلابي", en: "Student club" }, pay: 50, unit: { ar: "/ساعة", en: "/hr" }, dur: { ar: "4 ساعات · هذا الأسبوع", en: "4 hrs · this week" }, mode: { ar: "حضوري", en: "On-site" }, loc: { ar: "جامعة جدة", en: "University of Jeddah" },
     desc: { ar: "مساعدة فريق التنظيم في استقبال الحضور وتنسيق الفعالية داخل الحرم الجامعي.", en: "Help the organizing team welcome attendees and coordinate the campus event." },
     reqs: { ar: ["طالب جامعي حالي", "روح تعاونية", "حضور يوم الفعالية"], en: ["Current university student", "Team spirit", "Available on event day"] }, slots: 6 },
-  { e: "🛵", t: { ar: "توصيل أوقات الفراغ", en: "Flexible delivery" }, org: { ar: "شريك توصيل", en: "Delivery partner" }, pay: 35, unit: { ar: "/ساعة", en: "/hr" }, dur: { ar: "مرن", en: "Flexible" }, mode: { ar: "ميداني", en: "Field" }, loc: { ar: "جدة", en: "Jeddah" },
+  { icon: Bike, t: { ar: "توصيل أوقات الفراغ", en: "Flexible delivery" }, org: { ar: "شريك توصيل", en: "Delivery partner" }, pay: 35, unit: { ar: "/ساعة", en: "/hr" }, dur: { ar: "مرن", en: "Flexible" }, mode: { ar: "ميداني", en: "Field" }, loc: { ar: "جدة", en: "Jeddah" },
     desc: { ar: "توصيل الطلبات في أوقاتك الفاضية، تختار الساعات اللي تناسبك بنفسك.", en: "Deliver orders in your free time — pick the hours that suit you." },
     reqs: { ar: ["عمر 18+", "وسيلة تنقل", "رخصة سارية"], en: ["18+", "A vehicle", "Valid license"] }, slots: 20 },
-  { e: "💻", t: { ar: "إدخال بيانات عن بُعد", en: "Remote data entry" }, org: { ar: "شركة ناشئة", en: "Startup" }, pay: 40, unit: { ar: "/ساعة", en: "/hr" }, dur: { ar: "10 ساعات/أسبوع", en: "10 hrs/week" }, mode: { ar: "عن بُعد", en: "Remote" }, loc: { ar: "عن بُعد", en: "Remote" },
+  { icon: Laptop, t: { ar: "إدخال بيانات عن بُعد", en: "Remote data entry" }, org: { ar: "شركة ناشئة", en: "Startup" }, pay: 40, unit: { ar: "/ساعة", en: "/hr" }, dur: { ar: "10 ساعات/أسبوع", en: "10 hrs/week" }, mode: { ar: "عن بُعد", en: "Remote" }, loc: { ar: "عن بُعد", en: "Remote" },
     desc: { ar: "إدخال وتنظيم بيانات في جداول، من البيت وبأوقات مرنة.", en: "Enter and organize data into sheets, from home on a flexible schedule." },
     reqs: { ar: ["إتقان الإكسل", "دقة وسرعة", "لابتوب وإنترنت"], en: ["Excel skills", "Accuracy & speed", "Laptop + internet"] }, slots: 8 },
-  { e: "🎨", t: { ar: "تصميم سوشال ميديا", en: "Social media design" }, org: { ar: "متجر إلكتروني", en: "E-commerce" }, pay: 300, unit: { ar: "/مشروع", en: "/project" }, dur: { ar: "3 أيام", en: "3 days" }, mode: { ar: "عن بُعد", en: "Remote" }, loc: { ar: "عن بُعد", en: "Remote" },
+  { icon: Palette, t: { ar: "تصميم سوشال ميديا", en: "Social media design" }, org: { ar: "متجر إلكتروني", en: "E-commerce" }, pay: 300, unit: { ar: "/مشروع", en: "/project" }, dur: { ar: "3 أيام", en: "3 days" }, mode: { ar: "عن بُعد", en: "Remote" }, loc: { ar: "عن بُعد", en: "Remote" },
     desc: { ar: "تصميم 10 منشورات سوشال ميديا لحملة متجر إلكتروني.", en: "Design 10 social posts for an e-commerce campaign." },
     reqs: { ar: ["معرفة بفوتوشوب/Canva", "نماذج أعمال سابقة", "التزام بالموعد"], en: ["Photoshop/Canva", "Portfolio", "Meet the deadline"] }, slots: 3 },
-  { e: "📸", t: { ar: "تصوير منتجات", en: "Product photography" }, org: { ar: "محل محلي", en: "Local shop" }, pay: 200, unit: { ar: "/مهمة", en: "/gig" }, dur: { ar: "يوم واحد", en: "1 day" }, mode: { ar: "حضوري", en: "On-site" }, loc: { ar: "حي السلامة، جدة", en: "Al Salamah, Jeddah" },
+  { icon: Camera, t: { ar: "تصوير منتجات", en: "Product photography" }, org: { ar: "محل محلي", en: "Local shop" }, pay: 200, unit: { ar: "/مهمة", en: "/gig" }, dur: { ar: "يوم واحد", en: "1 day" }, mode: { ar: "حضوري", en: "On-site" }, loc: { ar: "حي السلامة، جدة", en: "Al Salamah, Jeddah" },
     desc: { ar: "تصوير 20 منتج بإضاءة احترافية في المحل وتسليم الصور معدّلة.", en: "Shoot 20 products with proper lighting in-store and deliver edited photos." },
     reqs: { ar: ["كاميرا/جوال جيد", "أساسيات التعديل", "خبرة بسيطة"], en: ["Good camera/phone", "Editing basics", "Some experience"] }, slots: 2 },
-  { e: "🧑‍🏫", t: { ar: "مدرّس أقران (مواد جامعية)", en: "Peer tutor" }, org: { ar: "منصة تعليم", en: "Edu platform" }, pay: 60, unit: { ar: "/ساعة", en: "/hr" }, dur: { ar: "مرن", en: "Flexible" }, mode: { ar: "عن بُعد", en: "Remote" }, loc: { ar: "عن بُعد", en: "Remote" },
+  { icon: School, t: { ar: "مدرّس أقران (مواد جامعية)", en: "Peer tutor" }, org: { ar: "منصة تعليم", en: "Edu platform" }, pay: 60, unit: { ar: "/ساعة", en: "/hr" }, dur: { ar: "مرن", en: "Flexible" }, mode: { ar: "عن بُعد", en: "Remote" }, loc: { ar: "عن بُعد", en: "Remote" },
     desc: { ar: "شرح مواد جامعية لطلاب أقل منك مستوى عبر جلسات أونلاين.", en: "Tutor juniors in university subjects via online sessions." },
     reqs: { ar: ["معدل تراكمي جيد", "إتقان المادة", "مهارات شرح"], en: ["Good GPA", "Subject mastery", "Explaining skills"] }, slots: 12 },
 ];
 const CASH = [
-  { e: "☕", cat: { ar: "كوفيهات", en: "Cafés" }, back: 10, ck: "terra", offers: [{ ar: "خصم 15% على القهوة المختصة", en: "15% off specialty coffee" }, { ar: "مشروب ثانٍ مجاني الثلاثاء", en: "Free 2nd drink on Tuesdays" }, { ar: "كاش باك 10% لطلاب الجامعات", en: "10% cashback for students" }] },
-  { e: "⛽", cat: { ar: "محطات الوقود", en: "Fuel stations" }, back: 5, ck: "accent", offers: [{ ar: "كاش باك 5% على كل تعبئة", en: "5% cashback on every fill-up" }, { ar: "غسيل سيارة مجاني كل 5 تعبئات", en: "Free car wash every 5 fill-ups" }, { ar: "نقاط مضاعفة نهاية الأسبوع", en: "Double points on weekends" }] },
-  { e: "🛒", cat: { ar: "سوبرماركت", en: "Supermarkets" }, back: 7, ck: "green", offers: [{ ar: "كاش باك 7% على المشتريات", en: "7% cashback on groceries" }, { ar: "خصم 20 ر.س عند الصرف فوق 200", en: "20 ر.س off when you spend 200+" }, { ar: "عروض أسبوعية على الأساسيات", en: "Weekly deals on essentials" }] },
-  { e: "🍔", cat: { ar: "مطاعم", en: "Restaurants" }, back: 8, ck: "accentText", offers: [{ ar: "كاش باك 8% على الطلبات", en: "8% cashback on orders" }, { ar: "وجبة طالب بسعر مخفّض", en: "Discounted student meal" }, { ar: "توصيل مجاني فوق 50 ر.س", en: "Free delivery over 50 ر.س" }] },
-  { e: "🎧", cat: { ar: "إلكترونيات", en: "Electronics" }, back: 4, ck: "terraText", offers: [{ ar: "كاش باك 4% على الأجهزة", en: "4% cashback on devices" }, { ar: "تقسيط بدون فوائد للطلاب", en: "Interest-free installments for students" }, { ar: "ضمان ممتد مجاني", en: "Free extended warranty" }] },
-  { e: "💊", cat: { ar: "صيدليات", en: "Pharmacies" }, back: 6, ck: "green", offers: [{ ar: "كاش باك 6% على المشتريات", en: "6% cashback on purchases" }, { ar: "خصم 10% على العناية الشخصية", en: "10% off personal care" }, { ar: "توصيل مجاني للأدوية", en: "Free medication delivery" }] },
+  { icon: Coffee, cat: { ar: "كوفيهات", en: "Cafés" }, back: 10, ck: "terra", offers: [{ ar: "خصم 15% على القهوة المختصة", en: "15% off specialty coffee" }, { ar: "مشروب ثانٍ مجاني الثلاثاء", en: "Free 2nd drink on Tuesdays" }, { ar: "كاش باك 10% لطلاب الجامعات", en: "10% cashback for students" }] },
+  { icon: Fuel, cat: { ar: "محطات الوقود", en: "Fuel stations" }, back: 5, ck: "accent", offers: [{ ar: "كاش باك 5% على كل تعبئة", en: "5% cashback on every fill-up" }, { ar: "غسيل سيارة مجاني كل 5 تعبئات", en: "Free car wash every 5 fill-ups" }, { ar: "نقاط مضاعفة نهاية الأسبوع", en: "Double points on weekends" }] },
+  { icon: ShoppingCart, cat: { ar: "سوبرماركت", en: "Supermarkets" }, back: 7, ck: "green", offers: [{ ar: "كاش باك 7% على المشتريات", en: "7% cashback on groceries" }, { ar: "خصم 20 ر.س عند الصرف فوق 200", en: "20 ر.س off when you spend 200+" }, { ar: "عروض أسبوعية على الأساسيات", en: "Weekly deals on essentials" }] },
+  { icon: Utensils, cat: { ar: "مطاعم", en: "Restaurants" }, back: 8, ck: "accentText", offers: [{ ar: "كاش باك 8% على الطلبات", en: "8% cashback on orders" }, { ar: "وجبة طالب بسعر مخفّض", en: "Discounted student meal" }, { ar: "توصيل مجاني فوق 50 ر.س", en: "Free delivery over 50 ر.س" }] },
+  { icon: Headphones, cat: { ar: "إلكترونيات", en: "Electronics" }, back: 4, ck: "terraText", offers: [{ ar: "كاش باك 4% على الأجهزة", en: "4% cashback on devices" }, { ar: "تقسيط بدون فوائد للطلاب", en: "Interest-free installments for students" }, { ar: "ضمان ممتد مجاني", en: "Free extended warranty" }] },
+  { icon: Pill, cat: { ar: "صيدليات", en: "Pharmacies" }, back: 6, ck: "green", offers: [{ ar: "كاش باك 6% على المشتريات", en: "6% cashback on purchases" }, { ar: "خصم 10% على العناية الشخصية", en: "10% off personal care" }, { ar: "توصيل مجاني للأدوية", en: "Free medication delivery" }] },
 ];
 
 const Ctx = createContext(null);
@@ -552,8 +576,8 @@ function detectIntent(m) {
 function cheapestLocal(st, lang) {
   return {
     text: lang === "ar"
-      ? `عشان توفّر بدون ما تحرم نفسك 💡\n• القهوة: حضّرها بالبيت أو كوفي محلي بدل السلاسل — توفّر 50–70%\n• الأكل: اطبخ مرتين بالأسبوع، وخصومات الطلاب في المطاعم (أظهر بطاقتك الجامعية)\n• البقالة: التطبيقات والعروض الأسبوعية + الماركات الاقتصادية\n• الوقود: عبّي كامل وقلّل التنقّل القصير\nوفعّل صفحة الكاش باك ترجع لك جزء من صرفك على الكوفي والسوبرماركت والمحطات.`
-      : `To save without depriving yourself 💡\n• Coffee: make it at home or a local shop instead of chains — saves 50–70%\n• Food: cook twice a week, and use student discounts (show your university ID)\n• Groceries: weekly-deal apps + value brands\n• Fuel: fill up fully, cut short trips\nAnd turn on the Cashback page to get part of your coffee, supermarket and fuel spend back.`,
+      ? `عشان توفّر بدون ما تحرم نفسك\n• القهوة: حضّرها بالبيت أو كوفي محلي بدل السلاسل — توفّر 50–70%\n• الأكل: اطبخ مرتين بالأسبوع، وخصومات الطلاب في المطاعم (أظهر بطاقتك الجامعية)\n• البقالة: التطبيقات والعروض الأسبوعية + الماركات الاقتصادية\n• الوقود: عبّي كامل وقلّل التنقّل القصير\nوفعّل صفحة الكاش باك ترجع لك جزء من صرفك على الكوفي والسوبرماركت والمحطات.`
+      : `To save without depriving yourself\n• Coffee: make it at home or a local shop instead of chains — saves 50–70%\n• Food: cook twice a week, and use student discounts (show your university ID)\n• Groceries: weekly-deal apps + value brands\n• Fuel: fill up fully, cut short trips\nAnd turn on the Cashback page to get part of your coffee, supermarket and fuel spend back.`,
   };
 }
 function investLocal(st, lang) {
@@ -565,8 +589,8 @@ function investLocal(st, lang) {
   const rates = [0.05, 0.09, 0.13, 0.20];
   const types = T[lang].map((t, i) => { const fv = fvSeries(monthly, rates[i], 12).at(-1); return { name: t[0], risk: t[1], r: rates[i], fv, profit: fv - contrib }; });
   const text = lang === "ar"
-    ? `حلو إنك تفكّر بالاستثمار 🌱\nلو حوّلت ${monthly} ر.س ادخار تلقائي أول كل شهر (إجمالي ${fmt(contrib)} ر.س بالسنة)، هذا تقدير نمو محفظتك:`
-    : `Great that you're thinking about investing 🌱\nIf you auto-save ${monthly} ر.س each month (${fmt(contrib)} ر.س/yr), here's an estimate of your portfolio growth:`;
+    ? `حلو إنك تفكّر بالاستثمار\nلو حوّلت ${monthly} ر.س ادخار تلقائي أول كل شهر (إجمالي ${fmt(contrib)} ر.س بالسنة)، هذا تقدير نمو محفظتك:`
+    : `Great that you're thinking about investing\nIf you auto-save ${monthly} ر.س each month (${fmt(contrib)} ر.س/yr), here's an estimate of your portfolio growth:`;
   const tips = lang === "ar"
     ? [`قهوتك ومطاعمك ${st.cats.food} ر.س — قلّلها 30% توفّر ~${Math.round(st.cats.food * 0.3)} ر.س`, "فعّل تحويل 20% ادخار تلقائي أول الشهر", "ألغِ الاشتراكات اللي ما تستخدمها"]
     : [`Food & coffee is ${st.cats.food} ر.س — cut 30% to save ~${Math.round(st.cats.food * 0.3)} ر.س`, "Auto-transfer 20% to savings at month start", "Cancel subscriptions you don't use"];
@@ -586,8 +610,8 @@ function loanLocal(st, msg, lang) {
     const hrs = Math.max(1, Math.ceil(gap / 35));
     return {
       text: lang === "ar"
-        ? `محتاج ${fmt(need)} ومعك ${fmt(have)} → ينقصك ${fmt(gap)} ر.س. عندك 3 حلول:\n\n١) اشتغلها 💼 — توصيل أوقات الفراغ ~35 ر.س/ساعة، ${hrs} ساعات تغطّي الفرق (افتح صفحة الوظائف).\n٢) سلفة 🤝 — وعي يعطيك ${fmt(offer)} ر.س تُخصم من راتب الشهر الجاي (بتنزل ${fmt(STIPEND - (st.loanTaken + offer))} بدل 1,000). اعتمدها بالزر تحت.\n٣) قلّلها ✂️ — وفّر الفرق من القهوة والترفيه هالأسبوع.\n\nوش يناسبك؟`
-        : `You need ${fmt(need)} but have ${fmt(have)} → short ${fmt(gap)} ر.س. You've got 3 options:\n\n1) Earn it 💼 — flexible delivery ~35 ر.س/hr, ${hrs} hrs covers the gap (open Jobs).\n2) Loan 🤝 — Waey lends ${fmt(offer)} ر.س deducted from next month (drops to ${fmt(STIPEND - (st.loanTaken + offer))} instead of 1,000). Approve with the button below.\n3) Trim it ✂️ — save the gap from coffee & fun this week.\n\nWhich works for you?`,
+        ? `محتاج ${fmt(need)} ومعك ${fmt(have)} → ينقصك ${fmt(gap)} ر.س. عندك 3 حلول:\n\n١) اشتغلها — توصيل أوقات الفراغ ~35 ر.س/ساعة، ${hrs} ساعات تغطّي الفرق (افتح صفحة الوظائف).\n٢) سلفة — وعي يعطيك ${fmt(offer)} ر.س تُخصم من راتب الشهر الجاي (بتنزل ${fmt(STIPEND - (st.loanTaken + offer))} بدل 1,000). اعتمدها بالزر تحت.\n٣) قلّلها — وفّر الفرق من القهوة والترفيه هالأسبوع.\n\nوش يناسبك؟`
+        : `You need ${fmt(need)} but have ${fmt(have)} → short ${fmt(gap)} ر.س. You've got 3 options:\n\n1) Earn it — flexible delivery ~35 ر.س/hr, ${hrs} hrs covers the gap (open Jobs).\n2) Loan — Waey lends ${fmt(offer)} ر.س deducted from next month (drops to ${fmt(STIPEND - (st.loanTaken + offer))} instead of 1,000). Approve with the button below.\n3) Trim it — save the gap from coffee & fun this week.\n\nWhich works for you?`,
     };
   }
   return { text: lang === "ar" ? `وضعك يغطّي المبلغ من المتاح (${fmt(st.available)} ر.س). لا تحتاج قرض — بس خلّ لك هامش ادخار. ولو تبي تزيد دخلك، صفحة الوظائف فيها أعمال مؤقتة.` : `Your available balance covers it (${fmt(st.available)} ر.س). No loan needed — keep a savings buffer. To boost income, the Jobs page has flexible gigs.` };
@@ -604,8 +628,8 @@ function generalLocal(st, msg, lang) {
   }
   return {
     text: lang === "ar"
-      ? `أنا وعي، مساعدك المالي 💡 وضعك الحالي: متاح ${fmt(st.available)} ر.س، ومدّخرات ${fmt(st.savings)} ر.س.\nأقدر أساعدك في:\n• كيف أوزّع مصروفي الشهري\n• أرخص طريقة أوفّر على القهوة والأكل والوقود\n• كيف أبدأ استثمار بسيط\n• محتاج مبلغ زائد أو سلفة\nاكتب سؤالك بصياغتك وأجاوبك مباشرة.`
-      : `I'm Waey, your money assistant 💡 Your status: ${fmt(st.available)} ر.س available, ${fmt(st.savings)} ر.س saved.\nI can help with:\n• How to split my monthly budget\n• Cheapest ways to save on coffee, food & fuel\n• How to start simple investing\n• I need extra cash or a loan\nType your question in your own words and I'll answer directly.`,
+      ? `أنا وعي، مساعدك المالي. وضعك الحالي: متاح ${fmt(st.available)} ر.س، ومدّخرات ${fmt(st.savings)} ر.س.\nأقدر أساعدك في:\n• كيف أوزّع مصروفي الشهري\n• أرخص طريقة أوفّر على القهوة والأكل والوقود\n• كيف أبدأ استثمار بسيط\n• محتاج مبلغ زائد أو سلفة\nاكتب سؤالك بصياغتك وأجاوبك مباشرة.`
+      : `I'm Waey, your money assistant. Your status: ${fmt(st.available)} ر.س available, ${fmt(st.savings)} ر.س saved.\nI can help with:\n• How to split my monthly budget\n• Cheapest ways to save on coffee, food & fuel\n• How to start simple investing\n• I need extra cash or a loan\nType your question in your own words and I'll answer directly.`,
   };
 }
 
@@ -841,9 +865,9 @@ function RoleSelect() {
   const { c, s, lang, dir, setScreen } = useCtx();
   const R = s.role;
   const roles = [
-    ["🎓", R.student, R.studentD, c.accent, () => setScreen("assess")],
-    ["🏛️", R.uni, R.uniD, c.accentText, () => setScreen("uniDash")],
-    ["🏦", R.bank, R.bankD, c.terra, () => setScreen("bankDash")],
+    [GraduationCap, R.student, R.studentD, c.accent, () => setScreen("assess")],
+    [Landmark, R.uni, R.uniD, c.accentText, () => setScreen("uniDash")],
+    [Building2, R.bank, R.bankD, c.terra, () => setScreen("bankDash")],
   ];
   const Fwd = lang === "ar" ? ArrowLeft : ArrowRight;
   return (
@@ -861,9 +885,9 @@ function RoleSelect() {
             <div style={{ fontSize: 13.5, color: c.muted, marginTop: 8, lineHeight: 1.6 }}>{R.sub}</div>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 13 }}>
-            {roles.map(([e, name, desc, col, go], i) => (
+            {roles.map(([Icon, name, desc, col, go], i) => (
               <button key={i} type="button" onClick={go} style={{ width: "100%", display: "flex", alignItems: "center", gap: 14, background: c.card, border: `1px solid ${c.line}`, borderRadius: 22, padding: 18, cursor: "pointer", transition: "transform .15s", position: "relative", color: c.text, fontFamily: "inherit", textAlign: "start" }}>
-                <div style={{ width: 54, height: 54, borderRadius: 16, background: col + "22", display: "grid", placeItems: "center", fontSize: 28, flexShrink: 0 }}>{e}</div>
+                <IconBubble icon={Icon} color={col} bg={col + "22"} size={27} box={54} radius={16} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontWeight: 800, fontSize: 16 }}>{name}</div>
                   <div style={{ fontSize: 12, color: c.muted, lineHeight: 1.6, marginTop: 2 }}>{desc}</div>
@@ -1015,7 +1039,7 @@ function UniDashScreen() {
           <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 12, color: c.accentText }}>{D.trend}</div>
           <MiniBars data={trend} c={c} col={col} />
         </div>
-        <div style={{ background: c.card2, border: `1px dashed ${c.line}`, borderRadius: 16, padding: 14, fontSize: 12, color: c.textSoft, textAlign: "center", lineHeight: 1.7 }}>{D.anon}</div>
+        <PrivacyNote c={c}>{D.anon}</PrivacyNote>
       </RoleShell>
     );
   }
@@ -1080,7 +1104,7 @@ function UniDashScreen() {
           {colleges.map(([n, pct, cnt], i) => <BarRow key={n} n={`${n}`} pct={pct} col={LB_COLORS[i % LB_COLORS.length]} c={c} onClick={() => setSel([n, pct, LB_COLORS[i % LB_COLORS.length]])} sub={`${cnt.toLocaleString("en-US")} ${D.students}`} />)}
         </div>
       )}
-      <div style={{ background: c.card2, border: `1px dashed ${c.line}`, borderRadius: 16, padding: 14, fontSize: 12, color: c.textSoft, textAlign: "center", lineHeight: 1.7, marginTop: 14 }}>{D.anon}</div>
+      <PrivacyNote c={c} style={{ marginTop: 14 }}>{D.anon}</PrivacyNote>
     </RoleShell>
   );
 }
@@ -1119,7 +1143,7 @@ function BankDashScreen() {
           <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 12, color: c.terra }}>{D.trend}</div>
           <MiniBars data={trend} c={c} col={col} />
         </div>
-        <div style={{ background: c.card2, border: `1px dashed ${c.line}`, borderRadius: 16, padding: 14, fontSize: 12, color: c.textSoft, textAlign: "center", lineHeight: 1.7 }}>{D.anon}</div>
+        <PrivacyNote c={c}>{D.anon}</PrivacyNote>
       </RoleShell>
     );
   }
@@ -1184,7 +1208,7 @@ function BankDashScreen() {
           ))}
         </div>
       )}
-      <div style={{ background: c.card2, border: `1px dashed ${c.line}`, borderRadius: 16, padding: 14, fontSize: 12, color: c.textSoft, textAlign: "center", lineHeight: 1.7, marginTop: 14 }}>{D.anon}</div>
+      <PrivacyNote c={c} style={{ marginTop: 14 }}>{D.anon}</PrivacyNote>
     </RoleShell>
   );
 }
@@ -1346,7 +1370,7 @@ function Assessment() {
         <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 700, fontSize: 13.5, marginBottom: 8, color: c.accentText }}><Target size={16} />{A.challengeTitle}</div>
           <div style={{ fontSize: 14.5, fontWeight: 600, lineHeight: 1.6 }}>{ch}</div>
-          <div style={{ display: "inline-block", marginTop: 10, background: c.green + "22", color: c.green, borderRadius: 999, padding: "5px 12px", fontSize: 12, fontWeight: 700 }}>🏆 +{result.points} {A.points}</div>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 10, background: c.green + "22", color: c.green, borderRadius: 999, padding: "5px 12px", fontSize: 12, fontWeight: 700 }}><Trophy size={14} aria-hidden="true" />+{result.points} {A.points}</div>
         </div>
         <button onClick={finish} style={btn(c.accent, c.onAccent)}>{A.acceptCh}</button>
         <button onClick={() => { setAnswers({}); setQi(0); setResult(null); setSlide(0); setStep("intro"); }} style={{ background: "none", border: "none", color: c.muted, fontSize: 12.5, cursor: "pointer", fontFamily: "inherit", padding: 6 }}>{A.retake}</button>
@@ -1408,7 +1432,7 @@ function HeroMock() {
         <div style={{ fontSize: 11, color: c.muted, textAlign: "center", marginTop: 2 }}>{lang === "ar" ? "نمو مدّخراتك" : "Savings growth"}</div>
       </div>
       <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-        {["🧠", "🎯", "🏆"].map((e) => <div key={e} style={{ flex: 1, textAlign: "center", background: c.card, border: `1px solid ${c.line}`, borderRadius: 14, padding: "10px 0", fontSize: 20 }}>{e}</div>)}
+        {[Brain, Target, Trophy].map((Icon, i) => <div key={i} style={{ flex: 1, textAlign: "center", background: c.card, border: `1px solid ${c.line}`, borderRadius: 14, padding: "10px 0" }}><Icon size={20} color={c.accentText} aria-hidden="true" /></div>)}
       </div>
     </div>
   );
@@ -1440,7 +1464,7 @@ function Landing() {
         <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols4}, 1fr)`, gap: 16, marginTop: 28 }}>
           {s.mk.pillars.map((p, i) => (
             <div key={i} style={card}>
-              <div style={{ fontSize: 30 }}>{p.e}</div>
+              <IconBubble icon={p.icon} color={c.accentText} bg={c.accent + "18"} size={25} box={48} radius={14} />
               <div style={{ fontWeight: 700, fontSize: 17, marginTop: 12 }}>{p.t}</div>
               <div style={{ fontSize: 13.5, color: c.muted, lineHeight: 1.7, marginTop: 6 }}>{p.d}</div>
             </div>
@@ -1511,7 +1535,7 @@ function AboutPage() {
       <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols4}, 1fr)`, gap: 14, marginTop: 20 }}>
         {s.mk.pillars.map((p, i) => (
           <div key={i} style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 18, padding: 18 }}>
-            <div style={{ fontSize: 24 }}>{p.e}</div>
+            <IconBubble icon={p.icon} color={c.accentText} bg={c.accent + "18"} size={22} box={42} radius={12} />
             <div style={{ fontWeight: 700, marginTop: 8 }}>{p.t}</div>
           </div>
         ))}
@@ -1678,8 +1702,8 @@ function HomeScreen() {
         <RewardsCard />
         <LeaderboardCard />
         <RoundUpCard />
-        <EntryCard emoji="💼" title={s.jobsTitle} sub={s.jobsSub} onClick={() => setOverlay("jobs")} />
-        <EntryCard emoji="🎁" title={s.cashTitle} sub={s.cashSub} onClick={() => setOverlay("cashback")} />
+        <EntryCard icon={Briefcase} title={s.jobsTitle} sub={s.jobsSub} onClick={() => setOverlay("jobs")} />
+        <EntryCard icon={Gift} title={s.cashTitle} sub={s.cashSub} onClick={() => setOverlay("cashback")} />
         <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 22, padding: 16 }}>
           <div style={{ display: "flex" }}>
             {[c.accent, c.terra, c.green].map((col, i) => <span key={i} style={{ width: 28, height: 28, borderRadius: 999, background: col, marginInlineStart: i ? -9 : 0, border: `2px solid ${c.card}`, display: "grid", placeItems: "center" }}><Users size={12} color={c.onAccent} /></span>)}
@@ -1713,7 +1737,7 @@ function PersonaCard() {
         <button onClick={() => setPersona((idx + 1) % s.personalities.length)} style={{ background: c.card, border: `1px solid ${c.line}`, color: c.textSoft, borderRadius: 999, padding: "5px 12px", fontSize: 11.5, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>{s.reanalyze}</button>
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 12 }}>
-        <div style={{ width: 54, height: 54, borderRadius: 16, background: c.accent, display: "grid", placeItems: "center", fontSize: 26 }}>{p.emoji}</div>
+        <IconBubble icon={p.icon} color={c.onAccent} bg={c.accent} size={27} box={54} radius={16} />
         <div><div style={{ fontSize: 18, fontWeight: 700 }}>{p.name}</div><div style={{ fontSize: 12, color: c.muted, lineHeight: 1.5 }}>{p.desc}</div></div>
       </div>
       <div style={{ display: "flex", gap: 7, flexWrap: "wrap", marginTop: 12 }}>
@@ -1781,12 +1805,12 @@ function FullPage({ title, sub, onClose, children }) {
     </div>
   );
 }
-function EntryCard({ emoji, title, sub, onClick }) {
+function EntryCard({ icon: Icon, title, sub, onClick }) {
   const { c, lang } = useCtx();
   const Chev = lang === "ar" ? ChevronLeft : ChevronRight;
   return (
     <button type="button" onClick={onClick} style={{ width: "100%", display: "flex", alignItems: "center", gap: 14, background: c.card, border: `1px solid ${c.line}`, borderRadius: 22, padding: 16, cursor: "pointer", color: c.text, fontFamily: "inherit", textAlign: "start" }}>
-      <div style={{ width: 46, height: 46, borderRadius: 14, background: c.card2, display: "grid", placeItems: "center", fontSize: 24, flexShrink: 0 }}>{emoji}</div>
+      <IconBubble icon={Icon} color={c.accentText} bg={c.card2} size={22} />
       <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontWeight: 700 }}>{title}</div><div style={{ fontSize: 11.5, color: c.muted }}>{sub}</div></div>
       <Chev size={18} color={c.muted} />
     </button>
@@ -1841,13 +1865,13 @@ function ProgressCard() {
             <div style={{ fontSize: 11, fontWeight: 800, color: c.accent }}>{w.score}</div>
             <div style={{ width: "100%", maxWidth: 34, height: `${(w.score / maxScore) * 60}px`, background: `linear-gradient(180deg, ${c.accent}, ${c.accentText})`, borderRadius: 8, transition: "height .5s" }} />
             <div style={{ fontSize: 10, color: c.muted }}>{s.progWeekLabel(i + 1)}</div>
-            <div style={{ fontSize: 9.5, color: c.green, display: "flex", alignItems: "center", gap: 2 }}>✓ {w.done} {lang === "ar" ? "تحدّي" : "ch."}</div>
+            <div style={{ fontSize: 9.5, color: c.green, display: "flex", alignItems: "center", gap: 2 }}><Check size={10} aria-hidden="true" />{w.done} {lang === "ar" ? "تحدّي" : "ch."}</div>
           </div>
         ))}
       </div>
       <div style={{ display: "flex", gap: 14, marginTop: 12, paddingTop: 12, borderTop: `1px solid ${c.line}`, fontSize: 10.5, color: c.muted }}>
         <span style={{ display: "flex", alignItems: "center", gap: 5 }}><span style={{ width: 9, height: 9, borderRadius: 3, background: c.accent }} />{lang === "ar" ? "الرقم فوق العمود = درجتك ذاك الأسبوع" : "Number above bar = that week's score"}</span>
-        <span style={{ display: "flex", alignItems: "center", gap: 5 }}><span style={{ color: c.green }}>✓</span>{lang === "ar" ? "التحديات المكتملة" : "challenges done"}</span>
+        <span style={{ display: "flex", alignItems: "center", gap: 5 }}><Check size={12} color={c.green} aria-hidden="true" />{lang === "ar" ? "التحديات المكتملة" : "challenges done"}</span>
       </div>
     </div>
   );
@@ -1855,7 +1879,7 @@ function ProgressCard() {
 function RewardsCard() {
   const { c, s, points } = useCtx();
   const level = Math.max(1, Math.floor(points / 100) + 1);
-  const badges = ["🥇", "💰", "🔥", "📈"];
+  const badges = [Medal, CircleDollarSign, Flame, TrendingUp];
   const earned = 2;
   return (
     <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 24, padding: 18 }}>
@@ -1865,14 +1889,14 @@ function RewardsCard() {
       </div>
       <div style={{ fontSize: 12, color: c.muted, marginBottom: 8 }}>{s.rewBadges}</div>
       <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
-        {badges.map((b, i) => (
+        {badges.map((Icon, i) => (
           <div key={i} style={{ flex: 1, textAlign: "center", background: c.card2, border: `1px solid ${c.line}`, borderRadius: 14, padding: "10px 4px", opacity: i < earned ? 1 : 0.35 }}>
-            <div style={{ fontSize: 22 }}>{b}</div>
+            <Icon size={22} color={i < earned ? c.accentText : c.muted} aria-hidden="true" />
             <div style={{ fontSize: 9, color: c.muted, marginTop: 3 }}>{s.badgeNames[i]}</div>
           </div>
         ))}
       </div>
-      <div style={{ background: c.card2, border: `1px dashed ${c.line}`, borderRadius: 14, padding: "10px 12px", fontSize: 12, color: c.textSoft, textAlign: "center" }}>{s.rewFuture}</div>
+      <div style={{ background: c.card2, border: `1px dashed ${c.line}`, borderRadius: 14, padding: "10px 12px", fontSize: 12, color: c.textSoft, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, textAlign: "center" }}><Gift size={15} color={c.accentText} aria-hidden="true" />{s.rewFuture}</div>
     </div>
   );
 }
@@ -1880,8 +1904,8 @@ function PlatformPage() {
   const { c, s, lang, setOverlay } = useCtx();
   const P = s.plat;
   const engines = [["engBehavior", c.accentText], ["engAI", c.accent], ["engAnalytics", c.terra]];
-  const nodes = [["nodeStudent", "👨‍🎓"], ["nodeUni", "🎓"], ["nodeBank", "🏦"]];
-  const parties = [["pStudent", "pStudentD", "👨‍🎓", c.accent], ["pUni", "pUniD", "🎓", c.accentText], ["pBank", "pBankD", "🏦", c.terra]];
+  const nodes = [["nodeStudent", GraduationCap], ["nodeUni", Landmark], ["nodeBank", Building2]];
+  const parties = [["pStudent", "pStudentD", GraduationCap, c.accent], ["pUni", "pUniD", Landmark, c.accentText], ["pBank", "pBankD", Building2, c.terra]];
   return (
     <FullPage title={P.title} sub={P.sub} onClose={() => setOverlay(null)}>
       <div style={{ background: `linear-gradient(135deg, ${c.accent}, ${c.terra})`, color: c.onAccent, borderRadius: 20, padding: 16, fontSize: 13.5, fontWeight: 700, lineHeight: 1.6, marginBottom: 16 }}>{P.tagline}</div>
@@ -1890,7 +1914,7 @@ function PlatformPage() {
       <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 10, color: c.accentText }}>{P.archTitle}</div>
       <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 16, marginBottom: 16 }}>
         <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
-          {nodes.map(([k, e]) => <div key={k} style={{ flex: 1, textAlign: "center", background: c.card2, border: `1px solid ${c.line}`, borderRadius: 12, padding: "10px 4px" }}><div style={{ fontSize: 20 }}>{e}</div><div style={{ fontSize: 10.5, fontWeight: 600, marginTop: 3 }}>{P[k]}</div></div>)}
+          {nodes.map(([k, Icon]) => <div key={k} style={{ flex: 1, textAlign: "center", background: c.card2, border: `1px solid ${c.line}`, borderRadius: 12, padding: "10px 4px" }}><Icon size={20} color={c.accentText} aria-hidden="true" /><div style={{ fontSize: 10.5, fontWeight: 600, marginTop: 3 }}>{P[k]}</div></div>)}
         </div>
         <div style={{ textAlign: "center", color: c.muted, fontSize: 16, lineHeight: 1 }}>▽</div>
         <div style={{ textAlign: "center", background: c.accent + "1A", color: c.accentText, borderRadius: 10, padding: "8px", fontSize: 12, fontWeight: 700, margin: "6px 0" }}>{P.layer}</div>
@@ -1902,9 +1926,9 @@ function PlatformPage() {
 
       {/* الأطراف الثلاثة */}
       <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 16 }}>
-        {parties.map(([nk, dk, e, col]) => (
+        {parties.map(([nk, dk, Icon, col]) => (
           <div key={nk} style={{ display: "flex", gap: 12, background: c.card, border: `1px solid ${c.line}`, borderRadius: 18, padding: 15 }}>
-            <div style={{ width: 42, height: 42, borderRadius: 12, background: col + "22", display: "grid", placeItems: "center", fontSize: 22, flexShrink: 0 }}>{e}</div>
+            <IconBubble icon={Icon} color={col} bg={col + "22"} size={22} box={42} radius={12} />
             <div><div style={{ fontWeight: 700, fontSize: 14 }}>{P[nk]}</div><div style={{ fontSize: 12, color: c.textSoft, lineHeight: 1.6, marginTop: 2 }}>{P[dk]}</div></div>
           </div>
         ))}
@@ -1924,7 +1948,7 @@ function PlatformPage() {
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {[[P.bankTopPersona, lang === "ar" ? PERSONA_META.social.ar : PERSONA_META.social.en], [P.bankAvgAware, "64%"], [P.bankTopCh, lang === "ar" ? "تحدّي القهوة" : "Coffee challenge"]].map(([l, v], i) => <div key={i} style={{ display: "flex", justifyContent: "space-between", background: c.card2, borderRadius: 12, padding: "10px 14px", fontSize: 12.5 }}><span style={{ color: c.textSoft }}>{l}</span><span style={{ fontWeight: 700 }}>{v}</span></div>)}
         </div>
-        <div style={{ marginTop: 10, fontSize: 11, color: c.muted, textAlign: "center" }}>{P.bankAnon}</div>
+        <div style={{ marginTop: 10, fontSize: 11, color: c.muted, display: "flex", justifyContent: "center", alignItems: "center", gap: 6, textAlign: "center" }}><Lock size={13} aria-hidden="true" />{P.bankAnon}</div>
       </div>
 
       {/* طبقة APIs */}
@@ -1953,12 +1977,15 @@ function RoundUpCard() {
   const Arrow = lang === "ar" ? ArrowLeft : ArrowRight;
   return (
     <div style={{ borderRadius: 24, padding: 18, background: `linear-gradient(135deg, ${c.card2}, ${c.card})`, border: `1px solid ${c.line}` }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div><div style={{ fontWeight: 700 }}>{s.roundTitle}</div><div style={{ fontSize: 11.5, color: c.muted }}>{s.roundSub}</div></div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <IconBubble icon={Coins} color={c.accentText} bg={c.accent + "1A"} size={20} box={40} radius={12} />
+          <div><div style={{ fontWeight: 700 }}>{s.roundTitle}</div><div style={{ fontSize: 11.5, color: c.muted }}>{s.roundSub}</div></div>
+        </div>
         <Toggle on={roundOn} onClick={() => setRoundOn(!roundOn)} label={s.roundOn} />
       </div>
       {/* جملة الهدف الواضحة */}
-      <div style={{ background: c.accent + "1A", color: c.accentText, borderRadius: 12, padding: "9px 12px", marginTop: 12, fontSize: 12.5, fontWeight: 700, textAlign: "center" }}>{s.roundGoal}</div>
+      <div style={{ background: c.accent + "1A", color: c.accentText, borderRadius: 12, padding: "9px 12px", marginTop: 12, fontSize: 12.5, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, textAlign: "center" }}><Target size={15} aria-hidden="true" />{s.roundGoal}</div>
       {/* مثال حيّ يشرح كيف يشتغل */}
       <div style={{ marginTop: 12 }}>
         <div style={{ fontSize: 11.5, color: c.muted, marginBottom: 7 }}>{s.roundHowTitle}</div>
@@ -1995,7 +2022,7 @@ function JobsPage() {
     return (
       <FullPage title={j.t[lang]} sub={j.org[lang]} onClose={() => setSel(null)}>
         <div style={{ display: "flex", alignItems: "center", gap: 14, background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 16 }}>
-          <div style={{ width: 54, height: 54, borderRadius: 16, background: c.card2, display: "grid", placeItems: "center", fontSize: 28, flexShrink: 0 }}>{j.e}</div>
+          <IconBubble icon={j.icon} color={c.accentText} bg={c.card2} size={27} box={54} radius={16} />
           <div style={{ flex: 1 }}><div style={{ fontWeight: 800, fontSize: 22 }}>{fmt(j.pay)} <RS size="0.6em" /></div><div style={{ fontSize: 11.5, color: c.muted }}>{j.unit[lang]} · {j.dur[lang]}</div></div>
         </div>
         <div style={{ display: "flex", gap: 7, flexWrap: "wrap", margin: "14px 0" }}>
@@ -2015,7 +2042,7 @@ function JobsPage() {
         {JOBS.map((j, i) => (
           <button key={i} type="button" onClick={() => setSel(i)} style={{ width: "100%", background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 16, cursor: "pointer", color: c.text, fontFamily: "inherit", textAlign: "start" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <div style={{ width: 46, height: 46, borderRadius: 14, background: c.card2, display: "grid", placeItems: "center", fontSize: 24, flexShrink: 0 }}>{j.e}</div>
+              <IconBubble icon={j.icon} color={c.accentText} bg={c.card2} size={22} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontWeight: 700, fontSize: 14.5 }}>{j.t[lang]}</div>
                 <div style={{ fontSize: 11.5, color: c.muted }}>{j.org[lang]} · {j.loc[lang]}</div>
@@ -2046,7 +2073,7 @@ function CashbackPage() {
     return (
       <FullPage title={x.cat[lang]} sub={s.cashOffersSub} onClose={() => setSel(null)}>
         <div style={{ display: "flex", alignItems: "center", gap: 14, background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 16, marginBottom: 14 }}>
-          <div style={{ width: 54, height: 54, borderRadius: 16, background: c[x.ck], display: "grid", placeItems: "center", fontSize: 28, flexShrink: 0 }}>{x.e}</div>
+          <IconBubble icon={x.icon} color={c.onAccent} bg={c[x.ck]} size={27} box={54} radius={16} />
           <div style={{ flex: 1 }}><div style={{ fontWeight: 800, fontSize: 18 }}>{x.cat[lang]}</div><div style={{ color: c[x.ck], fontWeight: 800, fontSize: 15 }}>{x.back}% <span style={{ fontSize: 11.5, color: c.muted, fontWeight: 600 }}>{s.backWord}</span></div></div>
         </div>
         <div style={{ fontWeight: 700, fontSize: 13.5, color: c.accentText, marginBottom: 10 }}>{s.cashOffersList}</div>
@@ -2074,7 +2101,7 @@ function CashbackPage() {
           return (
             <div key={i} style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 16 }}>
               <button type="button" onClick={() => setSel(i)} style={{ width: "100%", background: "transparent", border: "none", padding: 0, color: c.text, fontFamily: "inherit", textAlign: "start", cursor: "pointer" }}>
-              <div style={{ width: 44, height: 44, borderRadius: 13, background: c[x.ck], display: "grid", placeItems: "center", fontSize: 22 }}>{x.e}</div>
+              <IconBubble icon={x.icon} color={c.onAccent} bg={c[x.ck]} size={22} box={44} radius={13} />
               <div style={{ fontWeight: 700, fontSize: 13.5, marginTop: 10 }}>{x.cat[lang]}</div>
               <div style={{ color: c[x.ck], fontWeight: 800, fontSize: 17 }}>{x.back}% <span style={{ fontSize: 11, color: c.muted, fontWeight: 600 }}>{s.backWord}</span></div>
               <div style={{ fontSize: 11, color: c.muted, marginTop: 4 }}>{x.offers.length} {s.cashOffersCount} ←</div>
@@ -2230,10 +2257,11 @@ function WeeklyCard() {
         <MiniBox label={s.leftSpend} value={`${fmt(leftToSpend)} ر.س`} tone={c.text} />
         <MiniBox label={s.canSave} value={`${fmt(save)} ر.س`} tone={c.green} />
       </div>
-      <div style={{ marginTop: 12, background: c.card2, border: `1px solid ${c.line}`, borderRadius: 14, padding: "11px 13px", fontSize: 12.5, lineHeight: 1.7, color: c.textSoft }}>
+      <div style={{ marginTop: 12, background: c.card2, border: `1px solid ${c.line}`, borderRadius: 14, padding: "11px 13px", fontSize: 12.5, lineHeight: 1.7, color: c.textSoft, display: "flex", gap: 8, alignItems: "flex-start" }}>
+        <InlineIcon icon={Lightbulb} color={c.accentText} size={16} />
         {lang === "ar"
-          ? <>💡 أنت في الأسبوع {s.weekOrd[curWeek]} — بمعدّلك الحالي ({fmt(avg)} <RS />/أسبوع) راح توفّر ~<b style={{ color: c.green }}>{fmt(save)} <RS /></b> نهاية الشهر. لو قلّلت <b>{s.cats[topKey]}</b> 20% تضيف <b style={{ color: c.accentText }}>{fmt(extra)} <RS /></b> لمحفظتك.</>
-          : <>💡 You're in week {curWeek + 1} — at your pace ({fmt(avg)} <RS />/wk) you'll save ~<b style={{ color: c.green }}>{fmt(save)} <RS /></b> by month-end. Cut <b>{s.cats[topKey]}</b> 20% to add <b style={{ color: c.accentText }}>{fmt(extra)} <RS /></b> to your portfolio.</>}
+          ? <span>أنت في الأسبوع {s.weekOrd[curWeek]} — بمعدّلك الحالي ({fmt(avg)} <RS />/أسبوع) راح توفّر ~<b style={{ color: c.green }}>{fmt(save)} <RS /></b> نهاية الشهر. لو قلّلت <b>{s.cats[topKey]}</b> 20% تضيف <b style={{ color: c.accentText }}>{fmt(extra)} <RS /></b> لمحفظتك.</span>
+          : <span>You're in week {curWeek + 1} — at your pace ({fmt(avg)} <RS />/wk) you'll save ~<b style={{ color: c.green }}>{fmt(save)} <RS /></b> by month-end. Cut <b>{s.cats[topKey]}</b> 20% to add <b style={{ color: c.accentText }}>{fmt(extra)} <RS /></b> to your portfolio.</span>}
       </div>
     </div>
   );
@@ -2456,9 +2484,9 @@ USER SNAPSHOT (amounts in SAR): ${JSON.stringify(snapshot)}`;
         <div><div style={{ fontWeight: 700, fontSize: 17 }}>{s.coach.title}</div><div style={{ fontSize: 11.5, color: c.muted }}>{s.coach.sub}</div></div>
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9, marginBottom: 12 }}>
-        {[["analyze", "🔍", c.accent], ["save", "💰", c.green], ["explain", "📊", c.accentText], ["suggest", "🎯", c.terra]].map(([k, e, col]) => (
+        {[["analyze", Search, c.accent], ["save", CircleDollarSign, c.green], ["explain", BarChart3, c.accentText], ["suggest", Target, c.terra]].map(([k, Icon, col]) => (
           <button key={k} onClick={() => setCoachSheet(k)} style={{ display: "flex", alignItems: "center", gap: 10, background: c.card, border: `1px solid ${c.line}`, borderRadius: 16, padding: "13px 12px", cursor: "pointer", fontFamily: "inherit", textAlign: "start", color: c.text }}>
-            <span style={{ width: 34, height: 34, borderRadius: 10, background: col + "22", display: "grid", placeItems: "center", fontSize: 17, flexShrink: 0 }}>{e}</span>
+            <IconBubble icon={Icon} color={col} bg={col + "22"} size={17} box={34} radius={10} />
             <span style={{ fontSize: 12.5, fontWeight: 700, lineHeight: 1.3 }}>{s.coach[k]}</span>
           </button>
         ))}
@@ -2482,17 +2510,21 @@ USER SNAPSHOT (amounts in SAR): ${JSON.stringify(snapshot)}`;
 function CoachSheet({ which, onClose }) {
   const { c, s } = useCtx();
   const CO = s.coach;
-  const meta = { analyze: ["🔍", CO.analyze, c.accent], save: ["💰", CO.save, c.green], explain: ["📊", CO.explain, c.accentText], suggest: ["🎯", CO.suggest, c.terra] }[which];
-  const [emoji, title, col] = meta;
+  const meta = { analyze: [Search, CO.analyze, c.accent], save: [CircleDollarSign, CO.save, c.green], explain: [BarChart3, CO.explain, c.accentText], suggest: [Target, CO.suggest, c.terra] }[which];
+  const [Icon, title, col] = meta;
   return (
     <Sheet title={title} icon={undefined} onClose={onClose}>
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
-        <div style={{ width: 46, height: 46, borderRadius: 14, background: col + "22", display: "grid", placeItems: "center", fontSize: 24 }}>{emoji}</div>
+        <IconBubble icon={Icon} color={col} bg={col + "22"} size={24} />
         <div style={{ fontWeight: 800, fontSize: 16 }}>{title}</div>
       </div>
       {which === "explain" ? (
         <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
-          {CO.explainR.map((line, i) => <div key={i} style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 13, padding: "12px 14px", fontSize: 13.5, lineHeight: 1.6 }}>{line}</div>)}
+          {CO.explainR.map((line, i) => {
+            const Icon = i < 2 ? Check : TriangleAlert;
+            const col = i < 2 ? c.green : c.terraText;
+            return <div key={i} style={{ display: "flex", alignItems: "center", gap: 9, background: c.card, border: `1px solid ${c.line}`, borderRadius: 13, padding: "12px 14px", fontSize: 13.5, lineHeight: 1.6 }}><Icon size={15} color={col} aria-hidden="true" />{line.trim()}</div>;
+          })}
         </div>
       ) : (
         <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 16, padding: 16, fontSize: 14, lineHeight: 1.8, color: c.textSoft }}>{riyalText(CO[which + "R"])}</div>
@@ -2581,7 +2613,7 @@ function MoreScreen() {
       <div className="whz" style={{ display: "flex", gap: 12, overflowX: "auto", padding: "2px 0 6px" }}>
         {offersData.map((o) => (
           <div key={o.en} style={{ flexShrink: 0, width: 150, borderRadius: 18, padding: 14, background: c.card, border: `1px solid ${c.line}` }}>
-            <div style={{ width: 40, height: 40, borderRadius: 12, background: c[o.ck], display: "grid", placeItems: "center", fontSize: 20 }}>{o.emoji}</div>
+            <IconBubble icon={o.icon} color={c.onAccent} bg={c[o.ck]} size={20} box={40} radius={12} />
             <div style={{ fontWeight: 700, fontSize: 13.5, marginTop: 10 }}>{o[lang]}</div>
             <div style={{ color: c[o.ck], fontWeight: 700, fontSize: 13 }}>{o.off[lang]}</div>
             <button onClick={() => flash(s.offerOn)} style={{ ...btn(c.card2, c.text), height: 34, marginTop: 10, fontSize: 12, border: `1px solid ${c.line}` }}>{s.getIt}</button>
@@ -2593,7 +2625,7 @@ function MoreScreen() {
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
         {storeData.map((it) => (
           <div key={it.en} style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 18, padding: 14 }}>
-            <div style={{ fontSize: 26 }}>{it.emoji}</div>
+            <IconBubble icon={it.icon} color={c.accentText} bg={c.card2} size={23} box={42} radius={12} />
             <div style={{ fontWeight: 700, fontSize: 13, marginTop: 6 }}>{riyalText(it[lang])}</div>
             <div style={{ fontSize: 11.5, color: c.muted, marginBottom: 8 }}>{fmt(it.cost)} {s.pts}</div>
             <button onClick={() => redeem(it)} disabled={points < it.cost} style={{ ...btn(points < it.cost ? c.card2 : c.accent, points < it.cost ? c.muted : c.onAccent), height: 36, marginTop: 0, fontSize: 12.5, border: points < it.cost ? `1px solid ${c.line}` : "none" }}>{s.redeem}</button>
@@ -2852,7 +2884,7 @@ function LoanWidget({ w }) {
           ? <>ينقصك <b style={{ color: c.terraText }}>{fmt(w.gap)} <RS /></b>. أقدر أعطيك قرض <b>{fmt(w.offer)} <RS /></b> من راتب الشهر الجاي — بينزل راتبك القادم إلى <b>{fmt(drop)} <RS /></b> بدل {fmt(STIPEND)}.</>
           : <>You're short <b style={{ color: c.terraText }}>{fmt(w.gap)} <RS /></b>. I can lend you <b>{fmt(w.offer)} <RS /></b> from next month's salary — your next stipend becomes <b>{fmt(drop)} <RS /></b> instead of {fmt(STIPEND)}.</>}
       </div>
-      <button onClick={approve} disabled={done} style={{ ...btn(done ? c.green : c.terra, "#fff"), height: 42, marginTop: 10 }}>{done ? (lang === "ar" ? "تم اعتماد القرض ✅" : "Loan approved ✅") : s.approve}</button>
+      <button onClick={approve} disabled={done} style={{ ...btn(done ? c.green : c.terra, "#fff"), height: 42, marginTop: 10, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7 }}>{done && <Check size={16} aria-hidden="true" />}{done ? (lang === "ar" ? "تم اعتماد القرض" : "Loan approved") : s.approve}</button>
     </div>
   );
 }
@@ -2892,7 +2924,7 @@ function ProjectionWidget({ init }) {
         <Spark data={cur.series} />
         <div style={{ textAlign: "center", fontSize: 19, fontWeight: 800, marginTop: 2 }}>{fmt(total)} <RS /></div>
       </div>
-      <div style={{ fontSize: 12, color: c.textSoft, lineHeight: 1.7, marginTop: 8 }}>💡 {riyalText(cur.sugg(total))}</div>
+      <div style={{ fontSize: 12, color: c.textSoft, lineHeight: 1.7, marginTop: 8, display: "flex", gap: 8, alignItems: "flex-start" }}><InlineIcon icon={Lightbulb} color={c.accentText} size={15} /><span>{riyalText(cur.sugg(total))}</span></div>
     </div>
   );
 }
