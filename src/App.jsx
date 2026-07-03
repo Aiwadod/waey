@@ -717,6 +717,11 @@ export default function App() {
   useEffect(() => { injectAssets(); const on = () => setVw(window.innerWidth); window.addEventListener("resize", on); return () => window.removeEventListener("resize", on); }, []);
   useEffect(() => applyLanguageMetadata(lang), [lang]);
   useEffect(() => {
+    if (typeof document === "undefined") return;
+    document.documentElement.style.colorScheme = theme;
+    document.body.style.background = themes[theme].bg0;
+  }, [theme]);
+  useEffect(() => {
     if (typeof window === "undefined") return undefined;
     const onHash = () => {
       const routed = screenForHash(window.location.hash);
@@ -1491,8 +1496,8 @@ function HeroMock() {
   const scope = useRef(null);
 
   useGsap(scope, (gsap, { reduce }) => {
-    if (reduce) return;
-    gsap.to(".hero-phone", { y: -10, rotate: -1.5, duration: 2.4, yoyo: true, repeat: -1, ease: "sine.inOut" });
+    if (reduce || !scope.current) return;
+    gsap.to(scope.current, { y: -10, rotate: -1.5, duration: 2.4, yoyo: true, repeat: -1, ease: "sine.inOut" });
     gsap.from(".hero-cardlet", { y: 16, opacity: 0, stagger: 0.12, duration: 0.5, ease: "power3.out", clearProps: "transform,opacity" });
   }, []);
 
