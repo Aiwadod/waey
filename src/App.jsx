@@ -1741,8 +1741,13 @@ function InvestCalc() {
 }
 function HomeScreen() {
   const { c, s, lang, setLang, points, theme, setTheme, setOverlay } = useCtx();
+  const stack = useRef(null);
+  useGsap(stack, (gsap, { reduce }) => {
+    if (reduce || !stack.current) return;
+    gsap.from(Array.from(stack.current.children), { y: 18, opacity: 0, stagger: 0.05, duration: 0.5, ease: "power3.out", clearProps: "transform,opacity" });
+  }, []);
   return (
-    <div style={{ animation: "wUp .5s ease both" }}>
+    <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 6 }}>
         <div style={{ display: "flex", gap: 10 }}>
           <IconBtn onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>{theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}</IconBtn>
@@ -1762,7 +1767,7 @@ function HomeScreen() {
         <div style={{ color: c.muted, fontSize: 12.5 }}>{s.handle}</div>
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 16 }}>
+      <div ref={stack} style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 16 }}>
         <BalanceCard />
         <PersonaCard />
         <AwarenessCard />
@@ -2266,13 +2271,13 @@ function BalanceCard() {
   return (
     <div style={{ borderRadius: 26, padding: "20px 20px 16px", background: `linear-gradient(135deg, ${c.bg1} 0%, ${c.card2} 100%)`, border: `1px solid ${c.line}` }}>
       <div style={{ fontSize: 12.5, color: c.muted }}>{s.balance}</div>
-      <div style={{ fontSize: 33, fontWeight: 700, letterSpacing: "-0.02em", marginTop: 2 }}>{fmt(balance)}.00 <RS size="0.62em" color={c.muted} /></div>
+      <div style={{ fontSize: 33, fontWeight: 700, letterSpacing: "-0.02em", marginTop: 2 }}><AnimatedNumber value={balance} formatter={(n) => `${fmt(n)}.00`} /> <RS size="0.62em" color={c.muted} /></div>
       <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
         {actions.map((a) => { const I = a.icon; return (
-          <button key={a.t} onClick={a.go} style={{ flex: 1, background: c.card, border: `1px solid ${c.line}`, borderRadius: 15, padding: "11px 0", display: "flex", flexDirection: "column", alignItems: "center", gap: 5, cursor: "pointer", fontFamily: "inherit", color: c.text }}>
+          <motion.button key={a.t} onClick={a.go} whileHover={{ y: -2 }} whileTap={{ scale: 0.96 }} style={{ flex: 1, background: c.card, border: `1px solid ${c.line}`, borderRadius: 15, padding: "11px 0", display: "flex", flexDirection: "column", alignItems: "center", gap: 5, cursor: "pointer", fontFamily: "inherit", color: c.text }}>
             <span style={{ width: 34, height: 34, borderRadius: 11, background: c.accent, display: "grid", placeItems: "center" }}><I size={17} color={c.onAccent} /></span>
             <span style={{ fontSize: 11.5, fontWeight: 600 }}>{a.t}</span>
-          </button>
+          </motion.button>
         ); })}
       </div>
     </div>
@@ -2307,9 +2312,9 @@ function WeeklyCard() {
             <button key={i} type="button" onClick={() => setSel(active ? null : i)} style={{ flex: 1, textAlign: "center", cursor: "pointer", background: "transparent", border: "none", padding: 0, color: c.text, fontFamily: "inherit" }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: future ? c.muted : c.text, marginBottom: 5 }}>{future ? "—" : total}</div>
               <div style={{ height: AREA, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
-                <div style={{ width: "78%", height: barH, borderRadius: "8px 8px 3px 3px", overflow: "hidden", display: "flex", flexDirection: "column", transformOrigin: "bottom", animation: "wBar .5s ease both", background: future ? c.inputBg : c.card2, boxShadow: active ? `0 0 0 2px ${c.accent}` : on ? `0 0 0 1.5px ${c.line}` : "none", opacity: sel != null && !active ? 0.55 : 1, transition: "opacity .2s" }}>
+                <motion.div initial={{ scaleY: 0.08 }} whileInView={{ scaleY: 1 }} viewport={{ once: true, amount: 0.4 }} transition={{ duration: 0.5, delay: i * 0.06, ease: easeOut }} style={{ width: "78%", height: barH, borderRadius: "8px 8px 3px 3px", overflow: "hidden", display: "flex", flexDirection: "column", transformOrigin: "bottom", background: future ? c.inputBg : c.card2, boxShadow: active ? `0 0 0 2px ${c.accent}` : on ? `0 0 0 1.5px ${c.line}` : "none", opacity: sel != null && !active ? 0.55 : 1, transition: "opacity .2s" }}>
                   {total > 0 && segs.map((sg) => { const h = (w[sg.k] / total) * 100; return h > 0 ? <div key={sg.k} style={{ height: `${h}%`, background: sg.col }} /> : null; })}
-                </div>
+                </motion.div>
               </div>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 3, marginTop: 6 }}>
                 <span style={{ fontSize: 10.5, color: active || on ? c.accentText : c.muted, fontWeight: active || on ? 700 : 500 }}>{s.week(i + 1)}</span>
@@ -3020,7 +3025,7 @@ function Spark({ data }) {
   const pts = data.map((v, i) => [(i / (data.length - 1)) * w, h - ((v - min) / (max - min || 1)) * (h - 10) - 5]);
   const d = pts.map((p, i) => (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1)).join(" ");
   const id = "wg" + Math.round(min) + Math.round(max);
-  return <svg viewBox={`0 0 ${w} ${h}`} style={{ width: "100%", height: 70, marginTop: 8 }} preserveAspectRatio="none"><defs><linearGradient id={id} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={c.accent} stopOpacity="0.35" /><stop offset="100%" stopColor={c.accent} stopOpacity="0" /></linearGradient></defs><path d={`${d} L ${w} ${h} L 0 ${h} Z`} fill={`url(#${id})`} /><path d={d} fill="none" stroke={c.accentText} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /></svg>;
+  return <svg viewBox={`0 0 ${w} ${h}`} style={{ width: "100%", height: 70, marginTop: 8 }} preserveAspectRatio="none"><defs><linearGradient id={id} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={c.accent} stopOpacity="0.35" /><stop offset="100%" stopColor={c.accent} stopOpacity="0" /></linearGradient></defs><path d={`${d} L ${w} ${h} L 0 ${h} Z`} fill={`url(#${id})`} /><motion.path d={d} fill="none" stroke={c.accentText} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" initial={{ pathLength: 0, opacity: 0 }} whileInView={{ pathLength: 1, opacity: 1 }} viewport={{ once: true, amount: 0.5 }} transition={{ duration: 0.9, ease: easeOut }} /></svg>;
 }
 function Signal({ col }) { return <svg width="18" height="12" viewBox="0 0 18 12"><g fill={col}>{[0, 1, 2, 3].map((i) => <rect key={i} x={i * 4.5} y={9 - i * 2.7} width="3" height={3 + i * 2.7} rx="1" />)}</g></svg>; }
 function Wifi({ col }) { return <svg width="17" height="12" viewBox="0 0 17 12" fill="none" stroke={col} strokeWidth="1.6"><path d="M1 4.2C4-.4 13-.4 16 4.2M3.4 6.7c2.4-3 7.8-3 10.2 0M5.9 9.2c1-1.3 4.2-1.3 5.2 0" /><circle cx="8.5" cy="10.8" r="1" fill={col} stroke="none" /></svg>; }
