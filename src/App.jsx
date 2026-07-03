@@ -1,4 +1,9 @@
-import { useState, useEffect, useRef, createContext, useContext } from "react";
+import { Fragment, useState, useEffect, useRef, createContext, useContext } from "react";
+import { callConfiguredAi } from "./lib/ai.js";
+import { applyAcceptedSpend, evaluateSpend } from "./lib/finance.js";
+import { applyLanguageMetadata, translateSystemMessages } from "./lib/i18n.js";
+import { resolveInitialScreen, sanitizeScreen, screenForHash, SCREEN_HASHES } from "./lib/routing.js";
+import { clearSession, createGuestSession, createLoginSession, loadSession, saveScreen, saveSession } from "./lib/session.js";
 import {
   Home, BarChart3, Sparkles, TrendingUp, Bell, Plus, ChevronLeft, ChevronRight, Wallet, Trophy,
   Users, Target, BookOpen, HelpCircle, Coins, Send, Sun, Moon, Bus, Gamepad2, Coffee,
@@ -666,11 +671,37 @@ export default function App() {
   const [roundMult, setRoundMult] = useState(1);
   const [roundVault, setRoundVault] = useState(3.6);
   const [assess, setAssess] = useState({ dominant: "social", dna: { planning: 45, social: 72, emotional: 55, impulsive: 60 }, score: 62, confidence: 84, saveable: 120, points: 15 });
-  const [screen, setScreen] = useState("splash");
+  const [initialShell] = useState(() => {
+    if (typeof window === "undefined") return { session: null, screen: "splash" };
+    const saved = loadSession(window.localStorage);
+    const screen = resolveInitialScreen({ hash: window.location.hash, storedScreen: saved.screen, session: saved.session });
+    return { session: saved.session, screen: sanitizeScreen(screen, saved.session) };
+  });
+  const [session, setSession] = useState(initialShell.session);
+  const [screen, setScreenState] = useState(initialShell.screen);
   const [toast, setToast] = useState(null);
   const [vw, setVw] = useState(typeof window !== "undefined" ? window.innerWidth : 420);
 
   useEffect(() => { injectAssets(); const on = () => setVw(window.innerWidth); window.addEventListener("resize", on); return () => window.removeEventListener("resize", on); }, []);
+  useEffect(() => applyLanguageMetadata(lang), [lang]);
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+    const onHash = () => {
+      const routed = screenForHash(window.location.hash);
+      if (routed) setScreenState(sanitizeScreen(routed, session));
+    };
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  }, [session]);
+  useEffect(() => {
+    if (typeof window === "undefined" || screen === "splash") return;
+    const route = SCREEN_HASHES[screen];
+    if (route && window.location.hash !== route) {
+      window.history.replaceState(null, "", route);
+    }
+    if (session) saveSession(window.localStorage, session, screen);
+    else saveScreen(window.localStorage, screen);
+  }, [screen, session]);
 
   const c = themes[theme];
   const s = L[lang];
@@ -687,6 +718,23 @@ export default function App() {
   const available = STIPEND - spent + loanTaken;
   const nextStipend = STIPEND - loanTaken;
 
+  function setScreen(next) {
+    const requested = typeof next === "function" ? next(screen) : next;
+    setScreenState(sanitizeScreen(requested, session));
+  }
+  function startSession(nextSession) {
+    if (!nextSession) return false;
+    setSession(nextSession);
+    if (typeof window !== "undefined") saveSession(window.localStorage, nextSession, "app");
+    setScreenState("app");
+    return true;
+  }
+  function enterGuest() { return startSession(createGuestSession()); }
+  function logout() {
+    if (typeof window !== "undefined") clearSession(window.localStorage);
+    setSession(null);
+    setScreenState("landing");
+  }
   function flash(m) { setToast(m); setTimeout(() => setToast(null), 2400); }
   const pushTx = (t) => setTx((p) => [t, ...p].slice(0, 8));
   function addSpend(cat, amt, place) {
@@ -700,9 +748,9 @@ export default function App() {
   }
 
   const value = {
-    c, s, lang, setLang, dir, mobile, theme, setTheme, tab, setTab, cats, weeks, weekCats, entries, curWeek, tx, addSpend, pushTx,
+    c, s, lang, setLang, dir, mobile, theme, setTheme, tab, setTab, cats, weeks, weekCats, entries, setEntries, curWeek, tx, setTx, addSpend, pushTx,
     balance, setBalance, points, setPoints, savings, setSavings, loanTaken, setLoanTaken, invested, setInvested,
-    spent, available, nextStipend, loanOffer, setLoanOffer, demoPay, setDemoPay, sheet, setSheet, showLeaderboard, setShowLeaderboard, overlay, setOverlay, persona, setPersona, vw, screen, setScreen, roundOn, setRoundOn, roundMult, setRoundMult, roundVault, setRoundVault, assess, setAssess, flash,
+    spent, available, nextStipend, loanOffer, setLoanOffer, demoPay, setDemoPay, sheet, setSheet, showLeaderboard, setShowLeaderboard, overlay, setOverlay, persona, setPersona, vw, screen, setScreen, session, startSession, enterGuest, logout, roundOn, setRoundOn, roundMult, setRoundMult, roundVault, setRoundVault, assess, setAssess, flash,
   };
   const appBg = `linear-gradient(180deg, ${c.bg1} 0%, ${c.bg0} 100%)`;
 
@@ -765,14 +813,14 @@ function Splash() {
   const { c, s, dir, setScreen } = useCtx();
   useEffect(() => { const t = setTimeout(() => setScreen("landing"), 2200); return () => clearTimeout(t); }, []);
   return (
-    <div dir={dir} onClick={() => setScreen("landing")} style={{ fontFamily: "'IBM Plex Sans Arabic',system-ui,sans-serif", background: `radial-gradient(circle at 50% 40%, ${c.bg1}, ${c.bg0})`, color: c.text, height: "100dvh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 22, cursor: "pointer" }}>
+    <button type="button" dir={dir} aria-label={s.splash.start} onClick={() => setScreen("landing")} style={{ fontFamily: "'IBM Plex Sans Arabic',system-ui,sans-serif", background: `radial-gradient(circle at 50% 40%, ${c.bg1}, ${c.bg0})`, color: c.text, height: "100dvh", width: "100%", border: "none", padding: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 22, cursor: "pointer" }}>
       <div style={{ width: 96, height: 96, borderRadius: 30, background: `linear-gradient(135deg, ${c.accent}, ${c.terra})`, display: "grid", placeItems: "center", animation: "wPop .6s ease both", boxShadow: `0 20px 50px -12px ${c.accent}` }}><Sparkles size={46} color="#fff" /></div>
       <div style={{ textAlign: "center", animation: "wUp .6s ease .15s both" }}>
         <div style={{ fontSize: 40, fontWeight: 800, letterSpacing: 1 }}>{s.brand}</div>
         <div style={{ fontSize: 14, color: c.muted, marginTop: 6 }}>{s.splash.tagline}</div>
       </div>
       <div style={{ width: 130, height: 5, borderRadius: 9, background: c.card2, overflow: "hidden", marginTop: 4 }}><div style={{ height: "100%", background: c.accent, animation: "wLoad 2.2s ease forwards" }} /></div>
-    </div>
+    </button>
   );
 }
 /* ===================== اختيار الدور + لوحات الجامعة والبنك ===================== */
@@ -801,10 +849,10 @@ function RoleSelect() {
   return (
     <div dir={dir} style={{ fontFamily: "'IBM Plex Sans Arabic',system-ui,sans-serif", background: c.bg0, color: c.text, height: "100dvh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "calc(env(safe-area-inset-top,0px) + 16px) 18px 8px" }}>
-        <div onClick={() => setScreen("landing")} style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
+        <button type="button" onClick={() => setScreen("landing")} style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", background: "none", border: "none", color: c.text, fontFamily: "inherit", padding: 0 }}>
           <div style={{ width: 30, height: 30, borderRadius: 9, background: `linear-gradient(135deg, ${c.accent}, ${c.terra})`, display: "grid", placeItems: "center" }}><Sparkles size={16} color="#fff" /></div>
           <span style={{ fontWeight: 800, fontSize: 16 }}>{s.brand}</span>
-        </div>
+        </button>
       </div>
       <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", justifyContent: "center", padding: "20px 20px 32px" }}>
         <div style={{ width: "100%", maxWidth: 460, margin: "0 auto" }}>
@@ -814,14 +862,14 @@ function RoleSelect() {
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 13 }}>
             {roles.map(([e, name, desc, col, go], i) => (
-              <div key={i} onClick={go} style={{ display: "flex", alignItems: "center", gap: 14, background: c.card, border: `1px solid ${c.line}`, borderRadius: 22, padding: 18, cursor: "pointer", transition: "transform .15s", position: "relative" }}>
+              <button key={i} type="button" onClick={go} style={{ width: "100%", display: "flex", alignItems: "center", gap: 14, background: c.card, border: `1px solid ${c.line}`, borderRadius: 22, padding: 18, cursor: "pointer", transition: "transform .15s", position: "relative", color: c.text, fontFamily: "inherit", textAlign: "start" }}>
                 <div style={{ width: 54, height: 54, borderRadius: 16, background: col + "22", display: "grid", placeItems: "center", fontSize: 28, flexShrink: 0 }}>{e}</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontWeight: 800, fontSize: 16 }}>{name}</div>
                   <div style={{ fontSize: 12, color: c.muted, lineHeight: 1.6, marginTop: 2 }}>{desc}</div>
                 </div>
                 <Fwd size={18} color={col} style={{ flexShrink: 0 }} />
-              </div>
+              </button>
             ))}
           </div>
         </div>
@@ -847,12 +895,18 @@ function Tabs({ options, value, onChange, c }) {
   );
 }
 function BarRow({ n, pct, col, c, onClick, sub }) {
-  return (
-    <div onClick={onClick} style={{ marginBottom: 12, cursor: onClick ? "pointer" : "default" }}>
+  const content = (
+    <>
       <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, marginBottom: 4 }}><span style={{ color: c.textSoft }}>{n}</span><span style={{ fontWeight: 700 }}>{pct}%</span></div>
       <div style={{ height: 8, borderRadius: 9, background: c.card2, overflow: "hidden" }}><div style={{ height: "100%", width: `${pct}%`, background: col, borderRadius: 9, transition: "width .5s" }} /></div>
       {sub && <div style={{ fontSize: 10.5, color: c.muted, marginTop: 4 }}>{sub}</div>}
-    </div>
+    </>
+  );
+  const style = { marginBottom: 12, cursor: onClick ? "pointer" : "default", width: "100%", background: "transparent", border: "none", padding: 0, color: c.text, fontFamily: "inherit", textAlign: "start" };
+  return onClick ? (
+    <button type="button" onClick={onClick} style={style}>{content}</button>
+  ) : (
+    <div style={style}>{content}</div>
   );
 }
 function MiniBars({ data, c, col }) {
@@ -907,13 +961,13 @@ function Heatmap({ rows, cols, grid, c, accent }) {
         <div />
         {cols.map((cl, i) => <div key={i} style={{ fontSize: 9.5, color: c.muted, textAlign: "center", paddingBottom: 2 }}>{cl}</div>)}
         {rows.map((rw, ri) => (
-          <React.Fragment key={ri}>
+          <Fragment key={ri}>
             <div style={{ fontSize: 10, color: c.textSoft, display: "flex", alignItems: "center", paddingInlineEnd: 6, whiteSpace: "nowrap" }}>{rw}</div>
             {cols.map((_, ci) => {
               const v = grid[ri][ci], a = 0.12 + (v / mx) * 0.88;
               return <div key={ci} title={`${v}`} style={{ aspectRatio: "1", borderRadius: 6, background: accent, opacity: a, minHeight: 22 }} />;
             })}
-          </React.Fragment>
+          </Fragment>
         ))}
       </div>
     </div>
@@ -1162,7 +1216,7 @@ function Chips({ options, value, onChange, c }) {
   );
 }
 function Assessment() {
-  const { c, s, lang, dir, setScreen, setPersona, setAssess } = useCtx();
+  const { c, s, lang, dir, setScreen, setPersona, setAssess, enterGuest } = useCtx();
   const A = s.as;
   const [step, setStep] = useState("intro");
   const [slide, setSlide] = useState(0);
@@ -1182,8 +1236,8 @@ function Assessment() {
   }, [step]);
 
   function answer(k) { setAnswers((a) => ({ ...a, [qi]: k })); if (qi < ASSESS_Q.length - 1) setTimeout(() => setQi((v) => v + 1), 160); else setTimeout(() => setStep("loading"), 160); }
-  function finish() { const map = { social: 0, emotional: 1, impulsive: 2, planning: 0 }; setPersona(map[result.dominant] ?? 0); if (result) setAssess(result); setScreen("app"); }
-  function skip() { setScreen("app"); }
+  function finish() { const map = { social: 0, emotional: 1, impulsive: 2, planning: 0 }; setPersona(map[result.dominant] ?? 0); if (result) setAssess(result); enterGuest(); }
+  function skip() { enterGuest(); }
   const Fwd = lang === "ar" ? ArrowLeft : ArrowRight;
   const wrap = { fontFamily: "'IBM Plex Sans Arabic',system-ui,sans-serif", background: c.bg0, color: c.text, height: "100dvh", display: "flex", flexDirection: "column", overflow: "hidden" };
   const body = { flex: 1, overflowY: "auto", padding: "8px 20px 28px", display: "flex", flexDirection: "column" };
@@ -1327,14 +1381,14 @@ function MkNav() {
   return (
     <div style={{ position: "sticky", top: 0, zIndex: 20, backdropFilter: "blur(12px)", background: c.bg0 + "cc", borderBottom: `1px solid ${c.line}` }}>
       <div style={{ maxWidth: 1120, margin: "0 auto", padding: "12px 18px", display: "flex", alignItems: "center", gap: 14 }}>
-        <div onClick={() => setScreen("landing")} style={{ display: "flex", alignItems: "center", gap: 9, cursor: "pointer" }}>
+        <button type="button" onClick={() => setScreen("landing")} style={{ display: "flex", alignItems: "center", gap: 9, cursor: "pointer", background: "none", border: "none", color: c.text, fontFamily: "inherit", padding: 0 }}>
           <div style={{ width: 34, height: 34, borderRadius: 10, background: `linear-gradient(135deg, ${c.accent}, ${c.terra})`, display: "grid", placeItems: "center", color: "#fff", fontWeight: 800 }}>{lang === "ar" ? "و" : "W"}</div>
           <span style={{ fontWeight: 800, fontSize: 18, color: screen === "landing" ? c.text : c.text }}>{s.brand}</span>
-        </div>
+        </button>
         {!narrow && <div style={{ display: "flex", gap: 18, marginInlineStart: 12 }}>{link("about", s.mk.about)}</div>}
         <div style={{ flex: 1 }} />
-        <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")} style={ic}>{theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}</button>
-        <button onClick={() => setLang(lang === "ar" ? "en" : "ar")} style={ic}><Globe size={18} /></button>
+        <button aria-label={lang === "ar" ? "تغيير المظهر" : "Change theme"} onClick={() => setTheme(theme === "dark" ? "light" : "dark")} style={ic}>{theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}</button>
+        <button aria-label={lang === "ar" ? "تغيير اللغة" : "Change language"} onClick={() => setLang(lang === "ar" ? "en" : "ar")} style={ic}><Globe size={18} /></button>
         <button onClick={() => setScreen("login")} style={{ ...mkBtn(c.accent, c.onAccent), padding: "9px 16px", fontSize: 13.5 }}>{s.mk.login}</button>
       </div>
     </div>
@@ -1469,19 +1523,30 @@ function AboutPage() {
 }
 
 function LoginPage() {
-  const { c, s, lang, setScreen } = useCtx();
+  const { c, s, lang, setScreen, startSession, enterGuest } = useCtx();
   const [id, setId] = useState(""); const [pw, setPw] = useState("");
+  const [error, setError] = useState("");
+  function submit() {
+    const nextSession = createLoginSession(id, pw);
+    if (!nextSession) {
+      setError(lang === "ar" ? "اكتب رقمك الجامعي وكلمة المرور للمتابعة" : "Enter your ID and password to continue");
+      return;
+    }
+    setError("");
+    startSession(nextSession);
+  }
   return (
     <div style={{ minHeight: "calc(100dvh - 66px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "30px 20px" }}>
       <div style={{ width: "100%", maxWidth: 400, background: c.card, border: `1px solid ${c.line}`, borderRadius: 26, padding: "clamp(24px,4vw,34px)" }}>
         <div style={{ width: 54, height: 54, borderRadius: 16, background: `linear-gradient(135deg, ${c.accent}, ${c.terra})`, display: "grid", placeItems: "center", color: "#fff", fontWeight: 800, fontSize: 24, margin: "0 auto 14px" }}>{lang === "ar" ? "و" : "W"}</div>
         <h1 style={{ fontSize: 24, fontWeight: 800, textAlign: "center", margin: 0 }}>{s.mk.lgTitle}</h1>
         <p style={{ fontSize: 13.5, color: c.muted, textAlign: "center", marginTop: 6, marginBottom: 20 }}>{s.mk.lgSub}</p>
-        <input value={id} onChange={(e) => setId(e.target.value)} placeholder={s.mk.lgId} style={{ ...inp(c), marginBottom: 12 }} />
-        <input type="password" value={pw} onChange={(e) => setPw(e.target.value)} placeholder={s.mk.lgPass} style={inp(c)} />
-        <button onClick={() => setScreen("app")} style={btn(c.accent, c.onAccent)}>{s.mk.lgBtn}</button>
-        <button onClick={() => setScreen("app")} style={{ ...btn(c.card2, c.text), border: `1px solid ${c.line}`, marginTop: 10 }}>{s.mk.lgGuest}</button>
-        <div style={{ textAlign: "center", fontSize: 13, color: c.muted, marginTop: 16 }}>{s.mk.lgNo} <button onClick={() => setScreen("app")} style={{ background: "none", border: "none", color: c.accentText, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>{s.mk.lgSignup}</button></div>
+        <input aria-label={s.mk.lgId} value={id} onChange={(e) => setId(e.target.value)} placeholder={s.mk.lgId} style={{ ...inp(c), marginBottom: 12 }} />
+        <input aria-label={s.mk.lgPass} type="password" value={pw} onChange={(e) => setPw(e.target.value)} placeholder={s.mk.lgPass} style={inp(c)} />
+        {error && <div role="alert" style={{ color: c.terraText, fontSize: 12.5, marginTop: 10, lineHeight: 1.6 }}>{error}</div>}
+        <button onClick={submit} style={btn(c.accent, c.onAccent)}>{s.mk.lgBtn}</button>
+        <button onClick={enterGuest} style={{ ...btn(c.card2, c.text), border: `1px solid ${c.line}`, marginTop: 10 }}>{s.mk.lgGuest}</button>
+        <div style={{ textAlign: "center", fontSize: 13, color: c.muted, marginTop: 16 }}>{s.mk.lgNo} <button onClick={enterGuest} style={{ background: "none", border: "none", color: c.accentText, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>{s.mk.lgSignup}</button></div>
         <div style={{ textAlign: "center", marginTop: 10 }}><button onClick={() => setScreen("landing")} style={{ background: "none", border: "none", color: c.muted, fontSize: 12.5, cursor: "pointer", fontFamily: "inherit" }}>{s.mk.lgBack}</button></div>
       </div>
     </div>
@@ -1720,11 +1785,11 @@ function EntryCard({ emoji, title, sub, onClick }) {
   const { c, lang } = useCtx();
   const Chev = lang === "ar" ? ChevronLeft : ChevronRight;
   return (
-    <div onClick={onClick} style={{ display: "flex", alignItems: "center", gap: 14, background: c.card, border: `1px solid ${c.line}`, borderRadius: 22, padding: 16, cursor: "pointer" }}>
+    <button type="button" onClick={onClick} style={{ width: "100%", display: "flex", alignItems: "center", gap: 14, background: c.card, border: `1px solid ${c.line}`, borderRadius: 22, padding: 16, cursor: "pointer", color: c.text, fontFamily: "inherit", textAlign: "start" }}>
       <div style={{ width: 46, height: 46, borderRadius: 14, background: c.card2, display: "grid", placeItems: "center", fontSize: 24, flexShrink: 0 }}>{emoji}</div>
       <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontWeight: 700 }}>{title}</div><div style={{ fontSize: 11.5, color: c.muted }}>{sub}</div></div>
       <Chev size={18} color={c.muted} />
-    </div>
+    </button>
   );
 }
 function AwarenessCard() {
@@ -1890,7 +1955,7 @@ function RoundUpCard() {
     <div style={{ borderRadius: 24, padding: 18, background: `linear-gradient(135deg, ${c.card2}, ${c.card})`, border: `1px solid ${c.line}` }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div><div style={{ fontWeight: 700 }}>{s.roundTitle}</div><div style={{ fontSize: 11.5, color: c.muted }}>{s.roundSub}</div></div>
-        <Toggle on={roundOn} onClick={() => setRoundOn(!roundOn)} />
+        <Toggle on={roundOn} onClick={() => setRoundOn(!roundOn)} label={s.roundOn} />
       </div>
       {/* جملة الهدف الواضحة */}
       <div style={{ background: c.accent + "1A", color: c.accentText, borderRadius: 12, padding: "9px 12px", marginTop: 12, fontSize: 12.5, fontWeight: 700, textAlign: "center" }}>{s.roundGoal}</div>
@@ -1948,7 +2013,7 @@ function JobsPage() {
       <div style={{ display: "flex", alignItems: "center", gap: 10, background: `linear-gradient(135deg, ${c.accent}, ${c.accentText})`, color: c.onAccent, borderRadius: 18, padding: "13px 16px", marginBottom: 14, fontSize: 13, fontWeight: 600 }}><TrendingUp size={18} />{s.jobAvg}</div>
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         {JOBS.map((j, i) => (
-          <div key={i} onClick={() => setSel(i)} style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 16, cursor: "pointer" }}>
+          <button key={i} type="button" onClick={() => setSel(i)} style={{ width: "100%", background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 16, cursor: "pointer", color: c.text, fontFamily: "inherit", textAlign: "start" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               <div style={{ width: 46, height: 46, borderRadius: 14, background: c.card2, display: "grid", placeItems: "center", fontSize: 24, flexShrink: 0 }}>{j.e}</div>
               <div style={{ flex: 1, minWidth: 0 }}>
@@ -1961,7 +2026,7 @@ function JobsPage() {
               {[j.dur[lang], j.mode[lang]].map((tg) => <span key={tg} style={{ background: c.card2, border: `1px solid ${c.line}`, color: c.textSoft, borderRadius: 999, padding: "4px 11px", fontSize: 11 }}>{tg}</span>)}
               <span style={{ marginInlineStart: "auto", fontSize: 12, color: c.accentText, fontWeight: 700 }}>{s.jobDetails} ←</span>
             </div>
-          </div>
+          </button>
         ))}
       </div>
     </FullPage>
@@ -2007,11 +2072,13 @@ function CashbackPage() {
         {CASH.map((x, i) => {
           const on = active.includes(i);
           return (
-            <div key={i} onClick={() => setSel(i)} style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 16, cursor: "pointer" }}>
+            <div key={i} style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 16 }}>
+              <button type="button" onClick={() => setSel(i)} style={{ width: "100%", background: "transparent", border: "none", padding: 0, color: c.text, fontFamily: "inherit", textAlign: "start", cursor: "pointer" }}>
               <div style={{ width: 44, height: 44, borderRadius: 13, background: c[x.ck], display: "grid", placeItems: "center", fontSize: 22 }}>{x.e}</div>
               <div style={{ fontWeight: 700, fontSize: 13.5, marginTop: 10 }}>{x.cat[lang]}</div>
               <div style={{ color: c[x.ck], fontWeight: 800, fontSize: 17 }}>{x.back}% <span style={{ fontSize: 11, color: c.muted, fontWeight: 600 }}>{s.backWord}</span></div>
               <div style={{ fontSize: 11, color: c.muted, marginTop: 4 }}>{x.offers.length} {s.cashOffersCount} ←</div>
+              </button>
               <button onClick={(ev) => { ev.stopPropagation(); activate(i); }} disabled={on} style={{ ...btn(on ? c.card2 : c.accent, on ? c.green : c.onAccent), height: 36, marginTop: 10, fontSize: 12.5, border: on ? `1px solid ${c.line}` : "none" }}>{on ? s.cashActive : s.cashActivate}</button>
             </div>
           );
@@ -2138,7 +2205,7 @@ function WeeklyCard() {
           const total = weeks[i], on = i === curWeek, future = total === 0 && i > curWeek, active = sel === i;
           const barH = total > 0 ? Math.max(10, (total / maxT) * AREA) : 6;
           return (
-            <div key={i} onClick={() => setSel(active ? null : i)} style={{ flex: 1, textAlign: "center", cursor: "pointer" }}>
+            <button key={i} type="button" onClick={() => setSel(active ? null : i)} style={{ flex: 1, textAlign: "center", cursor: "pointer", background: "transparent", border: "none", padding: 0, color: c.text, fontFamily: "inherit" }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: future ? c.muted : c.text, marginBottom: 5 }}>{future ? "—" : total}</div>
               <div style={{ height: AREA, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
                 <div style={{ width: "78%", height: barH, borderRadius: "8px 8px 3px 3px", overflow: "hidden", display: "flex", flexDirection: "column", transformOrigin: "bottom", animation: "wBar .5s ease both", background: future ? c.inputBg : c.card2, boxShadow: active ? `0 0 0 2px ${c.accent}` : on ? `0 0 0 1.5px ${c.line}` : "none", opacity: sel != null && !active ? 0.55 : 1, transition: "opacity .2s" }}>
@@ -2149,7 +2216,7 @@ function WeeklyCard() {
                 <span style={{ fontSize: 10.5, color: active || on ? c.accentText : c.muted, fontWeight: active || on ? 700 : 500 }}>{s.week(i + 1)}</span>
                 {!future && <ChevronDown size={11} color={c.muted} style={{ transform: active ? "rotate(180deg)" : "none", transition: "transform .2s" }} />}
               </div>
-            </div>
+            </button>
           );
         })}
       </div>
@@ -2186,7 +2253,7 @@ function WeekDetails({ week, entries, colOf }) {
       {entries.map((e, i) => {
         cum += e.amt; const remain = WEEK_LIMIT - cum; const isOpen = open === e.id;
         return (
-          <div key={e.id} onClick={() => setOpen(isOpen ? null : e.id)} style={{ cursor: "pointer", padding: "10px 6px", borderBottom: i < entries.length - 1 ? `1px solid ${c.line}` : "none" }}>
+          <button key={e.id} type="button" onClick={() => setOpen(isOpen ? null : e.id)} style={{ width: "100%", cursor: "pointer", padding: "10px 6px", border: "none", borderBottom: i < entries.length - 1 ? `1px solid ${c.line}` : "none", background: "transparent", color: c.text, fontFamily: "inherit", textAlign: "start" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
                 <div style={{ fontWeight: 700, fontSize: 15, color: c.terraText }}>−{fmt(e.amt)} <RS /></div>
@@ -2206,7 +2273,7 @@ function WeekDetails({ week, entries, colOf }) {
                 <Detail icon={MapPin} text={e.location[lang]} c={c} />
               </div>
             )}
-          </div>
+          </button>
         );
       })}
     </div>
@@ -2228,8 +2295,10 @@ function Analytics() {
     if (!why.trim()) return flash(s.askReason);
     const place = { ar: why.trim(), en: why.trim() };
     const cat = catFromText(why);
-    if (a <= available) { addSpend(cat, a, place); flash(s.logged(available - a)); setAmt(""); setWhy(""); }
-    else { setLoanOffer({ need: a - available, offer: Math.min(250, Math.ceil((a - available) / 50) * 50), pending: { amount: a, place, cat } }); setAmt(""); setWhy(""); }
+    const decision = evaluateSpend({ amount: a, available });
+    if (decision.kind === "spend") { addSpend(cat, a, place); flash(s.logged(available - a)); setAmt(""); setWhy(""); }
+    else if (decision.kind === "loanOffer") { setLoanOffer({ ...decision, pending: { amount: a, place, cat } }); setAmt(""); setWhy(""); }
+    else flash(s.noBal);
   }
   return (
     <div style={{ animation: "wUp .5s ease both" }}>
@@ -2282,24 +2351,25 @@ function Analytics() {
 function AIChat() {
   const { c, s, lang, spent, available, savings, loanTaken, nextStipend, invested, cats, weeks, curWeek, balance, points, persona } = useCtx();
   const st = { spent, available, savings, loanTaken, nextStipend, invested, cats };
-  const [messages, setMessages] = useState([{ role: "assistant", text: s.hello }]);
+  const [messages, setMessages] = useState([{ role: "assistant", key: "hello", text: s.hello }]);
   const [input, setInput] = useState(""); const [busy, setBusy] = useState(false);
   const end = useRef(null);
   useEffect(() => { end.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, busy]);
-  useEffect(() => { setMessages((m) => (m.length === 1 ? [{ role: "assistant", text: s.hello }] : m)); }, [lang]);
+  useEffect(() => { setMessages((m) => translateSystemMessages(m, lang, { ar: { hello: L.ar.hello }, en: { hello: L.en.hello } })); }, [lang]);
 
   async function callModel(system, apiMsgs) {
+    const endpoint = import.meta.env.VITE_AI_ENDPOINT;
     for (let attempt = 0; attempt < 2; attempt++) {
       const ctrl = new AbortController();
       const timer = setTimeout(() => ctrl.abort(), 22000);
       try {
-        const res = await fetch("https://api.anthropic.com/v1/messages", {
-          method: "POST", headers: { "Content-Type": "application/json" }, signal: ctrl.signal,
-          body: JSON.stringify({ model: "claude-sonnet-4-6", max_tokens: 1024, system, messages: apiMsgs }),
+        const text = await callConfiguredAi({
+          endpoint,
+          fetcher: fetch,
+          signal: ctrl.signal,
+          payload: { system, messages: apiMsgs },
         });
         clearTimeout(timer);
-        const data = await res.json();
-        const text = data?.content?.filter((b) => b.type === "text").map((b) => b.text).join("\n").trim();
         if (text) return text;
       } catch { clearTimeout(timer); }
     }
@@ -2467,13 +2537,13 @@ function Invest() {
 
 /* ===================== المزيد ===================== */
 function MoreScreen() {
-  const { c, s, lang, setLang, points, setPoints, theme, setTheme, setDemoPay, flash, setTab, setScreen, setOverlay } = useCtx();
+  const { c, s, lang, setLang, points, setPoints, theme, setTheme, setDemoPay, flash, setTab, logout, setOverlay } = useCtx();
   function redeem(it) { if (points < it.cost) return flash(s.noPoints); setPoints((p) => p - it.cost); flash(s.redeemed(it[lang])); }
   const rows = [
     { i: <Store size={18} color={c.accentText} />, t: s.plat.title, go: () => setOverlay("platform") },
     { i: <BookOpen size={18} color={c.accentText} />, t: s.learn, go: () => setTab("ai") },
     { i: <HelpCircle size={18} color={c.accentText} />, t: s.help, go: () => flash(s.helpSoon) },
-    { i: <LogOut size={18} color={c.terraText} />, t: s.mk.lgOut, go: () => setScreen("landing") },
+    { i: <LogOut size={18} color={c.terraText} />, t: s.mk.lgOut, go: logout },
   ];
   const Chevron = lang === "ar" ? ChevronLeft : ChevronRight;
   return (
@@ -2539,7 +2609,7 @@ function MoreScreen() {
 
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: c.card, border: `1px solid ${c.line}`, borderRadius: 18, padding: "14px 16px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>{theme === "dark" ? <Moon size={18} color={c.accentText} /> : <Sun size={18} color={c.accentText} />}<span style={{ fontSize: 14 }}>{s.appearance} · {theme === "dark" ? s.dark : s.light}</span></div>
-        <Toggle on={theme === "dark"} onClick={() => setTheme(theme === "dark" ? "light" : "dark")} />
+        <Toggle on={theme === "dark"} onClick={() => setTheme(theme === "dark" ? "light" : "dark")} label={s.appearance} />
       </div>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: c.card, border: `1px solid ${c.line}`, borderRadius: 18, padding: "14px 16px", marginTop: 10 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}><Globe size={18} color={c.accentText} /><span style={{ fontSize: 14 }}>{s.language}</span></div>
@@ -2551,7 +2621,7 @@ function MoreScreen() {
       </div>
 
       <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 18, padding: "6px 4px", marginTop: 10 }}>
-        {rows.map((x, i) => <div key={i} onClick={x.go} style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 14px", cursor: "pointer", borderBottom: i < rows.length - 1 ? `1px solid ${c.line}` : "none" }}>{x.i}<span style={{ flex: 1, fontSize: 14 }}>{x.t}</span><Chevron size={16} color={c.muted} /></div>)}
+        {rows.map((x, i) => <button key={i} type="button" onClick={x.go} style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "13px 14px", cursor: "pointer", border: "none", borderBottom: i < rows.length - 1 ? `1px solid ${c.line}` : "none", background: "transparent", color: c.text, fontFamily: "inherit", textAlign: "start" }}>{x.i}<span style={{ flex: 1, fontSize: 14 }}>{x.t}</span><Chevron size={16} color={c.muted} /></button>)}
       </div>
     </div>
   );
@@ -2630,9 +2700,23 @@ function TopupSheet() {
 
 /* ===================== عرض القرض ===================== */
 function LoanModal() {
-  const { c, s, lang, loanOffer, setLoanOffer, setLoanTaken, addSpend, loanTaken, flash } = useCtx();
+  const { c, s, lang, loanOffer, setLoanOffer, entries, setEntries, curWeek, tx, setTx, balance, setBalance, setLoanTaken, loanTaken, flash } = useCtx();
   const { need, offer, pending } = loanOffer;
-  function accept() { setLoanTaken((l) => l + offer); addSpend(pending.cat || "other", pending.amount, pending.place); setLoanOffer(null); flash(s.loanDone(offer)); }
+  function accept() {
+    const before = { entries, tx, balance, loanTaken };
+    const after = applyAcceptedSpend(before, {
+      decision: { kind: "loanOffer", need, offer },
+      pending,
+      entryMeta: { week: curWeek, date: { ar: s.today, en: L.en.today }, time: { ar: s.now, en: L.en.now }, location: { ar: s.yourLoc, en: L.en.yourLoc } },
+    });
+    if (after === before) return flash(s.noBal);
+    setEntries(after.entries);
+    setTx(after.tx);
+    setBalance(after.balance);
+    setLoanTaken(after.loanTaken);
+    setLoanOffer(null);
+    flash(s.loanDone(offer));
+  }
   const drop = STIPEND - (loanTaken + offer);
   return (
     <div onClick={() => setLoanOffer(null)} style={{ position: "absolute", inset: 0, background: "rgba(0,8,14,0.6)", backdropFilter: "blur(6px)", display: "grid", placeItems: "center", padding: 22, zIndex: 50 }}>
@@ -2818,7 +2902,7 @@ function SectionTitle({ icon: Icon, children }) { const { c } = useCtx(); return
 function Stat({ icon, value, label }) { const { c } = useCtx(); return <div style={{ textAlign: "center" }}><div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>{icon}<span style={{ fontSize: 18, fontWeight: 700 }}>{value}</span></div><div style={{ fontSize: 10.5, color: c.muted, marginTop: 2 }}>{label}</div></div>; }
 function MiniBox({ label, value, tone }) { const { c } = useCtx(); return <div style={{ flex: 1, background: c.card2, border: `1px solid ${c.line}`, borderRadius: 14, padding: "10px 12px" }}><div style={{ fontSize: 11, color: c.muted }}>{label}</div><div style={{ fontSize: 16, fontWeight: 700, color: tone }}>{riyalText(value)}</div></div>; }
 function Divider() { const { c } = useCtx(); return <div style={{ width: 1, height: 32, background: c.line }} />; }
-function Toggle({ on, onClick }) { const { c } = useCtx(); return <div onClick={onClick} style={{ width: 52, height: 30, borderRadius: 999, background: on ? c.accent : c.line, position: "relative", cursor: "pointer", transition: "background .25s" }}><span style={{ position: "absolute", top: 3, insetInlineEnd: on ? 3 : 25, width: 24, height: 24, borderRadius: 999, background: "#fff", transition: "inset-inline-end .25s" }} /></div>; }
+function Toggle({ on, onClick, label }) { const { c } = useCtx(); return <button type="button" role="switch" aria-checked={on} aria-label={label} onClick={onClick} style={{ width: 52, height: 30, borderRadius: 999, background: on ? c.accent : c.line, position: "relative", cursor: "pointer", transition: "background .25s", border: "none", padding: 0, flexShrink: 0 }}><span aria-hidden="true" style={{ position: "absolute", top: 3, insetInlineEnd: on ? 3 : 25, width: 24, height: 24, borderRadius: 999, background: "#fff", transition: "inset-inline-end .25s" }} /></button>; }
 function IconBtn({ children, dot, onClick }) { const { c } = useCtx(); return <button onClick={onClick} style={{ position: "relative", width: 38, height: 38, borderRadius: 12, background: c.card, border: `1px solid ${c.line}`, color: c.text, display: "grid", placeItems: "center", cursor: "pointer" }}>{children}{dot && <span style={{ position: "absolute", top: 9, insetInlineEnd: 10, width: 7, height: 7, borderRadius: 9, background: c.terra, border: `1.5px solid ${c.card}` }} />}</button>; }
 function MetricCard({ label, value, tone, sign }) { const { c } = useCtx(); return <div style={{ flex: 1, background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 15 }}><div style={{ fontSize: 12, color: c.muted }}>{label}</div><div style={{ fontSize: 21, fontWeight: 700, marginTop: 2 }}>{value} <RS color={c.muted} /></div><div style={{ fontSize: 11.5, color: tone, fontWeight: 600, marginTop: 1 }}>{sign}</div></div>; }
 function Seg({ options, value, onChange }) { const { c } = useCtx(); return <div style={{ display: "flex", background: c.card, border: `1px solid ${c.line}`, borderRadius: 14, padding: 4, marginTop: 12 }}>{options.map((o) => <button key={o} onClick={() => onChange(o)} style={{ flex: 1, padding: "9px 0", borderRadius: 10, border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 13, fontWeight: 600, background: value === o ? c.accent : "transparent", color: value === o ? c.onAccent : c.muted }}>{o}</button>)}</div>; }

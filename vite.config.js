@@ -6,4 +6,12 @@ import react from "@vitejs/plugin-react";
 export default defineConfig({
   plugins: [react()],
   base: "./",
+  test: {
+    environment: "jsdom",
+    globals: true,
+    include: ["src/**/*.test.{js,jsx,ts,tsx}"],
+    exclude: ["node_modules/**", "dist/**", "tests/e2e/**"],
+    setupFiles: "./src/test/setup.js",
+    css: false,
+  },
 });
