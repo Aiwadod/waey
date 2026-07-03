@@ -797,11 +797,13 @@ export default function App() {
           <div style={{ flex: 1, minWidth: 0, position: "relative", display: "flex", flexDirection: "column", overflow: "hidden" }}>
           <div className="wscroll" style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", alignItems: "center" }}>
             <div style={{ width: "100%", maxWidth: sidebar ? 780 : maxW, padding: sidebar ? "26px 26px 40px" : "calc(env(safe-area-inset-top,0px) + 14px) 18px 104px", ...(tab === "ai" ? { flex: 1, minHeight: 0, display: "flex", flexDirection: "column" } : {}) }}>
+              <motion.div key={tab} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.22, ease: easeOut }} style={{ width: "100%", ...(tab === "ai" ? { flex: 1, minHeight: 0, display: "flex", flexDirection: "column" } : {}) }}>
               {tab === "home" && <HomeScreen />}
               {tab === "analytics" && <Analytics />}
               {tab === "ai" && <AIChat />}
               {tab === "invest" && <Invest />}
               {tab === "more" && <MoreScreen />}
+              </motion.div>
             </div>
           </div>
           {!sidebar && <BottomNav />}
@@ -814,7 +816,21 @@ export default function App() {
           {overlay === "jobs" && <JobsPage />}
           {overlay === "cashback" && <CashbackPage />}
           {overlay === "platform" && <PlatformPage />}
-          {toast && <div style={{ position: "absolute", bottom: sidebar ? 28 : 108, left: "50%", transform: "translateX(-50%)", background: c.accent, color: c.onAccent, padding: "10px 20px", borderRadius: 999, fontSize: 13.5, fontWeight: 700, animation: "wPop .25s ease both", whiteSpace: "nowrap", zIndex: 60, maxWidth: "88%", textAlign: "center" }}>{riyalText(toast)}</div>}
+          <AnimatePresence>
+            {toast && (
+              <motion.div
+                key={toast}
+                variants={toastVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                transition={{ duration: 0.24, ease: easeOut }}
+                style={{ position: "absolute", bottom: sidebar ? 28 : 108, left: "50%", x: "-50%", background: c.accent, color: c.onAccent, padding: "10px 20px", borderRadius: 999, fontSize: 13.5, fontWeight: 700, whiteSpace: "nowrap", zIndex: 60, maxWidth: "88%", textAlign: "center" }}
+              >
+                {riyalText(toast)}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
       )}
@@ -2807,7 +2823,7 @@ function LoanModal() {
   }
   const drop = STIPEND - (loanTaken + offer);
   return (
-    <div onClick={() => setLoanOffer(null)} style={{ position: "absolute", inset: 0, background: "rgba(0,8,14,0.6)", backdropFilter: "blur(6px)", display: "grid", placeItems: "center", padding: 22, zIndex: 50 }}>
+    <div onClick={() => setLoanOffer(null)} style={{ position: "absolute", inset: 0, background: "rgba(15,34,48,0.36)", backdropFilter: "blur(6px)", display: "grid", placeItems: "center", padding: 22, zIndex: 50 }}>
       <div onClick={(e) => e.stopPropagation()} style={{ background: c.card2, border: `1px solid ${c.line}`, borderRadius: 26, padding: 24, width: "100%", maxWidth: 330, animation: "wPop .25s ease both", textAlign: "center" }}>
         <div style={{ width: 52, height: 52, borderRadius: 16, margin: "0 auto", background: `linear-gradient(135deg, ${c.terra}, ${c.terraText})`, display: "grid", placeItems: "center" }}><Wallet size={24} color="#fff" /></div>
         <h3 style={{ margin: "14px 0 8px", fontSize: 18 }}>{s.loanTitle}</h3>
@@ -2840,7 +2856,12 @@ function Sidebar() {
       <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
         {items.map((x) => {
           const on = tab === x.id, Icon = x.icon;
-          return <button key={x.id} onClick={() => setTab(x.id)} style={{ display: "flex", alignItems: "center", gap: 13, padding: "12px 14px", borderRadius: 14, border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 14.5, fontWeight: on ? 700 : 500, background: on ? c.accent : "transparent", color: on ? c.onAccent : c.textSoft, textAlign: "start", transition: "background .15s" }}><Icon size={20} />{x.label}</button>;
+          return (
+            <motion.button key={x.id} onClick={() => setTab(x.id)} whileTap={{ scale: 0.98 }} style={{ position: "relative", display: "flex", alignItems: "center", gap: 13, padding: "12px 14px", borderRadius: 14, border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 14.5, fontWeight: on ? 700 : 500, background: "transparent", color: on ? c.onAccent : c.textSoft, textAlign: "start" }}>
+              {on && <motion.span layoutId="waey-sidebar-pill" transition={{ type: "spring", duration: 0.42, bounce: 0.16 }} style={{ position: "absolute", inset: 0, borderRadius: 14, background: c.accent, zIndex: 0 }} />}
+              <span style={{ position: "relative", zIndex: 1, display: "inline-flex", alignItems: "center", gap: 13 }}><Icon size={20} />{x.label}</span>
+            </motion.button>
+          );
         })}
       </div>
       <div style={{ marginTop: 18, borderTop: `1px solid ${c.line}`, paddingTop: 14, display: "flex", flexDirection: "column", gap: 5 }}>
@@ -2870,8 +2891,8 @@ function BottomNav() {
       <div style={{ width: "100%", maxWidth: 600, minHeight: 84, display: "flex", alignItems: "center", justifyContent: "space-around", padding: "0 14px 14px" }}>
       {items.map((x) => {
         const on = tab === x.id, Icon = x.icon;
-        if (x.center) return <button key={x.id} onClick={() => setTab(x.id)} style={{ width: 58, height: 58, borderRadius: 20, border: "none", cursor: "pointer", background: `linear-gradient(135deg, ${c.accent}, ${c.accentText})`, display: "grid", placeItems: "center", transform: "translateY(-12px)", boxShadow: `0 12px 26px -6px ${c.accent}` }}><Icon size={26} color={c.onAccent} /></button>;
-        return <button key={x.id} onClick={() => setTab(x.id)} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 4, color: on ? c.accentText : c.muted, flex: 1 }}><Icon size={22} /><span style={{ fontSize: 10.5, fontWeight: on ? 700 : 500 }}>{x.label}</span></button>;
+        if (x.center) return <motion.button key={x.id} onClick={() => setTab(x.id)} whileTap={{ scale: 0.92 }} style={{ width: 58, height: 58, borderRadius: 20, border: "none", cursor: "pointer", background: `linear-gradient(135deg, ${c.accent}, ${c.accentText})`, display: "grid", placeItems: "center", y: -12, boxShadow: `0 12px 26px -6px ${c.accent}` }}><Icon size={26} color={c.onAccent} /></motion.button>;
+        return <motion.button key={x.id} onClick={() => setTab(x.id)} whileTap={{ scale: 0.9 }} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 4, color: on ? c.accentText : c.muted, flex: 1, position: "relative" }}><Icon size={22} /><span style={{ fontSize: 10.5, fontWeight: on ? 700 : 500 }}>{x.label}</span>{on && <motion.span layoutId="waey-bottomnav-dot" transition={{ type: "spring", duration: 0.42, bounce: 0.16 }} style={{ position: "absolute", top: -6, width: 5, height: 5, borderRadius: 999, background: c.accentText }} />}</motion.button>;
       })}
       </div>
     </div>
@@ -2883,16 +2904,16 @@ function Sheet({ title, subtitle, icon: Icon, children, onClose }) {
   const { c, setSheet } = useCtx();
   const close = onClose || (() => setSheet(null));
   return (
-    <div onClick={close} style={{ position: "absolute", inset: 0, background: "rgba(0,8,14,0.55)", backdropFilter: "blur(5px)", display: "flex", alignItems: "flex-end", zIndex: 50 }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", background: c.card2, borderRadius: "26px 26px 0 0", padding: "20px 20px calc(24px + env(safe-area-inset-bottom,0px))", animation: "wSheet .3s ease both", border: `1px solid ${c.line}` }}>
+    <motion.div onClick={close} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.18, ease: easeOut }} style={{ position: "absolute", inset: 0, background: "rgba(15,34,48,0.32)", backdropFilter: "blur(6px)", display: "flex", alignItems: "flex-end", zIndex: 50 }}>
+      <motion.div onClick={(e) => e.stopPropagation()} variants={sheetVariants} initial="hidden" animate="visible" transition={{ duration: 0.3, ease: easeOut }} style={{ width: "100%", background: c.card2, borderRadius: "26px 26px 0 0", padding: "20px 20px calc(24px + env(safe-area-inset-bottom,0px))", border: `1px solid ${c.line}` }}>
         <div style={{ width: 40, height: 4, borderRadius: 9, background: c.line, margin: "0 auto 16px" }} />
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
           {Icon && <div style={{ width: 44, height: 44, borderRadius: 13, background: c.accent, display: "grid", placeItems: "center" }}><Icon size={22} color={c.onAccent} /></div>}
           <div><div style={{ fontWeight: 700, fontSize: 16 }}>{riyalText(title)}</div>{subtitle && <div style={{ fontSize: 12, color: c.muted }}>{riyalText(subtitle)}</div>}</div>
         </div>
         {children}
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }
 function Bubble({ role, text, widget }) {
