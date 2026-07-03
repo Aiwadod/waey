@@ -14,3 +14,7 @@ coverage/
 test-results/
 playwright-report/
 .playwright/
+
+# Local agent skill packs
+.agents/
+.claude/
