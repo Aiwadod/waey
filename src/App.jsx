@@ -845,16 +845,52 @@ function seedEntries() {
 
 /* ===================== شاشة البداية Splash ===================== */
 function Splash() {
-  const { c, s, dir, setScreen } = useCtx();
-  useEffect(() => { const t = setTimeout(() => setScreen("landing"), 2200); return () => clearTimeout(t); }, []);
+  const { c, s, dir, setScreen, theme } = useCtx();
+  const scope = useRef(null);
+
+  useEffect(() => { const t = setTimeout(() => setScreen("landing"), 2400); return () => clearTimeout(t); }, [setScreen]);
+
+  useGsap(scope, (gsap, { reduce }) => {
+    if (reduce) return;
+    const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+    tl.from(".splash-mark", { y: 18, scale: 0.92, opacity: 0, duration: 0.55 })
+      .from(".splash-title", { y: 16, opacity: 0, duration: 0.42 }, "-=0.22")
+      .from(".splash-chip", { y: 10, opacity: 0, stagger: 0.08, duration: 0.34 }, "-=0.16")
+      .fromTo(".splash-progress", { scaleX: 0 }, { scaleX: 1, duration: 1.4, transformOrigin: "left center" }, "-=0.14")
+      .to(".splash-mark", { y: -5, repeat: 1, yoyo: true, duration: 0.36, ease: "sine.inOut" }, "-=1.1");
+  }, []);
+
   return (
-    <button type="button" dir={dir} aria-label={s.splash.start} onClick={() => setScreen("landing")} style={{ fontFamily: "'IBM Plex Sans Arabic',system-ui,sans-serif", background: `radial-gradient(circle at 50% 40%, ${c.bg1}, ${c.bg0})`, color: c.text, height: "100dvh", width: "100%", border: "none", padding: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 22, cursor: "pointer" }}>
-      <div style={{ width: 96, height: 96, borderRadius: 30, background: `linear-gradient(135deg, ${c.accent}, ${c.terra})`, display: "grid", placeItems: "center", animation: "wPop .6s ease both", boxShadow: `0 20px 50px -12px ${c.accent}` }}><Sparkles size={46} color="#fff" /></div>
-      <div style={{ textAlign: "center", animation: "wUp .6s ease .15s both" }}>
-        <div style={{ fontSize: 40, fontWeight: 800, letterSpacing: 1 }}>{s.brand}</div>
-        <div style={{ fontSize: 14, color: c.muted, marginTop: 6 }}>{s.splash.tagline}</div>
+    <button
+      ref={scope}
+      type="button"
+      dir={dir}
+      data-waey-theme={theme}
+      data-waey-shell
+      aria-label={s.splash.start}
+      onClick={() => setScreen("landing")}
+      style={{ fontFamily: "'IBM Plex Sans Arabic',system-ui,sans-serif", background: c.page, color: c.text, height: "100dvh", width: "100%", border: "none", padding: 0, display: "grid", placeItems: "center", cursor: "pointer", position: "relative", overflow: "hidden" }}
+    >
+      <WaeyFlowField tone={theme} />
+      <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 18 }}>
+        <div className="splash-mark" style={{ width: 104, height: 104, borderRadius: 32, background: `linear-gradient(135deg, ${c.accent}, ${c.green} 58%, ${c.terra})`, display: "grid", placeItems: "center", boxShadow: `0 32px 80px -34px ${c.accent}` }}>
+          <Sparkles size={48} color="#fff" />
+        </div>
+        <div className="splash-title" style={{ textAlign: "center" }}>
+          <div style={{ fontSize: 42, fontWeight: 850 }}>{s.brand}</div>
+          <div style={{ fontSize: 14, color: c.muted, marginTop: 6 }}>{s.splash.tagline}</div>
+        </div>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center" }}>
+          {[s.nav.home, s.nav.analytics, s.nav.ai].map((label) => (
+            <span key={label} className="splash-chip" style={{ border: `1px solid ${c.line}`, background: "rgba(255,255,255,0.68)", borderRadius: 999, padding: "7px 12px", fontSize: 12, fontWeight: 700, color: c.textSoft }}>
+              {label}
+            </span>
+          ))}
+        </div>
+        <div style={{ width: 150, height: 5, borderRadius: 999, background: c.card2, overflow: "hidden", marginTop: 4 }}>
+          <div className="splash-progress" style={{ height: "100%", background: `linear-gradient(90deg, ${c.accent}, ${c.green})`, borderRadius: 999, transformOrigin: "left center" }} />
+        </div>
       </div>
-      <div style={{ width: 130, height: 5, borderRadius: 9, background: c.card2, overflow: "hidden", marginTop: 4 }}><div style={{ height: "100%", background: c.accent, animation: "wLoad 2.2s ease forwards" }} /></div>
     </button>
   );
 }
