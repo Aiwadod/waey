@@ -948,8 +948,8 @@ function RoleSelect() {
   return (
     <div dir={dir} style={{ fontFamily: "'IBM Plex Sans Arabic',system-ui,sans-serif", background: c.bg0, color: c.text, height: "100dvh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "calc(env(safe-area-inset-top,0px) + 16px) 18px 8px" }}>
-        <button type="button" onClick={() => setScreen("landing")} style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", background: "none", border: "none", color: c.text, fontFamily: "inherit", padding: 0 }}>
-          <div style={{ width: 30, height: 30, borderRadius: 9, background: `linear-gradient(135deg, ${c.accent}, ${c.terra})`, display: "grid", placeItems: "center" }}><Sparkles size={16} color="#fff" /></div>
+        <button type="button" onClick={() => setScreen("landing")} aria-label={lang === "ar" ? "الصفحة الرئيسية" : "Home"} style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", background: "none", border: "none", color: c.text, fontFamily: "inherit", padding: 0 }}>
+          <WaeyMark size={30} />
           <span style={{ fontWeight: 800, fontSize: 16 }}>{s.brand}</span>
         </button>
       </div>
@@ -1290,13 +1290,13 @@ function BankDashScreen() {
 
 /* ===================== التقييم السلوكي (Onboarding + Assessment + WOW) ===================== */
 function AsTopBar() {
-  const { c, lang, setLang, theme, setTheme, s } = useCtx();
+  const { c, lang, setLang, theme, setTheme, s, setScreen } = useCtx();
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "calc(env(safe-area-inset-top,0px) + 14px) 18px 8px", flexShrink: 0 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <div style={{ width: 30, height: 30, borderRadius: 9, background: `linear-gradient(135deg, ${c.accent}, ${c.terra})`, display: "grid", placeItems: "center" }}><Sparkles size={16} color="#fff" /></div>
+      <button type="button" onClick={() => setScreen("landing")} aria-label={lang === "ar" ? "العودة للرئيسية" : "Back home"} style={{ display: "flex", alignItems: "center", gap: 8, background: "none", border: "none", padding: 0, cursor: "pointer", color: c.text, fontFamily: "inherit" }}>
+        <WaeyMark size={30} />
         <span style={{ fontWeight: 800, fontSize: 16 }}>{s.brand}</span>
-      </div>
+      </button>
       <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
         <button onClick={() => setLang(lang === "ar" ? "en" : "ar")} style={{ width: 34, height: 34, borderRadius: 10, background: c.card, border: `1px solid ${c.line}`, color: c.text, cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 700 }}>{lang === "ar" ? "EN" : "ع"}</button>
         <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")} style={{ width: 34, height: 34, borderRadius: 10, background: c.card, border: `1px solid ${c.line}`, color: c.text, cursor: "pointer", display: "grid", placeItems: "center" }}>{theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}</button>
@@ -1480,8 +1480,8 @@ function MkNav() {
   return (
     <div style={{ position: "sticky", top: 0, zIndex: 20, backdropFilter: "blur(12px)", background: c.bg0 + "cc", borderBottom: `1px solid ${c.line}` }}>
       <div style={{ maxWidth: 1120, margin: "0 auto", padding: "12px 18px", display: "flex", alignItems: "center", gap: 14 }}>
-        <button type="button" onClick={() => setScreen("landing")} style={{ display: "flex", alignItems: "center", gap: 9, cursor: "pointer", background: "none", border: "none", color: c.text, fontFamily: "inherit", padding: 0 }}>
-          <div style={{ width: 34, height: 34, borderRadius: 10, background: `linear-gradient(135deg, ${c.accent}, ${c.terra})`, display: "grid", placeItems: "center", color: "#fff", fontWeight: 800 }}>{lang === "ar" ? "و" : "W"}</div>
+        <button type="button" onClick={() => setScreen("landing")} aria-label={lang === "ar" ? "الصفحة الرئيسية" : "Home"} style={{ display: "flex", alignItems: "center", gap: 9, cursor: "pointer", background: "none", border: "none", color: c.text, fontFamily: "inherit", padding: 0 }}>
+          <WaeyMark size={34} />
           <span style={{ fontWeight: 800, fontSize: 18, color: screen === "landing" ? c.text : c.text }}>{s.brand}</span>
         </button>
         {!narrow && <div style={{ display: "flex", gap: 18, marginInlineStart: 12 }}>{link("about", s.mk.about)}</div>}
@@ -1541,7 +1541,7 @@ function Metric({ value, duration = 1.2 }) {
 // wherever the app logo should appear.
 function WaeyMark({ size = 56 }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 512 512" role="img" aria-label="Waey" style={{ display: "block" }}>
+    <svg width={size} height={size} viewBox="0 0 512 512" aria-hidden="true" style={{ display: "block" }}>
       <defs>
         <linearGradient id="waeyMarkGradient" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stopColor="#8685D8" />
@@ -3081,10 +3081,10 @@ function Sidebar() {
   ];
   return (
     <div style={{ width: 236, flexShrink: 0, height: "100dvh", background: c.card, borderInlineEnd: `1px solid ${c.line}`, display: "flex", flexDirection: "column", padding: "22px 14px" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "0 8px", marginBottom: 26 }}>
-        <div style={{ width: 36, height: 36, borderRadius: 11, background: `linear-gradient(135deg, ${c.accent}, ${c.terra})`, display: "grid", placeItems: "center" }}><Sparkles size={19} color="#fff" /></div>
+      <button type="button" onClick={() => setTab("home")} aria-label={lang === "ar" ? "الصفحة الرئيسية" : "Home"} style={{ display: "flex", alignItems: "center", gap: 10, padding: "0 8px", marginBottom: 26, background: "none", border: "none", cursor: "pointer", color: c.text, fontFamily: "inherit", textAlign: "start" }}>
+        <WaeyMark size={36} />
         <span style={{ fontWeight: 800, fontSize: 19 }}>{s.brand}</span>
-      </div>
+      </button>
       <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
         {items.map((x) => {
           const on = tab === x.id, Icon = x.icon;
