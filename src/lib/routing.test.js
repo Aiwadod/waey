@@ -27,13 +27,24 @@ describe("hash routing", () => {
     expect(sanitizeScreen("not-real")).toBe("landing");
   });
 
-  it("prefers a valid direct hash over stored screen state", () => {
-    expect(resolveInitialScreen({ hash: "#/university", storedScreen: "bankDash" })).toBe("uniDash");
+  it("restores functional screens from a hash deep-link, gating the app behind a session", () => {
+    expect(resolveInitialScreen({ hash: "#/student", session: { mode: "guest" } })).toBe("app");
+    expect(resolveInitialScreen({ hash: "#/university" })).toBe("uniDash");
+    expect(resolveInitialScreen({ hash: "#/bank" })).toBe("bankDash");
+    // An app deep-link with no session sanitizes down to landing, so it plays the splash.
+    expect(resolveInitialScreen({ hash: "#/student", session: null })).toBe("splash");
   });
 
-  it("restores stored screens safely when there is no hash", () => {
-    expect(resolveInitialScreen({ hash: "", storedScreen: "bankDash" })).toBe("bankDash");
-    expect(resolveInitialScreen({ hash: "", storedScreen: "app", session: { mode: "guest" } })).toBe("app");
-    expect(resolveInitialScreen({ hash: "", storedScreen: "app", session: null })).toBe("landing");
+  it("sends a bare root URL to the splash intro, never a restored app or dashboard", () => {
+    expect(resolveInitialScreen({ hash: "" })).toBe("splash");
+    expect(resolveInitialScreen({ hash: "", session: { mode: "guest" } })).toBe("splash");
+    // A stored screen must NOT pull a bare root back into the app — root is the front door.
+    expect(resolveInitialScreen({ hash: "", storedScreen: "app", session: { mode: "guest" } })).toBe("splash");
+    expect(resolveInitialScreen({ hash: "", storedScreen: "bankDash" })).toBe("splash");
+  });
+
+  it("plays the splash intro before landing rather than showing it cold", () => {
+    expect(resolveInitialScreen({ hash: "#/landing" })).toBe("splash");
+    expect(resolveInitialScreen({ hash: "#/landing", session: { mode: "guest" } })).toBe("splash");
   });
 });

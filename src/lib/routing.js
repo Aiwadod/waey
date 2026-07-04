@@ -37,9 +37,18 @@ export function sanitizeScreen(screen, session = null) {
   return "landing";
 }
 
-export function resolveInitialScreen({ hash = "", storedScreen = null, session = null } = {}) {
+export function resolveInitialScreen({ hash = "", session = null } = {}) {
+  // A hash deep-links / reloads a specific screen (e.g. F5 on #/student keeps you in
+  // the app), so honor it — except "landing", and any screen the current session
+  // can't access which sanitizes down to landing, plays the splash intro first.
+  //
+  // A bare root URL has no hash: it means "take me to the front door", so it always
+  // resolves to the splash → landing. It never restores a stored app or dashboard —
+  // that's what the persisted hash is for.
   const routed = screenForHash(hash);
-  if (routed) return routed;
-  if (storedScreen) return sanitizeScreen(storedScreen, session);
+  if (routed) {
+    const safe = sanitizeScreen(routed, session);
+    if (safe !== "landing") return safe;
+  }
   return "splash";
 }

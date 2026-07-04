@@ -245,7 +245,7 @@ const L = {
         { icon: Target, t: "تحديات أسبوعية مخصّصة", d: "مبنية على شخصيتك تحديداً، ترفع وعيك المالي تدريجياً." },
         { icon: Trophy, t: "لوحة الالتزام", d: "نافس على إتمام التحديات لا على المبالغ — خصوصيتك محفوظة." },
       ],
-      stats: [{ v: "1.6%", l: "معدل ادخار السعوديين" }, { v: "2.2M", l: "طالب جامعي سنوياً" }, { v: "2030", l: "داعم لرؤية المملكة" }],
+      stats: [{ v: "1.6%", l: "معدل ادخار السعوديين" }, { v: "2.2M", l: "طالب جامعي سنوياً" }, { v: "2030", l: "داعم لرؤية المملكة", raw: true }],
       howTitle: "كيف يشتغل وعي؟",
       steps: [
         { t: "حلّل شخصيتك", d: "وعي يقرأ نمط صرفك ويحدّد شخصيتك المالية." },
@@ -437,7 +437,7 @@ const L = {
         { icon: Target, t: "Personalized weekly challenges", d: "Built for your personality, raising your money awareness step by step." },
         { icon: Trophy, t: "Commitment leaderboard", d: "Compete on completing challenges, not amounts — privacy kept." },
       ],
-      stats: [{ v: "1.6%", l: "Saudi savings rate" }, { v: "2.2M", l: "students yearly" }, { v: "2030", l: "supports the Vision" }],
+      stats: [{ v: "1.6%", l: "Saudi savings rate" }, { v: "2.2M", l: "students yearly" }, { v: "2030", l: "supports the Vision", raw: true }],
       howTitle: "How Waey works",
       steps: [
         { t: "Analyze your personality", d: "Waey reads your spending pattern and finds your money type." },
@@ -709,7 +709,7 @@ export default function App() {
   const [initialShell] = useState(() => {
     if (typeof window === "undefined") return { session: null, screen: "splash" };
     const saved = loadSession(window.localStorage);
-    const screen = resolveInitialScreen({ hash: window.location.hash, storedScreen: saved.screen, session: saved.session });
+    const screen = resolveInitialScreen({ hash: window.location.hash, session: saved.session });
     return { session: saved.session, screen: sanitizeScreen(screen, saved.session) };
   });
   const [session, setSession] = useState(initialShell.session);
@@ -1522,8 +1522,11 @@ function HeroMock() {
 }
 
 // Animate any visible metric — number OR string like "94%", "1.9M", "4,250", "+30%".
-function Metric({ value, duration = 1.2 }) {
-  if (typeof value === "number") return <AnimatedNumber value={value} formatter={(n) => fmt(n)} duration={duration} />;
+// `group` controls thousands separators; turn it off for values that are years or
+// codes (e.g. Vision 2030) where a comma would wrongly read as "2,030".
+function Metric({ value, duration = 1.2, group = true }) {
+  const format = group ? fmt : (n) => String(Math.round(n));
+  if (typeof value === "number") return <AnimatedNumber value={value} formatter={format} duration={duration} />;
   const str = String(value);
   const m = str.match(/^(\D*?)(-?[\d.,]+)(.*)$/);
   if (!m) return <>{value}</>;
@@ -1532,7 +1535,7 @@ function Metric({ value, duration = 1.2 }) {
   const suffix = m[3] || "";
   if (!isFinite(num)) return <>{value}</>;
   const decimals = (m[2].split(".")[1] || "").length;
-  const fmtN = (n) => `${prefix}${decimals ? n.toFixed(decimals) : fmt(n)}${suffix}`;
+  const fmtN = (n) => `${prefix}${decimals ? n.toFixed(decimals) : format(n)}${suffix}`;
   return <AnimatedNumber value={num} formatter={fmtN} duration={duration} />;
 }
 
@@ -1598,7 +1601,12 @@ function HeroShowcase() {
           overlay="linear-gradient(180deg, rgba(255,255,255,0.04) 0%, transparent 42%, rgba(15,34,48,0.16) 100%)"
           style={{ position: "absolute", inset: 0, borderRadius: 32, border: `1px solid ${c.line}`, boxShadow: c.shadow }}
         />
-        <div className="hero-float-phone" style={{ position: "absolute", bottom: "4%", ...phoneSide, zIndex: 3 }}><LoadingPhone /></div>
+        {/* Tucked into the bottom-right corner and scaled down so it accents the
+            frame without riding up over the student's face. Scale lives on an inner
+            wrapper so GSAP's float animation on .hero-float-phone stays conflict-free. */}
+        <div className="hero-float-phone" style={{ position: "absolute", bottom: "4%", ...phoneSide, zIndex: 3, pointerEvents: "none" }}>
+          <div style={{ transform: "scale(0.6)", transformOrigin: "right bottom" }}><LoadingPhone /></div>
+        </div>
         <div className="hero-float-card waey-soft-card" style={{ position: "absolute", top: "6%", insetInlineStart: dir === "rtl" ? "auto" : "-13%", insetInlineEnd: dir === "rtl" ? "-13%" : "auto", background: "rgba(255,255,255,0.86)", backdropFilter: "blur(10px)", border: `1px solid ${c.line}`, borderRadius: 18, padding: "12px 15px", boxShadow: c.shadow, zIndex: 3 }}>
           <div style={{ fontSize: 10.5, color: c.muted }}>{lang === "ar" ? "متوسط الادخار" : "Avg. saved"}</div>
           <div style={{ fontSize: 22, fontWeight: 850, color: c.accentText }}><Metric value={447} /> <RS size="0.5em" color={c.muted} /></div>
@@ -1635,7 +1643,7 @@ function Landing() {
             <motion.div initial="hidden" whileInView="visible" viewport={viewportOnce} variants={revealContainer} style={{ display: "flex", gap: "clamp(18px,3vw,34px)", marginTop: 36, flexWrap: "wrap", justifyContent: narrow ? "center" : "flex-start" }}>
               {s.mk.stats.slice(0, 3).map((st, i) => (
                 <motion.div key={i} variants={revealItem} style={{ textAlign: narrow ? "center" : "start" }}>
-                  <div style={{ fontSize: "clamp(24px,3vw,34px)", fontWeight: 850, color: i === 1 ? c.green : c.accentText, letterSpacing: "-0.02em" }}><Metric value={st.v} /></div>
+                  <div style={{ fontSize: "clamp(24px,3vw,34px)", fontWeight: 850, color: i === 1 ? c.green : c.accentText, letterSpacing: "-0.02em" }}><Metric value={st.v} group={!st.raw} /></div>
                   <div style={{ fontSize: 12, color: c.muted, marginTop: 3 }}>{st.l}</div>
                 </motion.div>
               ))}
@@ -1711,7 +1719,7 @@ function Landing() {
           <motion.div initial="hidden" whileInView="visible" viewport={viewportOnce} variants={revealContainer} style={{ display: "flex", flexWrap: "wrap", gap: 24, justifyContent: "space-around", textAlign: "center" }}>
             {s.mk.stats.map((st, i) => (
               <motion.div key={i} variants={revealItem} style={{ flex: "1 1 160px" }}>
-                <div style={{ fontSize: "clamp(30px,5vw,46px)", fontWeight: 800, color: c.accentText }}><Metric value={st.v} /></div>
+                <div style={{ fontSize: "clamp(30px,5vw,46px)", fontWeight: 800, color: c.accentText }}><Metric value={st.v} group={!st.raw} /></div>
                 <div style={{ fontSize: 13.5, color: c.muted, marginTop: 4 }}>{st.l}</div>
               </motion.div>
             ))}
@@ -3070,7 +3078,7 @@ function LoanModal() {
 
 /* ===================== التبويبات ===================== */
 function Sidebar() {
-  const { c, s, tab, setTab, lang, setLang, theme, setTheme, points, setOverlay } = useCtx();
+  const { c, s, tab, setTab, lang, setLang, theme, setTheme, points, setOverlay, setScreen } = useCtx();
   const items = [
     { id: "home", label: s.nav.home, icon: Home }, { id: "analytics", label: s.nav.analytics, icon: BarChart3 },
     { id: "ai", label: s.nav.ai, icon: Sparkles }, { id: "invest", label: s.nav.invest, icon: TrendingUp },
@@ -3078,7 +3086,7 @@ function Sidebar() {
   ];
   return (
     <div style={{ width: 236, flexShrink: 0, height: "100dvh", background: c.card, borderInlineEnd: `1px solid ${c.line}`, display: "flex", flexDirection: "column", padding: "22px 14px" }}>
-      <button type="button" onClick={() => setTab("home")} aria-label={lang === "ar" ? "الصفحة الرئيسية" : "Home"} style={{ display: "flex", alignItems: "center", gap: 10, padding: "0 8px", marginBottom: 26, background: "none", border: "none", cursor: "pointer", color: c.text, fontFamily: "inherit", textAlign: "start" }}>
+      <button type="button" onClick={() => setScreen("landing")} aria-label={lang === "ar" ? "العودة للصفحة الرئيسية" : "Back to landing"} style={{ display: "flex", alignItems: "center", gap: 10, padding: "0 8px", marginBottom: 26, background: "none", border: "none", cursor: "pointer", color: c.text, fontFamily: "inherit", textAlign: "start" }}>
         <WaeyMark size={36} />
         <span style={{ fontWeight: 800, fontSize: 19 }}>{s.brand}</span>
       </button>
