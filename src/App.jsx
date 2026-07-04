@@ -1536,22 +1536,19 @@ function Metric({ value, duration = 1.2 }) {
   return <AnimatedNumber value={num} formatter={fmtN} duration={duration} />;
 }
 
-// The original Waey brand mark (matches public/favicon.svg): violet→terracotta tile
-// with a white four-point spark + dot. Use this — NOT the generic lucide <Sparkles/> —
-// wherever the app logo should appear.
+// The official Waey brand mark — renders the real app icon (public/apple-touch-icon.png):
+// a soft violet→terracotta rounded tile with a white four-point spark + dot. Use this —
+// NOT the generic lucide <Sparkles/> — wherever the app logo should appear.
 function WaeyMark({ size = 56 }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 512 512" aria-hidden="true" style={{ display: "block" }}>
-      <defs>
-        <linearGradient id="waeyMarkGradient" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#8685D8" />
-          <stop offset="1" stopColor="#CA6C46" />
-        </linearGradient>
-      </defs>
-      <rect width="512" height="512" rx="120" fill="url(#waeyMarkGradient)" />
-      <path d="M256 120c-14 60-44 96-84 120 34 8 62 30 84 66 22-36 50-58 84-66-40-24-70-60-84-120z" fill="#fff" />
-      <circle cx="256" cy="372" r="26" fill="#fff" />
-    </svg>
+    <img
+      src={`${import.meta.env.BASE_URL}apple-touch-icon.png`}
+      alt=""
+      aria-hidden="true"
+      width={size}
+      height={size}
+      style={{ display: "block", width: size, height: size, borderRadius: Math.round(size * 0.22), objectFit: "cover" }}
+    />
   );
 }
 
