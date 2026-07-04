@@ -18,8 +18,11 @@ import AnimatedNumber from "./components/motion/AnimatedNumber.jsx";
 import ScreenTransition from "./components/motion/ScreenTransition.jsx";
 import ScrollReveal from "./components/motion/ScrollReveal.jsx";
 import WaeyFlowField from "./components/motion/WaeyFlowField.jsx";
+import LandingImage from "./components/LandingImage.jsx";
 import { easeOut, hoverLift, pressProps, revealContainer, revealItem, sheetVariants, toastVariants, viewportOnce } from "./motion/presets.js";
 import { useGsap } from "./motion/gsap.js";
+
+const LANDING_IMG = `${import.meta.env.BASE_URL}images/landing/`;
 
 /*  وعي (Waey) — تطبيق الوعي المالي لطلاب الجامعات
     متجاوب لكل الأجهزة · عربي/إنجليزي · ألوان المسابقة: كحلي #002134 / بنفسجي #8685D8 / تراكوتا #CA6C46  */
@@ -974,7 +977,7 @@ function RoleSelect() {
   );
 }
 function DashStat({ label, value, col, c, delta }) {
-  return <div style={{ flex: 1, textAlign: "center", background: c.card2, borderRadius: 16, padding: "14px 6px" }}><div style={{ fontSize: 24, fontWeight: 800, color: col }}>{value}</div><div style={{ fontSize: 10, color: c.muted, marginTop: 3 }}>{label}</div>{delta != null && <div style={{ fontSize: 9.5, color: c.green, marginTop: 2 }}>▲ {delta}</div>}</div>;
+  return <div style={{ flex: 1, textAlign: "center", background: c.card2, borderRadius: 16, padding: "14px 6px" }}><div style={{ fontSize: 24, fontWeight: 800, color: col }}><Metric value={value} /></div><div style={{ fontSize: 10, color: c.muted, marginTop: 3 }}>{label}</div>{delta != null && <div style={{ fontSize: 9.5, color: c.green, marginTop: 2 }}>▲ <Metric value={delta} /></div>}</div>;
 }
 function Segmented({ options, value, onChange, c }) {
   return (
@@ -1518,27 +1521,101 @@ function HeroMock() {
   );
 }
 
+// Animate any visible metric — number OR string like "94%", "1.9M", "4,250", "+30%".
+function Metric({ value, duration = 1.2 }) {
+  if (typeof value === "number") return <AnimatedNumber value={value} formatter={(n) => fmt(n)} duration={duration} />;
+  const str = String(value);
+  const m = str.match(/^(\D*?)(-?[\d.,]+)(.*)$/);
+  if (!m) return <>{value}</>;
+  const prefix = m[1] || "";
+  const num = parseFloat(m[2].replace(/,/g, ""));
+  const suffix = m[3] || "";
+  if (!isFinite(num)) return <>{value}</>;
+  const decimals = (m[2].split(".")[1] || "").length;
+  const fmtN = (n) => `${prefix}${decimals ? n.toFixed(decimals) : fmt(n)}${suffix}`;
+  return <AnimatedNumber value={num} formatter={fmtN} duration={duration} />;
+}
+
+// Real Waey loading-screen UI, composited on the hero (crisp + localized, not baked into the photo).
+function LoadingPhone() {
+  const { c, s } = useCtx();
+  return (
+    <div style={{ width: "clamp(146px,16vw,184px)", borderRadius: 30, padding: 9, background: `linear-gradient(160deg, ${c.bg1}, ${c.card2})`, border: `1px solid ${c.line}`, boxShadow: c.shadow }}>
+      <div style={{ borderRadius: 23, background: c.page, aspectRatio: "9 / 17.5", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 11, padding: "18px 16px", overflow: "hidden", position: "relative" }}>
+        <div style={{ width: 56, height: 56, borderRadius: 18, background: `linear-gradient(135deg, ${c.accent}, ${c.green} 58%, ${c.terra})`, display: "grid", placeItems: "center", boxShadow: `0 16px 40px -18px ${c.accent}` }}><Sparkles size={27} color="#fff" /></div>
+        <div style={{ fontSize: 19, fontWeight: 850 }}>{s.brand}</div>
+        <div style={{ fontSize: 10, color: c.muted, textAlign: "center", lineHeight: 1.5 }}>{s.splash.tagline}</div>
+        <div style={{ width: 88, height: 5, borderRadius: 999, background: c.card2, overflow: "hidden", marginTop: 2 }}>
+          <motion.div initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ duration: 1.6, ease: easeOut, repeat: Infinity, repeatType: "loop", repeatDelay: 0.3 }} style={{ height: "100%", background: `linear-gradient(90deg, ${c.accent}, ${c.green})`, transformOrigin: "left center" }} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function HeroShowcase() {
+  const { c, s, lang, dir, theme } = useCtx();
+  const scope = useRef(null);
+  useGsap(scope, (gsap, { reduce }) => {
+    if (reduce || !scope.current) return;
+    gsap.from(".hero-photo", { scale: 1.08, opacity: 0, duration: 1.1, ease: "power3.out", clearProps: "opacity" });
+    gsap.from([".hero-float-phone", ".hero-float-card"], { y: 34, opacity: 0, stagger: 0.16, duration: 0.7, ease: "power3.out", delay: 0.25, clearProps: "opacity" });
+    gsap.to(".hero-float-phone", { y: -12, duration: 3, yoyo: true, repeat: -1, ease: "sine.inOut", delay: 1 });
+    gsap.to(".hero-float-card", { y: 10, duration: 3.4, yoyo: true, repeat: -1, ease: "sine.inOut", delay: 1.2 });
+  }, []);
+  const side = dir === "rtl" ? { insetInlineStart: "-4%" } : { insetInlineEnd: "-4%" };
+  return (
+    <div ref={scope} style={{ position: "relative", minHeight: "clamp(360px,44vw,500px)", zIndex: 1 }}>
+      <LandingImage
+        className="hero-photo"
+        src={`${LANDING_IMG}waey-hero-student-phone.webp`}
+        alt={lang === "ar" ? "طالبة جامعية تستخدم تطبيق وعي" : "University student using the Waey app"}
+        tone="hero"
+        priority
+        overlay="linear-gradient(180deg, rgba(255,255,255,0.04) 0%, transparent 40%, rgba(15,34,48,0.14) 100%)"
+        style={{ position: "absolute", inset: 0, borderRadius: 32, border: `1px solid ${c.line}`, boxShadow: c.shadow }}
+      />
+      <div className="hero-float-phone" style={{ position: "absolute", bottom: "6%", ...side, zIndex: 2 }}><LoadingPhone /></div>
+      <div className="hero-float-card waey-soft-card" style={{ position: "absolute", top: "8%", insetInlineStart: dir === "rtl" ? "auto" : "-5%", insetInlineEnd: dir === "rtl" ? "-5%" : "auto", background: "rgba(255,255,255,0.82)", backdropFilter: "blur(10px)", border: `1px solid ${c.line}`, borderRadius: 18, padding: "12px 15px", zIndex: 2 }}>
+        <div style={{ fontSize: 10.5, color: c.muted }}>{lang === "ar" ? "متوسط الادخار" : "Avg. saved"}</div>
+        <div style={{ fontSize: 22, fontWeight: 850, color: c.accentText }}><Metric value={447} /> <RS size="0.5em" color={c.muted} /></div>
+        <div style={{ fontSize: 10, color: c.green, fontWeight: 700, marginTop: 2 }}>▲ <Metric value="12%" /></div>
+      </div>
+    </div>
+  );
+}
+
 function Landing() {
-  const { c, s, vw, setScreen, theme } = useCtx();
+  const { c, s, lang, vw, setScreen, theme } = useCtx();
   const narrow = vw < 860;
   const cols4 = vw >= 1000 ? 4 : vw >= 620 ? 2 : 1;
   const cols3 = vw >= 820 ? 3 : 1;
   const card = { background: c.card, border: `1px solid ${c.line}`, borderRadius: 22, padding: 22 };
   return (
     <div>
-      <div style={{ maxWidth: 1120, margin: "0 auto", padding: "clamp(32px,6vw,70px) 20px", display: "flex", flexDirection: narrow ? "column" : "row", alignItems: "center", gap: "clamp(28px,5vw,50px)", position: "relative" }}>
+      <section style={{ position: "relative", overflow: "hidden" }}>
         <WaeyFlowField tone={theme} />
-        <ScrollReveal style={{ flex: 1, textAlign: narrow ? "center" : "start", position: "relative", zIndex: 1 }}>
-          <div style={{ display: "inline-block", fontSize: 12.5, fontWeight: 700, color: c.accentText, background: c.card, border: `1px solid ${c.line}`, borderRadius: 999, padding: "6px 14px", marginBottom: 18 }}>Waey · {s.mk.visionTitle} 2030</div>
-          <h1 style={{ fontSize: "clamp(32px,5.5vw,58px)", fontWeight: 800, lineHeight: 1.1, letterSpacing: "-0.02em", margin: 0 }}>{s.mk.heroTitle}</h1>
-          <p style={{ fontSize: "clamp(15px,2vw,19px)", color: c.muted, lineHeight: 1.7, marginTop: 18, maxWidth: 520, marginInline: narrow ? "auto" : 0 }}>{s.mk.heroSub}</p>
-          <div style={{ display: "flex", gap: 12, marginTop: 26, flexWrap: "wrap", justifyContent: narrow ? "center" : "flex-start" }}>
-            <motion.button onClick={() => setScreen("role")} {...pressProps} style={mkBtn(c.accent, c.onAccent)}>{s.mk.ctaPrimary}</motion.button>
-            <motion.button onClick={() => setScreen("about")} {...pressProps} style={mkBtn(c.card, c.text, c.line)}>{s.mk.about}</motion.button>
-          </div>
-        </ScrollReveal>
-        <HeroMock />
-      </div>
+        <div style={{ maxWidth: 1180, margin: "0 auto", padding: "clamp(26px,5vw,60px) 20px clamp(36px,5vw,72px)", display: "grid", gridTemplateColumns: narrow ? "1fr" : "1.02fr 0.98fr", alignItems: "center", gap: "clamp(30px,5vw,54px)", position: "relative", zIndex: 1 }}>
+          <ScrollReveal style={{ textAlign: narrow ? "center" : "start" }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 12.5, fontWeight: 700, color: c.accentText, background: "rgba(255,255,255,0.7)", backdropFilter: "blur(8px)", border: `1px solid ${c.line}`, borderRadius: 999, padding: "7px 14px", marginBottom: 20 }}><Sparkles size={13} /> Waey · {s.mk.visionTitle} 2030</div>
+            <h1 style={{ fontSize: "clamp(36px,6vw,66px)", fontWeight: 850, lineHeight: 1.04, letterSpacing: "-0.03em", margin: 0 }}>{s.mk.heroTitle}</h1>
+            <p style={{ fontSize: "clamp(15px,1.6vw,20px)", color: c.textSoft, lineHeight: 1.7, marginTop: 20, maxWidth: 540, marginInline: narrow ? "auto" : 0 }}>{s.mk.heroSub}</p>
+            <div style={{ display: "flex", gap: 12, marginTop: 28, flexWrap: "wrap", justifyContent: narrow ? "center" : "flex-start" }}>
+              <motion.button onClick={() => setScreen("role")} whileHover={{ y: -2, boxShadow: c.shadow }} whileTap={{ scale: 0.97 }} style={{ ...mkBtn(c.accent, c.onAccent), padding: "15px 30px", fontSize: 16 }}>{s.mk.ctaPrimary}</motion.button>
+              <motion.button onClick={() => setScreen("about")} whileHover={{ y: -2 }} whileTap={{ scale: 0.97 }} style={{ ...mkBtn(c.card, c.text, c.line), padding: "15px 26px", fontSize: 16 }}>{s.mk.about}</motion.button>
+            </div>
+            <motion.div initial="hidden" whileInView="visible" viewport={viewportOnce} variants={revealContainer} style={{ display: "flex", gap: "clamp(18px,3vw,34px)", marginTop: 36, flexWrap: "wrap", justifyContent: narrow ? "center" : "flex-start" }}>
+              {s.mk.stats.slice(0, 3).map((st, i) => (
+                <motion.div key={i} variants={revealItem} style={{ textAlign: narrow ? "center" : "start" }}>
+                  <div style={{ fontSize: "clamp(24px,3vw,34px)", fontWeight: 850, color: i === 1 ? c.green : c.accentText, letterSpacing: "-0.02em" }}><Metric value={st.v} /></div>
+                  <div style={{ fontSize: 12, color: c.muted, marginTop: 3 }}>{st.l}</div>
+                </motion.div>
+              ))}
+            </motion.div>
+          </ScrollReveal>
+          <HeroShowcase />
+        </div>
+      </section>
 
       <div style={{ maxWidth: 1120, margin: "0 auto", padding: "clamp(30px,5vw,60px) 20px" }}>
         <h2 style={mkH2(c)}>{s.mk.pillarsTitle}</h2>
@@ -1553,6 +1630,30 @@ function Landing() {
         </motion.div>
       </div>
 
+      <div style={{ maxWidth: 1180, margin: "0 auto", padding: "clamp(16px,3vw,36px) 20px" }}>
+        <motion.div initial="hidden" whileInView="visible" viewport={viewportOnce} variants={revealContainer} style={{ display: "grid", gridTemplateColumns: vw >= 820 ? "1.35fr 1fr" : "1fr", gap: 16 }}>
+          <motion.div variants={revealItem} whileHover={{ y: -4 }} style={{ position: "relative", borderRadius: 26, overflow: "hidden", minHeight: "clamp(260px,32vw,380px)", border: `1px solid ${c.line}`, boxShadow: c.shadow }}>
+            <LandingImage src={`${LANDING_IMG}waey-campus-budgeting.webp`} alt={lang === "ar" ? "طلاب يدرسون ويخططون مصاريفهم" : "Students budgeting together"} tone="warm" overlay="linear-gradient(0deg, rgba(15,34,48,0.62), transparent 58%)" style={{ position: "absolute", inset: 0 }} />
+            <div style={{ position: "absolute", insetInline: 0, bottom: 0, padding: "clamp(18px,3vw,28px)", color: "#fff", textAlign: "start" }}>
+              <div style={{ fontSize: "clamp(19px,2.4vw,27px)", fontWeight: 850, letterSpacing: "-0.02em" }}>{lang === "ar" ? "عادات مالية تبدأ من الحرم الجامعي" : "Money habits that start on campus"}</div>
+              <div style={{ fontSize: 13.5, opacity: 0.92, marginTop: 8, maxWidth: 440, lineHeight: 1.6 }}>{lang === "ar" ? "تتبّع، تحدَّ زملاءك، وابنِ سلوكاً مالياً واعياً مع أصدقائك." : "Track, challenge your peers, and build mindful money behavior together."}</div>
+            </div>
+          </motion.div>
+          <motion.div variants={revealItem} style={{ display: "grid", gridTemplateRows: "1.15fr auto", gap: 16 }}>
+            <motion.div whileHover={{ y: -4 }} style={{ position: "relative", borderRadius: 26, overflow: "hidden", minHeight: "clamp(150px,18vw,210px)", border: `1px solid ${c.line}`, boxShadow: c.shadow }}>
+              <LandingImage src={`${LANDING_IMG}waey-cafe-insight.webp`} alt={lang === "ar" ? "طالب يراجع تحليلات إنفاقه" : "Student reviewing spending insights"} tone="green" overlay="linear-gradient(0deg, rgba(15,34,48,0.55), transparent 62%)" style={{ position: "absolute", inset: 0 }} />
+              <div style={{ position: "absolute", insetInline: 0, bottom: 0, padding: 18, color: "#fff", textAlign: "start" }}>
+                <div style={{ fontSize: "clamp(16px,1.8vw,20px)", fontWeight: 800 }}>{lang === "ar" ? "تحليلات لحظية لإنفاقك" : "Real-time spending insight"}</div>
+              </div>
+            </motion.div>
+            <div className="waey-soft-card" style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 22, padding: "20px 18px", textAlign: "center" }}>
+              <div style={{ fontSize: "clamp(30px,4vw,42px)", fontWeight: 850, color: c.accentText, letterSpacing: "-0.02em" }}><Metric value="1.9M" /> <RS size="0.38em" color={c.muted} /></div>
+              <div style={{ fontSize: 12.5, color: c.muted, marginTop: 4 }}>{lang === "ar" ? "ريال ادّخرها طلاب وعي" : "riyals saved by Waey students"}</div>
+            </div>
+          </motion.div>
+        </motion.div>
+      </div>
+
       <div style={{ maxWidth: 1120, margin: "0 auto", padding: "clamp(30px,5vw,60px) 20px" }}>
         <h2 style={mkH2(c)}>{s.calc.title}</h2>
         <p style={{ textAlign: "center", color: c.muted, fontSize: 14.5, marginTop: 8 }}>{s.calc.sub}</p>
@@ -1563,7 +1664,7 @@ function Landing() {
         <motion.div initial="hidden" whileInView="visible" viewport={viewportOnce} variants={revealContainer} style={{ maxWidth: 1120, margin: "0 auto", padding: "clamp(30px,5vw,54px) 20px", display: "flex", flexWrap: "wrap", gap: 24, justifyContent: "space-around", textAlign: "center" }}>
           {s.mk.stats.map((st, i) => (
             <motion.div key={i} variants={revealItem} style={{ flex: "1 1 160px" }}>
-              <div style={{ fontSize: "clamp(30px,5vw,46px)", fontWeight: 800, color: c.accentText }}>{st.v}</div>
+              <div style={{ fontSize: "clamp(30px,5vw,46px)", fontWeight: 800, color: c.accentText }}><Metric value={st.v} /></div>
               <div style={{ fontSize: 13.5, color: c.muted, marginTop: 4 }}>{st.l}</div>
             </motion.div>
           ))}
@@ -1583,10 +1684,38 @@ function Landing() {
         </motion.div>
       </div>
 
+      <div style={{ background: c.card2, borderTop: `1px solid ${c.line}`, borderBottom: `1px solid ${c.line}` }}>
+        <div style={{ maxWidth: 1180, margin: "0 auto", padding: "clamp(34px,5vw,66px) 20px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: vw >= 900 ? "0.9fr 1.1fr" : "1fr", gap: "clamp(24px,4vw,44px)", alignItems: "center" }}>
+            <ScrollReveal style={{ textAlign: "start" }}>
+              <div style={{ fontSize: 12.5, fontWeight: 700, color: c.accentText, marginBottom: 10 }}>{lang === "ar" ? "للجامعات والبنوك" : "For universities & banks"}</div>
+              <h2 style={{ fontSize: "clamp(24px,3.4vw,40px)", fontWeight: 850, letterSpacing: "-0.02em", margin: 0, lineHeight: 1.12 }}>{lang === "ar" ? "رؤى سلوكية مجهّلة على مستوى الحرم" : "Anonymized behavioral insight, campus-wide"}</h2>
+              <p style={{ fontSize: 15, color: c.textSoft, lineHeight: 1.7, marginTop: 14, maxWidth: 460 }}>{lang === "ar" ? "لوحات حيّة لمشاركة الطلاب، الوعي المالي، والتحديات — بدون أي بيانات شخصية." : "Live dashboards for participation, awareness, and challenges — with zero personal data."}</p>
+              <motion.div initial="hidden" whileInView="visible" viewport={viewportOnce} variants={revealContainer} style={{ display: "flex", gap: "clamp(18px,3vw,30px)", marginTop: 24, flexWrap: "wrap" }}>
+                {[["4,250", lang === "ar" ? "طالب" : "students"], ["+64%", lang === "ar" ? "وعي مالي" : "awareness"], ["78%", lang === "ar" ? "إكمال" : "completion"]].map(([v, l], i) => (
+                  <motion.div key={i} variants={revealItem}><div style={{ fontSize: "clamp(22px,2.6vw,30px)", fontWeight: 850, color: i === 1 ? c.green : c.accentText }}><Metric value={v} /></div><div style={{ fontSize: 12, color: c.muted }}>{l}</div></motion.div>
+                ))}
+              </motion.div>
+            </ScrollReveal>
+            <ScrollReveal style={{ position: "relative", borderRadius: 28, overflow: "hidden", minHeight: "clamp(240px,28vw,340px)", border: `1px solid ${c.line}`, boxShadow: c.shadow }}>
+              <LandingImage src={`${LANDING_IMG}waey-university-dashboard.webp`} alt={lang === "ar" ? "بيئة لوحة الجامعة" : "University dashboard environment"} tone="hero" overlay="linear-gradient(120deg, rgba(15,34,48,0.30), rgba(15,34,48,0.04))" style={{ position: "absolute", inset: 0 }} />
+              <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.15, ease: easeOut }} style={{ position: "absolute", insetInlineEnd: "6%", top: "12%", background: "rgba(255,255,255,0.92)", backdropFilter: "blur(10px)", border: `1px solid ${c.line}`, borderRadius: 16, padding: "12px 16px", boxShadow: c.shadow }}>
+                <div style={{ fontSize: 10.5, color: c.muted }}>{lang === "ar" ? "المشاركة" : "Participation"}</div>
+                <div style={{ fontSize: 24, fontWeight: 850, color: c.accent }}><Metric value={4250} /></div>
+              </motion.div>
+              <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.3, ease: easeOut }} style={{ position: "absolute", insetInlineStart: "6%", bottom: "12%", background: "rgba(255,255,255,0.92)", backdropFilter: "blur(10px)", border: `1px solid ${c.line}`, borderRadius: 16, padding: "12px 16px", boxShadow: c.shadow }}>
+                <div style={{ fontSize: 10.5, color: c.muted }}>{lang === "ar" ? "الوعي المالي" : "Awareness"}</div>
+                <div style={{ fontSize: 24, fontWeight: 850, color: c.green }}><Metric value="64%" /></div>
+              </motion.div>
+            </ScrollReveal>
+          </div>
+        </div>
+      </div>
+
       <div style={{ maxWidth: 1120, margin: "0 auto", padding: "clamp(20px,4vw,40px) 20px clamp(40px,6vw,70px)" }}>
         <div style={{ borderRadius: 28, padding: "clamp(30px,5vw,56px) 24px", textAlign: "center", background: `linear-gradient(135deg, ${c.accent}, ${c.accentText})`, color: c.onAccent }}>
           <h2 style={{ fontSize: "clamp(24px,3.5vw,36px)", fontWeight: 800, margin: 0 }}>{s.mk.ctaTitle}</h2>
-          <button onClick={() => setScreen("role")} style={{ ...mkBtn("#fff", c.accent), marginTop: 22 }}>{s.mk.ctaBtn}</button>
+          <motion.button onClick={() => setScreen("role")} whileHover={{ y: -2, scale: 1.02 }} whileTap={{ scale: 0.97 }} style={{ ...mkBtn("#fff", c.accent), marginTop: 22 }}>{s.mk.ctaBtn}</motion.button>
         </div>
       </div>
     </div>
@@ -1764,7 +1893,7 @@ function HomeScreen() {
           <IconBtn dot><Bell size={18} /></IconBtn>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 7, background: c.card, border: `1px solid ${c.line}`, padding: "7px 14px", borderRadius: 999 }}>
-          <Coins size={16} color={c.accentText} /><span style={{ fontWeight: 700, fontSize: 14 }}>{fmt(points)}</span><span style={{ fontSize: 11, color: c.muted }}>{s.pts}</span>
+          <Coins size={16} color={c.accentText} /><span style={{ fontWeight: 700, fontSize: 14 }}><Metric value={points} /></span><span style={{ fontSize: 11, color: c.muted }}>{s.pts}</span>
         </div>
       </div>
 
@@ -1795,7 +1924,7 @@ function HomeScreen() {
             {[c.accent, c.terra, c.green].map((col, i) => <span key={i} style={{ width: 28, height: 28, borderRadius: 999, background: col, marginInlineStart: i ? -9 : 0, border: `2px solid ${c.card}`, display: "grid", placeItems: "center" }}><Users size={12} color={c.onAccent} /></span>)}
           </div>
           <div style={{ fontWeight: 700, marginTop: 10 }}>{s.friends}</div>
-          <div style={{ color: c.accentText, fontSize: 12, fontWeight: 600 }}>14 {s.online}</div>
+          <div style={{ color: c.accentText, fontSize: 12, fontWeight: 600 }}><Metric value={14} /> {s.online}</div>
         </div>
         <div style={{ borderRadius: 22, padding: 16, position: "relative", overflow: "hidden", background: c.card, border: `1px solid ${c.line}` }}>
           <div style={{ fontWeight: 700, color: c.accentText }}>{s.keepUp}</div>
@@ -1910,7 +2039,7 @@ function AwarenessCard() {
       <div style={{ display: "flex", gap: 12, marginBottom: 16 }}>
         <div style={{ flex: 1, textAlign: "center", background: c.card2, borderRadius: 16, padding: "12px 8px" }}>
           <div style={{ fontSize: 11, color: c.muted }}>{s.awarenessTitle}</div>
-          <div style={{ fontSize: 28, fontWeight: 800, color: c.accent }}>{assess.score}<span style={{ fontSize: 13, color: c.muted }}>/100</span></div>
+          <div style={{ fontSize: 28, fontWeight: 800, color: c.accent }}><Metric value={assess.score} /><span style={{ fontSize: 13, color: c.muted }}>/100</span></div>
         </div>
         <div style={{ flex: 1, textAlign: "center", background: c.card2, borderRadius: 16, padding: "12px 8px" }}>
           <div style={{ fontSize: 11, color: c.muted }}>{s.aiConf}</div>
@@ -2086,7 +2215,7 @@ function RoundUpCard() {
       {/* العدّاد */}
       <div style={{ textAlign: "center", margin: "16px 0 4px" }}>
         <div style={{ fontSize: 11.5, color: c.muted }}>{s.roundCollected}</div>
-        <div style={{ fontSize: 32, fontWeight: 800 }}>{roundVault.toFixed(2)} <RS size="0.55em" color={c.muted} /></div>
+        <div style={{ fontSize: 32, fontWeight: 800 }}><AnimatedNumber value={roundVault} formatter={(n) => n.toFixed(2)} duration={0.6} /> <RS size="0.55em" color={c.muted} /></div>
       </div>
       <div style={{ fontSize: 11, color: c.muted, textAlign: "center", lineHeight: 1.7, margin: "0 4px 6px" }}>{s.roundWhy}</div>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: c.card2, border: `1px solid ${c.line}`, borderRadius: 14, padding: "8px 12px", marginTop: 8 }}>
@@ -2673,7 +2802,7 @@ function MoreScreen() {
       </div>
 
       <div style={{ marginTop: 14, borderRadius: 22, padding: "18px 20px", background: `linear-gradient(135deg, ${c.accent}, ${c.accentText})`, color: c.onAccent, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div><div style={{ fontSize: 12.5, fontWeight: 600, opacity: .85 }}>{s.waeyPoints}</div><div style={{ fontSize: 28, fontWeight: 700 }}>{fmt(points)}</div></div>
+        <div><div style={{ fontSize: 12.5, fontWeight: 600, opacity: .85 }}>{s.waeyPoints}</div><div style={{ fontSize: 28, fontWeight: 700 }}><Metric value={points} /></div></div>
         <Gift size={40} />
       </div>
 
@@ -2883,7 +3012,7 @@ function Sidebar() {
       </div>
       <div style={{ marginTop: "auto", display: "flex", flexDirection: "column", gap: 10 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", borderRadius: 14, background: c.card2 }}>
-          <Coins size={17} color={c.accentText} /><span style={{ fontSize: 13, fontWeight: 700 }}>{fmt(points)}</span><span style={{ fontSize: 11, color: c.muted }}>{lang === "ar" ? "نقطة" : "pts"}</span>
+          <Coins size={17} color={c.accentText} /><span style={{ fontSize: 13, fontWeight: 700 }}><Metric value={points} /></span><span style={{ fontSize: 11, color: c.muted }}>{lang === "ar" ? "نقطة" : "pts"}</span>
         </div>
         <div style={{ display: "flex", gap: 8 }}>
           <button onClick={() => setLang(lang === "ar" ? "en" : "ar")} style={{ flex: 1, height: 38, borderRadius: 12, background: c.card2, border: `1px solid ${c.line}`, color: c.text, cursor: "pointer", fontFamily: "inherit", fontSize: 12.5, fontWeight: 700 }}>{lang === "ar" ? "EN" : "ع"}</button>
@@ -3027,12 +3156,12 @@ function ProjectionWidget({ init }) {
 function StatusBar() { const { c } = useCtx(); return <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 26px 4px", fontSize: 14, fontWeight: 600, flexShrink: 0, color: c.statusText, direction: "ltr" }}><span>9:41</span><div style={{ display: "flex", gap: 6, alignItems: "center" }}><Signal col={c.statusText} /><Wifi col={c.statusText} /><Battery col={c.statusText} /></div></div>; }
 function ScreenHead({ title }) { return <div style={{ fontSize: 24, fontWeight: 700, padding: "8px 2px 2px" }}>{title}</div>; }
 function SectionTitle({ icon: Icon, children }) { const { c } = useCtx(); return <div style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 700, fontSize: 15, margin: "18px 2px 10px" }}><Icon size={17} color={c.accentText} />{children}</div>; }
-function Stat({ icon, value, label }) { const { c } = useCtx(); return <div style={{ textAlign: "center" }}><div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>{icon}<span style={{ fontSize: 18, fontWeight: 700 }}>{value}</span></div><div style={{ fontSize: 10.5, color: c.muted, marginTop: 2 }}>{label}</div></div>; }
+function Stat({ icon, value, label }) { const { c } = useCtx(); return <div style={{ textAlign: "center" }}><div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>{icon}<span style={{ fontSize: 18, fontWeight: 700 }}><Metric value={value} /></span></div><div style={{ fontSize: 10.5, color: c.muted, marginTop: 2 }}>{label}</div></div>; }
 function MiniBox({ label, value, tone }) { const { c } = useCtx(); return <div style={{ flex: 1, background: c.card2, border: `1px solid ${c.line}`, borderRadius: 14, padding: "10px 12px" }}><div style={{ fontSize: 11, color: c.muted }}>{label}</div><div style={{ fontSize: 16, fontWeight: 700, color: tone }}>{riyalText(value)}</div></div>; }
 function Divider() { const { c } = useCtx(); return <div style={{ width: 1, height: 32, background: c.line }} />; }
 function Toggle({ on, onClick, label }) { const { c } = useCtx(); return <button type="button" role="switch" aria-checked={on} aria-label={label} onClick={onClick} style={{ width: 52, height: 30, borderRadius: 999, background: on ? c.accent : c.line, position: "relative", cursor: "pointer", transition: "background .25s", border: "none", padding: 0, flexShrink: 0 }}><span aria-hidden="true" style={{ position: "absolute", top: 3, insetInlineEnd: on ? 3 : 25, width: 24, height: 24, borderRadius: 999, background: "#fff", transition: "inset-inline-end .25s" }} /></button>; }
 function IconBtn({ children, dot, onClick }) { const { c } = useCtx(); return <button onClick={onClick} style={{ position: "relative", width: 38, height: 38, borderRadius: 12, background: c.card, border: `1px solid ${c.line}`, color: c.text, display: "grid", placeItems: "center", cursor: "pointer" }}>{children}{dot && <span style={{ position: "absolute", top: 9, insetInlineEnd: 10, width: 7, height: 7, borderRadius: 9, background: c.terra, border: `1.5px solid ${c.card}` }} />}</button>; }
-function MetricCard({ label, value, tone, sign }) { const { c } = useCtx(); return <div style={{ flex: 1, background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 15 }}><div style={{ fontSize: 12, color: c.muted }}>{label}</div><div style={{ fontSize: 21, fontWeight: 700, marginTop: 2 }}>{value} <RS color={c.muted} /></div><div style={{ fontSize: 11.5, color: tone, fontWeight: 600, marginTop: 1 }}>{sign}</div></div>; }
+function MetricCard({ label, value, tone, sign }) { const { c } = useCtx(); return <div style={{ flex: 1, background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 15 }}><div style={{ fontSize: 12, color: c.muted }}>{label}</div><div style={{ fontSize: 21, fontWeight: 700, marginTop: 2 }}><Metric value={value} /> <RS color={c.muted} /></div><div style={{ fontSize: 11.5, color: tone, fontWeight: 600, marginTop: 1 }}>{sign}</div></div>; }
 function Seg({ options, value, onChange }) { const { c } = useCtx(); return <div style={{ display: "flex", background: c.card, border: `1px solid ${c.line}`, borderRadius: 14, padding: 4, marginTop: 12 }}>{options.map((o) => <button key={o} onClick={() => onChange(o)} style={{ flex: 1, padding: "9px 0", borderRadius: 10, border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 13, fontWeight: 600, background: value === o ? c.accent : "transparent", color: value === o ? c.onAccent : c.muted }}>{o}</button>)}</div>; }
 function Spark({ data }) {
   const { c } = useCtx(); const w = 300, h = 70, max = Math.max(...data), min = Math.min(...data);
