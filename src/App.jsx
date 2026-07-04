@@ -896,8 +896,8 @@ function Splash() {
     >
       <WaeyFlowField tone={theme} />
       <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 18 }}>
-        <div className="splash-mark" style={{ width: 104, height: 104, borderRadius: 32, background: `linear-gradient(135deg, ${c.accent}, ${c.green} 58%, ${c.terra})`, display: "grid", placeItems: "center", boxShadow: `0 32px 80px -34px ${c.accent}` }}>
-          <Sparkles size={48} color="#fff" />
+        <div className="splash-mark" style={{ borderRadius: 24, boxShadow: `0 32px 80px -34px ${c.accent}`, lineHeight: 0 }}>
+          <WaeyMark size={104} />
         </div>
         <div className="splash-title" style={{ textAlign: "center" }}>
           <div style={{ fontSize: 42, fontWeight: 850 }}>{s.brand}</div>
@@ -996,7 +996,7 @@ function Tabs({ options, value, onChange, c }) {
 function BarRow({ n, pct, col, c, onClick, sub }) {
   const content = (
     <>
-      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, marginBottom: 4 }}><span style={{ color: c.textSoft }}>{n}</span><span style={{ fontWeight: 700 }}>{pct}%</span></div>
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, marginBottom: 4 }}><span style={{ color: c.textSoft }}>{n}</span><span style={{ fontWeight: 700 }}><Metric value={`${pct}%`} /></span></div>
       <div style={{ height: 8, borderRadius: 9, background: c.card2, overflow: "hidden" }}><div style={{ height: "100%", width: `${pct}%`, background: col, borderRadius: 9, transition: "width .5s" }} /></div>
       {sub && <div style={{ fontSize: 10.5, color: c.muted, marginTop: 4 }}>{sub}</div>}
     </>
@@ -1014,7 +1014,7 @@ function MiniBars({ data, c, col }) {
     <div style={{ display: "flex", alignItems: "flex-end", gap: 8, height: 80 }}>
       {data.map((d, i) => (
         <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 5 }}>
-          <div style={{ fontSize: 10, fontWeight: 700, color: col }}>{d.v}</div>
+          <div style={{ fontSize: 10, fontWeight: 700, color: col }}><Metric value={d.v} /></div>
           <div style={{ width: "100%", maxWidth: 30, height: `${(d.v / mx) * 52}px`, background: col, borderRadius: 7, transition: "height .5s" }} />
           <div style={{ fontSize: 9.5, color: c.muted }}>{d.l}</div>
         </div>
@@ -1045,7 +1045,7 @@ function Donut({ data, c, size = 140 }) {
           <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12 }}>
             <span style={{ width: 11, height: 11, borderRadius: 3, background: d.col, flexShrink: 0 }} />
             <span style={{ color: c.textSoft }}>{d.l}</span>
-            <span style={{ fontWeight: 700, marginInlineStart: "auto" }}>{Math.round((d.v / total) * 100)}%</span>
+            <span style={{ fontWeight: 700, marginInlineStart: "auto" }}><Metric value={`${Math.round((d.v / total) * 100)}%`} /></span>
           </div>
         ))}
       </div>
@@ -1082,7 +1082,7 @@ function Gauge({ value, c, label, low, mid, high }) {
         <path d="M14 62 A46 46 0 0 1 106 62" fill="none" stroke={c.card2} strokeWidth={11} strokeLinecap="round" />
         <path d="M14 62 A46 46 0 0 1 106 62" fill="none" stroke={col} strokeWidth={11} strokeLinecap="round" strokeDasharray={`${len} ${circ}`} />
       </svg>
-      <div style={{ fontSize: 24, fontWeight: 800, color: col, marginTop: -14 }}>{value}</div>
+      <div style={{ fontSize: 24, fontWeight: 800, color: col, marginTop: -14 }}><Metric value={value} /></div>
       <div style={{ fontSize: 11, color: c.muted }}>{label} · {seg}</div>
     </div>
   );
@@ -1107,7 +1107,7 @@ function UniDashScreen() {
     return (
       <RoleShell title={D.detailFor(n)} onBack={() => setSel(null)}>
         <div style={{ textAlign: "center", background: c.card, border: `1px solid ${c.line}`, borderRadius: 22, padding: 22, marginBottom: 14 }}>
-          <div style={{ fontSize: 44, fontWeight: 800, color: col }}>{pct}%</div>
+          <div style={{ fontSize: 44, fontWeight: 800, color: col }}><Metric value={`${pct}%`} /></div>
           <div style={{ fontSize: 13, color: c.muted }}>{n} · {D.share}</div>
         </div>
         <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18, marginBottom: 14 }}>
@@ -1166,8 +1166,8 @@ function UniDashScreen() {
             <div key={n} style={{ marginBottom: 14, paddingBottom: 12, borderBottom: `1px solid ${c.line}` }}>
               <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8 }}>{n}</div>
               <div style={{ display: "flex", gap: 14 }}>
-                <div style={{ flex: 1 }}><div style={{ fontSize: 10.5, color: c.muted, marginBottom: 3 }}>{D.chAccept} {acc}%</div><div style={{ height: 6, borderRadius: 9, background: c.card2 }}><div style={{ height: "100%", width: `${acc}%`, background: c.accentText, borderRadius: 9 }} /></div></div>
-                <div style={{ flex: 1 }}><div style={{ fontSize: 10.5, color: c.muted, marginBottom: 3 }}>{D.chDone} {done}%</div><div style={{ height: 6, borderRadius: 9, background: c.card2 }}><div style={{ height: "100%", width: `${done}%`, background: c.green, borderRadius: 9 }} /></div></div>
+                <div style={{ flex: 1 }}><div style={{ fontSize: 10.5, color: c.muted, marginBottom: 3 }}>{D.chAccept} <Metric value={`${acc}%`} /></div><div style={{ height: 6, borderRadius: 9, background: c.card2 }}><div style={{ height: "100%", width: `${acc}%`, background: c.accentText, borderRadius: 9 }} /></div></div>
+                <div style={{ flex: 1 }}><div style={{ fontSize: 10.5, color: c.muted, marginBottom: 3 }}>{D.chDone} <Metric value={`${done}%`} /></div><div style={{ height: 6, borderRadius: 9, background: c.card2 }}><div style={{ height: "100%", width: `${done}%`, background: c.green, borderRadius: 9 }} /></div></div>
               </div>
             </div>
           ))}
@@ -1176,7 +1176,7 @@ function UniDashScreen() {
       {tab === 3 && (
         <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18 }}>
           <div style={{ fontWeight: 700, fontSize: 13.5, marginBottom: 14, color: c.accentText }}>{D.collegeTitle}</div>
-          {colleges.map(([n, pct, cnt], i) => <BarRow key={n} n={`${n}`} pct={pct} col={LB_COLORS[i % LB_COLORS.length]} c={c} onClick={() => setSel([n, pct, LB_COLORS[i % LB_COLORS.length]])} sub={`${cnt.toLocaleString("en-US")} ${D.students}`} />)}
+          {colleges.map(([n, pct, cnt], i) => <BarRow key={n} n={`${n}`} pct={pct} col={LB_COLORS[i % LB_COLORS.length]} c={c} onClick={() => setSel([n, pct, LB_COLORS[i % LB_COLORS.length]])} sub={<><Metric value={cnt.toLocaleString("en-US")} /> {D.students}</>} />)}
         </div>
       )}
       <PrivacyNote c={c} style={{ marginTop: 14 }}>{D.anon}</PrivacyNote>
@@ -1211,7 +1211,7 @@ function BankDashScreen() {
     return (
       <RoleShell title={D.detailFor(n)} onBack={() => setSel(null)}>
         <div style={{ textAlign: "center", background: c.card, border: `1px solid ${c.line}`, borderRadius: 22, padding: 22, marginBottom: 14 }}>
-          <div style={{ fontSize: 44, fontWeight: 800, color: col }}>{pct}%</div>
+          <div style={{ fontSize: 44, fontWeight: 800, color: col }}><Metric value={`${pct}%`} /></div>
           <div style={{ fontSize: 13, color: c.muted }}>{n} · {D.share}</div>
         </div>
         <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18, marginBottom: 14 }}>
@@ -1247,7 +1247,7 @@ function BankDashScreen() {
             <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderBottom: i < ranking.length - 1 ? `1px solid ${c.line}` : "none" }}>
               <div style={{ width: 26, height: 26, borderRadius: 999, background: i < 3 ? c.accent : c.card2, color: i < 3 ? c.onAccent : c.muted, display: "grid", placeItems: "center", fontSize: 12, fontWeight: 800, flexShrink: 0 }}>{i + 1}</div>
               <div style={{ flex: 1, fontSize: 13, fontWeight: 600 }}>{u.n}</div>
-              <div style={{ fontWeight: 800, fontSize: 13, color: c.accent }}>{u.v}{rankBy === 0 ? ` ${D.unitK}` : "%"}</div>
+              <div style={{ fontWeight: 800, fontSize: 13, color: c.accent }}><Metric value={rankBy === 0 ? `${u.v} ${D.unitK}` : `${u.v}%`} /></div>
             </div>
           ))}
         </div>
@@ -1428,7 +1428,7 @@ function Assessment() {
           <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 14 }}>{A.dna}</div>
           {bars.map(([lab, key, col], i) => (
             <div key={key} style={{ marginBottom: 12 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, marginBottom: 5 }}><span style={{ color: c.textSoft }}>{A[lab]}</span><span style={{ fontWeight: 700 }}>{result.dna[key]}%</span></div>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, marginBottom: 5 }}><span style={{ color: c.textSoft }}>{A[lab]}</span><span style={{ fontWeight: 700 }}><Metric value={`${result.dna[key]}%`} /></span></div>
               <div style={{ height: 8, borderRadius: 9, background: c.card2, overflow: "hidden" }}><motion.div initial={{ scaleX: 0 }} animate={{ scaleX: result.dna[key] / 100 }} transition={{ duration: 0.7, delay: 0.15 + i * 0.08, ease: easeOut }} style={{ height: "100%", width: "100%", background: col, borderRadius: 9, transformOrigin: dir === "rtl" ? "right center" : "left center" }} /></div>
             </div>
           ))}
@@ -1445,7 +1445,7 @@ function Assessment() {
         <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 700, fontSize: 13.5, marginBottom: 8, color: c.accentText }}><Target size={16} />{A.challengeTitle}</div>
           <div style={{ fontSize: 14.5, fontWeight: 600, lineHeight: 1.6 }}>{ch}</div>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 10, background: c.green + "22", color: c.green, borderRadius: 999, padding: "5px 12px", fontSize: 12, fontWeight: 700 }}><Trophy size={14} aria-hidden="true" />+{result.points} {A.points}</div>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 10, background: c.green + "22", color: c.green, borderRadius: 999, padding: "5px 12px", fontSize: 12, fontWeight: 700 }}><Trophy size={14} aria-hidden="true" />+<Metric value={result.points} /> {A.points}</div>
         </div>
         <button onClick={finish} style={btn(c.accent, c.onAccent)}>{A.acceptCh}</button>
         <button onClick={() => { setAnswers({}); setQi(0); setResult(null); setSlide(0); setStep("intro"); }} style={{ background: "none", border: "none", color: c.muted, fontSize: 12.5, cursor: "pointer", fontFamily: "inherit", padding: 6 }}>{A.retake}</button>
@@ -1536,13 +1536,32 @@ function Metric({ value, duration = 1.2 }) {
   return <AnimatedNumber value={num} formatter={fmtN} duration={duration} />;
 }
 
+// The original Waey brand mark (matches public/favicon.svg): violet→terracotta tile
+// with a white four-point spark + dot. Use this — NOT the generic lucide <Sparkles/> —
+// wherever the app logo should appear.
+function WaeyMark({ size = 56 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 512 512" role="img" aria-label="Waey" style={{ display: "block" }}>
+      <defs>
+        <linearGradient id="waeyMarkGradient" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#8685D8" />
+          <stop offset="1" stopColor="#CA6C46" />
+        </linearGradient>
+      </defs>
+      <rect width="512" height="512" rx="120" fill="url(#waeyMarkGradient)" />
+      <path d="M256 120c-14 60-44 96-84 120 34 8 62 30 84 66 22-36 50-58 84-66-40-24-70-60-84-120z" fill="#fff" />
+      <circle cx="256" cy="372" r="26" fill="#fff" />
+    </svg>
+  );
+}
+
 // Real Waey loading-screen UI, composited on the hero (crisp + localized, not baked into the photo).
 function LoadingPhone() {
   const { c, s } = useCtx();
   return (
     <div style={{ width: "clamp(146px,16vw,184px)", borderRadius: 30, padding: 9, background: `linear-gradient(160deg, ${c.bg1}, ${c.card2})`, border: `1px solid ${c.line}`, boxShadow: c.shadow }}>
       <div style={{ borderRadius: 23, background: c.page, aspectRatio: "9 / 17.5", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 11, padding: "18px 16px", overflow: "hidden", position: "relative" }}>
-        <div style={{ width: 56, height: 56, borderRadius: 18, background: `linear-gradient(135deg, ${c.accent}, ${c.green} 58%, ${c.terra})`, display: "grid", placeItems: "center", boxShadow: `0 16px 40px -18px ${c.accent}` }}><Sparkles size={27} color="#fff" /></div>
+        <div style={{ borderRadius: 14, boxShadow: `0 16px 40px -18px ${c.accent}`, lineHeight: 0 }}><WaeyMark size={56} /></div>
         <div style={{ fontSize: 19, fontWeight: 850 }}>{s.brand}</div>
         <div style={{ fontSize: 10, color: c.muted, textAlign: "center", lineHeight: 1.5 }}>{s.splash.tagline}</div>
         <div style={{ width: 88, height: 5, borderRadius: 999, background: c.card2, overflow: "hidden", marginTop: 2 }}>
@@ -1554,32 +1573,44 @@ function LoadingPhone() {
 }
 
 function HeroShowcase() {
-  const { c, s, lang, dir, theme } = useCtx();
+  const { c, lang, dir } = useCtx();
   const scope = useRef(null);
   useGsap(scope, (gsap, { reduce }) => {
     if (reduce || !scope.current) return;
-    gsap.from(".hero-photo", { scale: 1.08, opacity: 0, duration: 1.1, ease: "power3.out", clearProps: "opacity" });
-    gsap.from([".hero-float-phone", ".hero-float-card"], { y: 34, opacity: 0, stagger: 0.16, duration: 0.7, ease: "power3.out", delay: 0.25, clearProps: "opacity" });
+    gsap.from(".hero-photo", { scale: 1.06, opacity: 0, duration: 1.1, ease: "power3.out", clearProps: "opacity" });
+    gsap.from([".hero-float-phone", ".hero-float-card", ".hero-float-card2"], { y: 34, opacity: 0, stagger: 0.15, duration: 0.7, ease: "power3.out", delay: 0.3, clearProps: "opacity" });
     gsap.to(".hero-float-phone", { y: -12, duration: 3, yoyo: true, repeat: -1, ease: "sine.inOut", delay: 1 });
     gsap.to(".hero-float-card", { y: 10, duration: 3.4, yoyo: true, repeat: -1, ease: "sine.inOut", delay: 1.2 });
+    gsap.to(".hero-float-card2", { y: -9, duration: 3.8, yoyo: true, repeat: -1, ease: "sine.inOut", delay: 1.4 });
+    // Parallax the photo inside its clip. The img is oversized to 108% (top -4%),
+    // so a ±3% yPercent shift never exposes the frame edges.
+    gsap.fromTo(".hero-photo img", { yPercent: -3 }, { yPercent: 3, ease: "none", scrollTrigger: { trigger: scope.current, start: "top bottom", end: "bottom top", scrub: true } });
   }, []);
-  const side = dir === "rtl" ? { insetInlineStart: "-4%" } : { insetInlineEnd: "-4%" };
+  const phoneSide = dir === "rtl" ? { insetInlineStart: "-6%" } : { insetInlineEnd: "-6%" };
   return (
-    <div ref={scope} style={{ position: "relative", minHeight: "clamp(360px,44vw,500px)", zIndex: 1 }}>
-      <LandingImage
-        className="hero-photo"
-        src={`${LANDING_IMG}waey-hero-student-phone.webp`}
-        alt={lang === "ar" ? "طالبة جامعية تستخدم تطبيق وعي" : "University student using the Waey app"}
-        tone="hero"
-        priority
-        overlay="linear-gradient(180deg, rgba(255,255,255,0.04) 0%, transparent 40%, rgba(15,34,48,0.14) 100%)"
-        style={{ position: "absolute", inset: 0, borderRadius: 32, border: `1px solid ${c.line}`, boxShadow: c.shadow }}
-      />
-      <div className="hero-float-phone" style={{ position: "absolute", bottom: "6%", ...side, zIndex: 2 }}><LoadingPhone /></div>
-      <div className="hero-float-card waey-soft-card" style={{ position: "absolute", top: "8%", insetInlineStart: dir === "rtl" ? "auto" : "-5%", insetInlineEnd: dir === "rtl" ? "-5%" : "auto", background: "rgba(255,255,255,0.82)", backdropFilter: "blur(10px)", border: `1px solid ${c.line}`, borderRadius: 18, padding: "12px 15px", zIndex: 2 }}>
-        <div style={{ fontSize: 10.5, color: c.muted }}>{lang === "ar" ? "متوسط الادخار" : "Avg. saved"}</div>
-        <div style={{ fontSize: 22, fontWeight: 850, color: c.accentText }}><Metric value={447} /> <RS size="0.5em" color={c.muted} /></div>
-        <div style={{ fontSize: 10, color: c.green, fontWeight: 700, marginTop: 2 }}>▲ <Metric value="12%" /></div>
+    <div ref={scope} style={{ position: "relative", zIndex: 1, display: "flex", justifyContent: "center" }}>
+      <div aria-hidden="true" style={{ position: "absolute", inset: "-10% -8%", background: `radial-gradient(58% 58% at 28% 18%, ${c.accent}22, transparent 70%), radial-gradient(58% 58% at 82% 92%, ${c.green}22, transparent 70%)`, zIndex: 0 }} />
+      <div style={{ position: "relative", width: "clamp(258px,33vw,404px)", aspectRatio: "1122 / 1402", zIndex: 1 }}>
+        <LandingImage
+          className="hero-photo"
+          src={`${LANDING_IMG}waey-hero-student-phone.webp`}
+          alt={lang === "ar" ? "طالب جامعي يحمل هاتفه وتظهر شاشة بدء تطبيق وعي" : "University student holding a phone showing the Waey loading screen"}
+          tone="hero"
+          priority
+          imgStyle={{ height: "108%", top: "-4%", objectPosition: "center 46%" }}
+          overlay="linear-gradient(180deg, rgba(255,255,255,0.04) 0%, transparent 42%, rgba(15,34,48,0.16) 100%)"
+          style={{ position: "absolute", inset: 0, borderRadius: 32, border: `1px solid ${c.line}`, boxShadow: c.shadow }}
+        />
+        <div className="hero-float-phone" style={{ position: "absolute", bottom: "4%", ...phoneSide, zIndex: 3 }}><LoadingPhone /></div>
+        <div className="hero-float-card waey-soft-card" style={{ position: "absolute", top: "6%", insetInlineStart: dir === "rtl" ? "auto" : "-13%", insetInlineEnd: dir === "rtl" ? "-13%" : "auto", background: "rgba(255,255,255,0.86)", backdropFilter: "blur(10px)", border: `1px solid ${c.line}`, borderRadius: 18, padding: "12px 15px", boxShadow: c.shadow, zIndex: 3 }}>
+          <div style={{ fontSize: 10.5, color: c.muted }}>{lang === "ar" ? "متوسط الادخار" : "Avg. saved"}</div>
+          <div style={{ fontSize: 22, fontWeight: 850, color: c.accentText }}><Metric value={447} /> <RS size="0.5em" color={c.muted} /></div>
+          <div style={{ fontSize: 10, color: c.green, fontWeight: 700, marginTop: 2 }}>▲ <Metric value="12%" /></div>
+        </div>
+        <div className="hero-float-card2 waey-soft-card" style={{ position: "absolute", bottom: "27%", insetInlineEnd: dir === "rtl" ? "auto" : "-10%", insetInlineStart: dir === "rtl" ? "-10%" : "auto", background: "rgba(255,255,255,0.86)", backdropFilter: "blur(10px)", border: `1px solid ${c.line}`, borderRadius: 16, padding: "10px 13px", boxShadow: c.shadow, zIndex: 3 }}>
+          <div style={{ fontSize: 10, color: c.muted }}>{lang === "ar" ? "درجة الوعي" : "Awareness"}</div>
+          <div style={{ fontSize: 19, fontWeight: 850, color: c.green }}><Metric value={62} /><span style={{ fontSize: 11, color: c.muted }}>/100</span></div>
+        </div>
       </div>
     </div>
   );
@@ -1630,26 +1661,41 @@ function Landing() {
         </motion.div>
       </div>
 
-      <div style={{ maxWidth: 1180, margin: "0 auto", padding: "clamp(16px,3vw,36px) 20px" }}>
-        <motion.div initial="hidden" whileInView="visible" viewport={viewportOnce} variants={revealContainer} style={{ display: "grid", gridTemplateColumns: vw >= 820 ? "1.35fr 1fr" : "1fr", gap: 16 }}>
-          <motion.div variants={revealItem} whileHover={{ y: -4 }} style={{ position: "relative", borderRadius: 26, overflow: "hidden", minHeight: "clamp(260px,32vw,380px)", border: `1px solid ${c.line}`, boxShadow: c.shadow }}>
-            <LandingImage src={`${LANDING_IMG}waey-campus-budgeting.webp`} alt={lang === "ar" ? "طلاب يدرسون ويخططون مصاريفهم" : "Students budgeting together"} tone="warm" overlay="linear-gradient(0deg, rgba(15,34,48,0.62), transparent 58%)" style={{ position: "absolute", inset: 0 }} />
+      <div style={{ maxWidth: 1180, margin: "0 auto", padding: "clamp(20px,3vw,40px) 20px" }}>
+        <motion.div initial="hidden" whileInView="visible" viewport={viewportOnce} variants={revealContainer} style={vw >= 1000
+          ? { display: "grid", gridTemplateColumns: "repeat(12, 1fr)", gridTemplateRows: "clamp(150px,18vw,210px) clamp(150px,18vw,210px)", gap: 16 }
+          : { display: "grid", gridTemplateColumns: "1fr", gap: 16 }}>
+          {/* Tile A — campus (tall hero of the mosaic) */}
+          <motion.div variants={revealItem} whileHover={{ y: -4 }} transition={{ duration: 0.2, ease: easeOut }} style={{ position: "relative", borderRadius: 26, overflow: "hidden", border: `1px solid ${c.line}`, boxShadow: c.shadow, ...(vw >= 1000 ? { gridColumn: "span 7", gridRow: "1 / span 2" } : { minHeight: "clamp(230px,44vw,320px)" }) }}>
+            <LandingImage src={`${LANDING_IMG}waey-campus-budgeting.webp`} alt={lang === "ar" ? "ثلاثة طلاب يخططون مصاريفهم حول هاتف ولابتوب" : "Three students budgeting together around a phone and laptop"} tone="warm" overlay="linear-gradient(0deg, rgba(15,34,48,0.64), transparent 55%)" style={{ position: "absolute", inset: 0 }} />
+            <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.2, ease: easeOut }} style={{ position: "absolute", top: "7%", insetInlineEnd: "6%", background: "rgba(255,255,255,0.9)", backdropFilter: "blur(10px)", border: `1px solid ${c.line}`, borderRadius: 16, padding: "10px 14px", boxShadow: c.shadow }}>
+              <div style={{ fontSize: 22, fontWeight: 850, color: c.accentText, letterSpacing: "-0.02em" }}><Metric value="1.9M" /> <RS size="0.4em" color={c.muted} /></div>
+              <div style={{ fontSize: 10.5, color: c.muted }}>{lang === "ar" ? "ريال ادّخرها الطلاب" : "saved by students"}</div>
+            </motion.div>
             <div style={{ position: "absolute", insetInline: 0, bottom: 0, padding: "clamp(18px,3vw,28px)", color: "#fff", textAlign: "start" }}>
               <div style={{ fontSize: "clamp(19px,2.4vw,27px)", fontWeight: 850, letterSpacing: "-0.02em" }}>{lang === "ar" ? "عادات مالية تبدأ من الحرم الجامعي" : "Money habits that start on campus"}</div>
               <div style={{ fontSize: 13.5, opacity: 0.92, marginTop: 8, maxWidth: 440, lineHeight: 1.6 }}>{lang === "ar" ? "تتبّع، تحدَّ زملاءك، وابنِ سلوكاً مالياً واعياً مع أصدقائك." : "Track, challenge your peers, and build mindful money behavior together."}</div>
             </div>
           </motion.div>
-          <motion.div variants={revealItem} style={{ display: "grid", gridTemplateRows: "1.15fr auto", gap: 16 }}>
-            <motion.div whileHover={{ y: -4 }} style={{ position: "relative", borderRadius: 26, overflow: "hidden", minHeight: "clamp(150px,18vw,210px)", border: `1px solid ${c.line}`, boxShadow: c.shadow }}>
-              <LandingImage src={`${LANDING_IMG}waey-cafe-insight.webp`} alt={lang === "ar" ? "طالب يراجع تحليلات إنفاقه" : "Student reviewing spending insights"} tone="green" overlay="linear-gradient(0deg, rgba(15,34,48,0.55), transparent 62%)" style={{ position: "absolute", inset: 0 }} />
-              <div style={{ position: "absolute", insetInline: 0, bottom: 0, padding: 18, color: "#fff", textAlign: "start" }}>
-                <div style={{ fontSize: "clamp(16px,1.8vw,20px)", fontWeight: 800 }}>{lang === "ar" ? "تحليلات لحظية لإنفاقك" : "Real-time spending insight"}</div>
-              </div>
+          {/* Tile B — cafe insight */}
+          <motion.div variants={revealItem} whileHover={{ y: -4 }} transition={{ duration: 0.2, ease: easeOut }} style={{ position: "relative", borderRadius: 26, overflow: "hidden", border: `1px solid ${c.line}`, boxShadow: c.shadow, ...(vw >= 1000 ? { gridColumn: "8 / span 5", gridRow: 1 } : { minHeight: "clamp(180px,42vw,240px)" }) }}>
+            <LandingImage src={`${LANDING_IMG}waey-cafe-insight.webp`} alt={lang === "ar" ? "طالب يراجع تحليلات إنفاقه اللحظية" : "A student reviewing real-time spending insights"} tone="green" overlay="linear-gradient(0deg, rgba(15,34,48,0.55), transparent 60%)" style={{ position: "absolute", inset: 0 }} />
+            <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.3, ease: easeOut }} style={{ position: "absolute", top: "9%", insetInlineStart: "6%", background: "rgba(255,255,255,0.9)", backdropFilter: "blur(10px)", border: `1px solid ${c.line}`, borderRadius: 14, padding: "8px 12px", boxShadow: c.shadow }}>
+              <div style={{ fontSize: 18, fontWeight: 850, color: c.green }}><Metric value="94%" /></div>
+              <div style={{ fontSize: 10, color: c.muted }}>{lang === "ar" ? "تحكّم أكبر" : "in control"}</div>
             </motion.div>
-            <div className="waey-soft-card" style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 22, padding: "20px 18px", textAlign: "center" }}>
-              <div style={{ fontSize: "clamp(30px,4vw,42px)", fontWeight: 850, color: c.accentText, letterSpacing: "-0.02em" }}><Metric value="1.9M" /> <RS size="0.38em" color={c.muted} /></div>
-              <div style={{ fontSize: 12.5, color: c.muted, marginTop: 4 }}>{lang === "ar" ? "ريال ادّخرها طلاب وعي" : "riyals saved by Waey students"}</div>
+            <div style={{ position: "absolute", insetInline: 0, bottom: 0, padding: 18, color: "#fff", textAlign: "start" }}>
+              <div style={{ fontSize: "clamp(16px,1.8vw,20px)", fontWeight: 800 }}>{lang === "ar" ? "تحليلات لحظية لإنفاقك" : "Real-time spending insight"}</div>
             </div>
+          </motion.div>
+          {/* Tile C — non-photo stat tile */}
+          <motion.div variants={revealItem} style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 26, padding: "clamp(18px,2.4vw,26px)", boxShadow: c.shadow, display: "flex", flexDirection: "column", justifyContent: "center", ...(vw >= 1000 ? { gridColumn: "8 / span 5", gridRow: 2 } : {}) }}>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
+              <div style={{ fontSize: "clamp(30px,4vw,44px)", fontWeight: 850, color: c.accentText, letterSpacing: "-0.02em" }}><Metric value="2.2M" /></div>
+              <div style={{ fontSize: 13, color: c.green, fontWeight: 700 }}>▲ <Metric value="+64%" /></div>
+            </div>
+            <div style={{ fontSize: 12.5, color: c.muted, marginTop: 4 }}>{lang === "ar" ? "طالب يمكن الوصول إليهم — ووعي مالي يرتفع" : "students reachable — awareness rising"}</div>
+            <div style={{ marginTop: 12 }}><Spark data={[40, 44, 52, 50, 58, 62, 70, 78]} /></div>
           </motion.div>
         </motion.div>
       </div>
@@ -1661,14 +1707,19 @@ function Landing() {
       </div>
 
       <div style={{ background: c.card2, borderTop: `1px solid ${c.line}`, borderBottom: `1px solid ${c.line}` }}>
-        <motion.div initial="hidden" whileInView="visible" viewport={viewportOnce} variants={revealContainer} style={{ maxWidth: 1120, margin: "0 auto", padding: "clamp(30px,5vw,54px) 20px", display: "flex", flexWrap: "wrap", gap: 24, justifyContent: "space-around", textAlign: "center" }}>
-          {s.mk.stats.map((st, i) => (
-            <motion.div key={i} variants={revealItem} style={{ flex: "1 1 160px" }}>
-              <div style={{ fontSize: "clamp(30px,5vw,46px)", fontWeight: 800, color: c.accentText }}><Metric value={st.v} /></div>
-              <div style={{ fontSize: 13.5, color: c.muted, marginTop: 4 }}>{st.l}</div>
-            </motion.div>
-          ))}
-        </motion.div>
+        <div style={{ maxWidth: 1120, margin: "0 auto", padding: "clamp(30px,5vw,54px) 20px" }}>
+          <ScrollReveal style={{ textAlign: "center", marginBottom: "clamp(18px,3vw,28px)" }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 12.5, fontWeight: 700, color: c.accentText, background: "rgba(255,255,255,0.6)", border: `1px solid ${c.line}`, borderRadius: 999, padding: "7px 15px" }}><Sparkles size={13} />{lang === "ar" ? "طبقة سلوكية بين الطالب والجامعة والبنك" : "A Behavior Layer between student, university & bank"}</div>
+          </ScrollReveal>
+          <motion.div initial="hidden" whileInView="visible" viewport={viewportOnce} variants={revealContainer} style={{ display: "flex", flexWrap: "wrap", gap: 24, justifyContent: "space-around", textAlign: "center" }}>
+            {s.mk.stats.map((st, i) => (
+              <motion.div key={i} variants={revealItem} style={{ flex: "1 1 160px" }}>
+                <div style={{ fontSize: "clamp(30px,5vw,46px)", fontWeight: 800, color: c.accentText }}><Metric value={st.v} /></div>
+                <div style={{ fontSize: 13.5, color: c.muted, marginTop: 4 }}>{st.l}</div>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
       </div>
 
       <div style={{ maxWidth: 1120, margin: "0 auto", padding: "clamp(30px,5vw,60px) 20px" }}>
@@ -1686,27 +1737,65 @@ function Landing() {
 
       <div style={{ background: c.card2, borderTop: `1px solid ${c.line}`, borderBottom: `1px solid ${c.line}` }}>
         <div style={{ maxWidth: 1180, margin: "0 auto", padding: "clamp(34px,5vw,66px) 20px" }}>
+          <ScrollReveal style={{ textAlign: "center", marginBottom: "clamp(26px,4vw,46px)" }}>
+            <div style={{ fontSize: 12.5, fontWeight: 700, color: c.accentText, marginBottom: 8 }}>{lang === "ar" ? "للجامعات والبنوك" : "For universities & banks"}</div>
+            <h2 style={{ fontSize: "clamp(24px,3.4vw,40px)", fontWeight: 850, letterSpacing: "-0.02em", margin: 0, lineHeight: 1.12 }}>{lang === "ar" ? "طبقة سلوكية واحدة — لوحتان مجهّلتان" : "One behavior layer, two anonymized dashboards"}</h2>
+            <p style={{ fontSize: 15, color: c.textSoft, lineHeight: 1.7, marginTop: 12, maxWidth: 560, marginInline: "auto" }}>{lang === "ar" ? "وعي طبقة سلوكية بين الطالب والجامعة والبنك — رؤى حيّة بدون أي بيانات شخصية." : "Waey sits between student, university and bank — live insight with zero personal data."}</p>
+          </ScrollReveal>
           <div style={{ display: "grid", gridTemplateColumns: vw >= 900 ? "0.9fr 1.1fr" : "1fr", gap: "clamp(24px,4vw,44px)", alignItems: "center" }}>
             <ScrollReveal style={{ textAlign: "start" }}>
-              <div style={{ fontSize: 12.5, fontWeight: 700, color: c.accentText, marginBottom: 10 }}>{lang === "ar" ? "للجامعات والبنوك" : "For universities & banks"}</div>
-              <h2 style={{ fontSize: "clamp(24px,3.4vw,40px)", fontWeight: 850, letterSpacing: "-0.02em", margin: 0, lineHeight: 1.12 }}>{lang === "ar" ? "رؤى سلوكية مجهّلة على مستوى الحرم" : "Anonymized behavioral insight, campus-wide"}</h2>
-              <p style={{ fontSize: 15, color: c.textSoft, lineHeight: 1.7, marginTop: 14, maxWidth: 460 }}>{lang === "ar" ? "لوحات حيّة لمشاركة الطلاب، الوعي المالي، والتحديات — بدون أي بيانات شخصية." : "Live dashboards for participation, awareness, and challenges — with zero personal data."}</p>
-              <motion.div initial="hidden" whileInView="visible" viewport={viewportOnce} variants={revealContainer} style={{ display: "flex", gap: "clamp(18px,3vw,30px)", marginTop: 24, flexWrap: "wrap" }}>
-                {[["4,250", lang === "ar" ? "طالب" : "students"], ["+64%", lang === "ar" ? "وعي مالي" : "awareness"], ["78%", lang === "ar" ? "إكمال" : "completion"]].map(([v, l], i) => (
-                  <motion.div key={i} variants={revealItem}><div style={{ fontSize: "clamp(22px,2.6vw,30px)", fontWeight: 850, color: i === 1 ? c.green : c.accentText }}><Metric value={v} /></div><div style={{ fontSize: 12, color: c.muted }}>{l}</div></motion.div>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 12.5, fontWeight: 700, color: c.accentText, background: c.accent + "14", border: `1px solid ${c.line}`, borderRadius: 999, padding: "6px 13px", marginBottom: 12 }}><Landmark size={14} />{lang === "ar" ? "بوابة الجامعة" : "University portal"}</div>
+              <h3 style={{ fontSize: "clamp(20px,2.6vw,30px)", fontWeight: 850, letterSpacing: "-0.02em", margin: 0, lineHeight: 1.15 }}>{lang === "ar" ? "رؤى سلوكية مجهّلة على مستوى الحرم" : "Anonymized behavioral insight, campus-wide"}</h3>
+              <p style={{ fontSize: 14.5, color: c.textSoft, lineHeight: 1.7, marginTop: 12, maxWidth: 440 }}>{lang === "ar" ? "لوحات حيّة لمشاركة الطلاب، الوعي المالي، وإكمال التحديات — بدون أي بيانات شخصية." : "Live dashboards for participation, awareness and challenge completion — with zero personal data."}</p>
+              <motion.div initial="hidden" whileInView="visible" viewport={viewportOnce} variants={revealContainer} style={{ display: "flex", gap: "clamp(18px,3vw,30px)", marginTop: 22, flexWrap: "wrap" }}>
+                {[["4,250", lang === "ar" ? "طالب" : "students", c.accentText], ["+64%", lang === "ar" ? "وعي مالي" : "awareness", c.green], ["78%", lang === "ar" ? "إكمال" : "completion", c.accentText]].map(([v, l, col], i) => (
+                  <motion.div key={i} variants={revealItem}><div style={{ fontSize: "clamp(22px,2.6vw,30px)", fontWeight: 850, color: col }}><Metric value={v} /></div><div style={{ fontSize: 12, color: c.muted }}>{l}</div></motion.div>
                 ))}
               </motion.div>
             </ScrollReveal>
-            <ScrollReveal style={{ position: "relative", borderRadius: 28, overflow: "hidden", minHeight: "clamp(240px,28vw,340px)", border: `1px solid ${c.line}`, boxShadow: c.shadow }}>
-              <LandingImage src={`${LANDING_IMG}waey-university-dashboard.webp`} alt={lang === "ar" ? "بيئة لوحة الجامعة" : "University dashboard environment"} tone="hero" overlay="linear-gradient(120deg, rgba(15,34,48,0.30), rgba(15,34,48,0.04))" style={{ position: "absolute", inset: 0 }} />
-              <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.15, ease: easeOut }} style={{ position: "absolute", insetInlineEnd: "6%", top: "12%", background: "rgba(255,255,255,0.92)", backdropFilter: "blur(10px)", border: `1px solid ${c.line}`, borderRadius: 16, padding: "12px 16px", boxShadow: c.shadow }}>
-                <div style={{ fontSize: 10.5, color: c.muted }}>{lang === "ar" ? "المشاركة" : "Participation"}</div>
-                <div style={{ fontSize: 24, fontWeight: 850, color: c.accent }}><Metric value={4250} /></div>
+            <ScrollReveal>
+              <motion.div whileHover={{ y: -4 }} transition={{ duration: 0.2, ease: easeOut }} style={{ position: "relative", aspectRatio: "1672 / 941", borderRadius: 28, overflow: "hidden", border: `1px solid ${c.line}`, boxShadow: c.shadow }}>
+                <LandingImage src={`${LANDING_IMG}waey-university-dashboard.webp`} alt={lang === "ar" ? "مكتب إرشاد أكاديمي يعرض لوحة تحليلات وعي على اللابتوب" : "Academic-advising office viewing the Waey analytics dashboard on a laptop"} tone="hero" overlay="linear-gradient(120deg, rgba(15,34,48,0.30), rgba(15,34,48,0.04))" style={{ position: "absolute", inset: 0 }} />
+                <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.15, ease: easeOut }} style={{ position: "absolute", insetInlineEnd: "6%", top: "10%", background: "rgba(255,255,255,0.92)", backdropFilter: "blur(10px)", border: `1px solid ${c.line}`, borderRadius: 16, padding: "10px 15px", boxShadow: c.shadow }}>
+                  <div style={{ fontSize: 10.5, color: c.muted }}>{lang === "ar" ? "المشاركة" : "Participation"}</div>
+                  <div style={{ fontSize: 23, fontWeight: 850, color: c.accent }}><Metric value={4250} /></div>
+                </motion.div>
+                <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.3, ease: easeOut }} style={{ position: "absolute", insetInlineStart: "6%", bottom: "10%", background: "rgba(255,255,255,0.92)", backdropFilter: "blur(10px)", border: `1px solid ${c.line}`, borderRadius: 16, padding: "10px 15px", boxShadow: c.shadow }}>
+                  <div style={{ fontSize: 10.5, color: c.muted }}>{lang === "ar" ? "الوعي المالي" : "Awareness"}</div>
+                  <div style={{ fontSize: 23, fontWeight: 850, color: c.green }}><Metric value="64%" /></div>
+                </motion.div>
               </motion.div>
-              <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.3, ease: easeOut }} style={{ position: "absolute", insetInlineStart: "6%", bottom: "12%", background: "rgba(255,255,255,0.92)", backdropFilter: "blur(10px)", border: `1px solid ${c.line}`, borderRadius: 16, padding: "12px 16px", boxShadow: c.shadow }}>
-                <div style={{ fontSize: 10.5, color: c.muted }}>{lang === "ar" ? "الوعي المالي" : "Awareness"}</div>
-                <div style={{ fontSize: 24, fontWeight: 850, color: c.green }}><Metric value="64%" /></div>
+            </ScrollReveal>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ background: c.bg1, borderBottom: `1px solid ${c.line}` }}>
+        <div style={{ maxWidth: 1180, margin: "0 auto", padding: "clamp(34px,5vw,66px) 20px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: vw >= 900 ? "1.1fr 0.9fr" : "1fr", gap: "clamp(24px,4vw,44px)", alignItems: "center" }}>
+            <ScrollReveal>
+              <motion.div whileHover={{ y: -4 }} transition={{ duration: 0.2, ease: easeOut }} style={{ position: "relative", aspectRatio: "1672 / 941", borderRadius: 28, overflow: "hidden", border: `1px solid ${c.line}`, boxShadow: c.shadow }}>
+                <LandingImage src={`${LANDING_IMG}waey-bank-partner-dashboard.webp`} alt={lang === "ar" ? "شريكان من البنك يراجعان لوحة تحليلات وعي المجمّعة والمجهّلة" : "Two bank partners reviewing Waey's aggregated, anonymized analytics dashboard"} tone="terra" overlay="linear-gradient(240deg, rgba(15,34,48,0.30), rgba(15,34,48,0.04))" style={{ position: "absolute", inset: 0 }} />
+                <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.15, ease: easeOut }} style={{ position: "absolute", insetInlineStart: "6%", top: "10%", background: "rgba(255,255,255,0.92)", backdropFilter: "blur(10px)", border: `1px solid ${c.line}`, borderRadius: 16, padding: "10px 15px", boxShadow: c.shadow }}>
+                  <div style={{ fontSize: 10.5, color: c.muted }}>{lang === "ar" ? "طلاب نشطون" : "Active students"}</div>
+                  <div style={{ fontSize: 23, fontWeight: 850, color: c.terra }}><Metric value="4,200" /></div>
+                </motion.div>
+                <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.3, ease: easeOut }} style={{ position: "absolute", insetInlineEnd: "6%", bottom: "10%", background: "rgba(255,255,255,0.92)", backdropFilter: "blur(10px)", border: `1px solid ${c.line}`, borderRadius: 16, padding: "10px 15px", boxShadow: c.shadow }}>
+                  <div style={{ fontSize: 10.5, color: c.muted }}>{lang === "ar" ? "متوسط الوعي" : "Avg awareness"}</div>
+                  <div style={{ fontSize: 23, fontWeight: 850, color: c.green }}><Metric value="64%" /></div>
+                </motion.div>
               </motion.div>
+            </ScrollReveal>
+            <ScrollReveal style={{ textAlign: "start" }}>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 12.5, fontWeight: 700, color: c.terraText, background: c.terra + "14", border: `1px solid ${c.line}`, borderRadius: 999, padding: "6px 13px", marginBottom: 12 }}><Building2 size={14} />{lang === "ar" ? "لوحة البنك" : "Bank dashboard"}</div>
+              <h3 style={{ fontSize: "clamp(20px,2.6vw,30px)", fontWeight: 850, letterSpacing: "-0.02em", margin: 0, lineHeight: 1.15 }}>{lang === "ar" ? "تحليلات سلوكية مجمّعة لتصميم منتجات الشباب" : "Aggregated behavior analytics to design youth products"}</h3>
+              <p style={{ fontSize: 14.5, color: c.textSoft, lineHeight: 1.7, marginTop: 12, maxWidth: 440 }}>{lang === "ar" ? "شريك مؤسسي (بنك الإنماء المقترح) يرى الأنماط والفرص — كل البيانات مجمّعة ومجهّلة بالكامل." : "An institutional partner (proposed: Bank Alinma) sees patterns and opportunities — all data aggregated and fully anonymized."}</p>
+              <motion.div initial="hidden" whileInView="visible" viewport={viewportOnce} variants={revealContainer} style={{ display: "flex", gap: "clamp(18px,3vw,30px)", marginTop: 22, flexWrap: "wrap" }}>
+                {[["8.4M", lang === "ar" ? "ريال ادّخرها الطلاب" : "riyals saved", c.green], ["34%", lang === "ar" ? "أعلى شخصية" : "top persona", c.terra], ["82%", lang === "ar" ? "أعمار 18–24" : "ages 18–24", c.accentText]].map(([v, l, col], i) => (
+                  <motion.div key={i} variants={revealItem}><div style={{ fontSize: "clamp(22px,2.6vw,30px)", fontWeight: 850, color: col }}><Metric value={v} /></div><div style={{ fontSize: 12, color: c.muted }}>{l}</div></motion.div>
+                ))}
+              </motion.div>
+              <div style={{ marginTop: 16, display: "inline-flex", alignItems: "center", gap: 7, background: c.card2, border: `1px dashed ${c.line}`, borderRadius: 12, padding: "8px 13px", fontSize: 12, color: c.textSoft }}><Lock size={14} color={c.green} aria-hidden="true" />{lang === "ar" ? "100% بيانات مجهّلة — بدون أي أفراد" : "100% anonymized — no individuals"}</div>
             </ScrollReveal>
           </div>
         </div>
@@ -1974,7 +2063,7 @@ function PeerCard() {
         <div style={{ width: `${pct}%`, height: "100%", background: `linear-gradient(90deg, ${c.accent}, ${c.green})`, borderRadius: 9 }} />
         <div style={{ position: "absolute", insetInlineStart: `calc(${pct}% - 8px)`, top: -3, width: 16, height: 16, borderRadius: 999, background: "#fff", border: `3px solid ${c.accent}` }} />
       </div>
-      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10.5, color: c.muted, marginTop: 6 }}><span>{s.peerYou}</span><span>100%</span></div>
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10.5, color: c.muted, marginTop: 6 }}><span>{s.peerYou}</span><span><Metric value="100%" /></span></div>
     </div>
   );
 }
@@ -1994,7 +2083,7 @@ function ChallengesCard() {
           <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", borderRadius: 16, border: `1px solid ${c.line}`, background: c.card2, opacity: done[i] ? 0.55 : 1 }}>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 13.5, fontWeight: 600, textDecoration: done[i] ? "line-through" : "none" }}>{riyalText(ch.t)}</div>
-              <div style={{ fontSize: 11, color: c.accentText, fontWeight: 700 }}>+{ch.pts} {s.pts}</div>
+              <div style={{ fontSize: 11, color: c.accentText, fontWeight: 700 }}>+<Metric value={ch.pts} /> {s.pts}</div>
             </div>
             <button onClick={() => toggle(i, ch.pts)} disabled={done[i]} style={{ width: 34, height: 34, borderRadius: 11, border: `1px solid ${done[i] ? c.green : c.line}`, background: done[i] ? c.green : "transparent", display: "grid", placeItems: "center", cursor: done[i] ? "default" : "pointer" }}>
               <Check size={18} color={done[i] ? "#fff" : c.muted} />
@@ -2043,13 +2132,13 @@ function AwarenessCard() {
         </div>
         <div style={{ flex: 1, textAlign: "center", background: c.card2, borderRadius: 16, padding: "12px 8px" }}>
           <div style={{ fontSize: 11, color: c.muted }}>{s.aiConf}</div>
-          <div style={{ fontSize: 28, fontWeight: 800, color: c.terra }}>{assess.confidence}%</div>
+          <div style={{ fontSize: 28, fontWeight: 800, color: c.terra }}><Metric value={`${assess.confidence}%`} /></div>
         </div>
       </div>
       <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 12, color: c.accentText }}>{s.dnaTitle}</div>
       {bars.map(([lab, key, col]) => (
         <div key={key} style={{ marginBottom: 10 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 4 }}><span style={{ color: c.textSoft }}>{s.as[lab]}</span><span style={{ fontWeight: 700 }}>{assess.dna[key]}%</span></div>
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 4 }}><span style={{ color: c.textSoft }}>{s.as[lab]}</span><span style={{ fontWeight: 700 }}><Metric value={`${assess.dna[key]}%`} /></span></div>
           <div style={{ height: 7, borderRadius: 9, background: c.card2, overflow: "hidden" }}><div style={{ height: "100%", width: `${assess.dna[key]}%`, background: col, borderRadius: 9, transition: "width .6s ease" }} /></div>
         </div>
       ))}
@@ -2073,14 +2162,14 @@ function ProgressCard() {
     <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 24, padding: 18 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 700, marginBottom: 4 }}><BarChart2 size={17} color={c.accentText} />{s.progTitle}</div>
       <div style={{ fontSize: 11.5, color: c.muted, marginBottom: 4 }}>{lang === "ar" ? "درجة وعيك المالي ترتفع كل أسبوع مع إكمال التحديات" : "Your awareness score rises each week as you finish challenges"}</div>
-      <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: c.green + "1A", color: c.green, borderRadius: 999, padding: "3px 10px", fontSize: 11, fontWeight: 700, marginBottom: 14 }}>▲ 58 → 76 {lang === "ar" ? "خلال 4 أسابيع" : "in 4 weeks"}</div>
+      <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: c.green + "1A", color: c.green, borderRadius: 999, padding: "3px 10px", fontSize: 11, fontWeight: 700, marginBottom: 14 }}>▲ <Metric value={58} /> → <Metric value={76} /> {lang === "ar" ? "خلال 4 أسابيع" : "in 4 weeks"}</div>
       <div style={{ display: "flex", alignItems: "flex-end", gap: 10, height: 96 }}>
         {weeks.map((w, i) => (
           <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
-            <div style={{ fontSize: 11, fontWeight: 800, color: c.accent }}>{w.score}</div>
+            <div style={{ fontSize: 11, fontWeight: 800, color: c.accent }}><Metric value={w.score} /></div>
             <div style={{ width: "100%", maxWidth: 34, height: `${(w.score / maxScore) * 60}px`, background: `linear-gradient(180deg, ${c.accent}, ${c.accentText})`, borderRadius: 8, transition: "height .5s" }} />
             <div style={{ fontSize: 10, color: c.muted }}>{s.progWeekLabel(i + 1)}</div>
-            <div style={{ fontSize: 9.5, color: c.green, display: "flex", alignItems: "center", gap: 2 }}><Check size={10} aria-hidden="true" />{w.done} {lang === "ar" ? "تحدّي" : "ch."}</div>
+            <div style={{ fontSize: 9.5, color: c.green, display: "flex", alignItems: "center", gap: 2 }}><Check size={10} aria-hidden="true" /><Metric value={w.done} /> {lang === "ar" ? "تحدّي" : "ch."}</div>
           </div>
         ))}
       </div>
@@ -2100,7 +2189,7 @@ function RewardsCard() {
     <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 24, padding: 18 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 700 }}><Trophy size={17} color={c.accentText} />{s.rewardsTitle}</div>
-        <div style={{ background: c.accent, color: c.onAccent, borderRadius: 999, padding: "4px 12px", fontSize: 12, fontWeight: 700 }}>{s.rewLevel} {level}</div>
+        <div style={{ background: c.accent, color: c.onAccent, borderRadius: 999, padding: "4px 12px", fontSize: 12, fontWeight: 700 }}>{s.rewLevel} <Metric value={level} /></div>
       </div>
       <div style={{ fontSize: 12, color: c.muted, marginBottom: 8 }}>{s.rewBadges}</div>
       <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
@@ -2153,7 +2242,7 @@ function PlatformPage() {
       <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 16, marginBottom: 12 }}>
         <div style={{ fontWeight: 700, fontSize: 13.5, marginBottom: 12, color: c.accentText }}>{P.uniDash}</div>
         <div style={{ display: "flex", gap: 10 }}>
-          {[[P.uniStudents, "4,250"], [P.uniAwareness, "64%"], [P.uniComplete, "78%"]].map(([l, v]) => <div key={l} style={{ flex: 1, textAlign: "center", background: c.card2, borderRadius: 14, padding: "12px 4px" }}><div style={{ fontSize: 22, fontWeight: 800, color: c.accent }}>{v}</div><div style={{ fontSize: 10, color: c.muted, marginTop: 3 }}>{l}</div></div>)}
+          {[[P.uniStudents, "4,250"], [P.uniAwareness, "64%"], [P.uniComplete, "78%"]].map(([l, v]) => <div key={l} style={{ flex: 1, textAlign: "center", background: c.card2, borderRadius: 14, padding: "12px 4px" }}><div style={{ fontSize: 22, fontWeight: 800, color: c.accent }}><Metric value={v} /></div><div style={{ fontSize: 10, color: c.muted, marginTop: 3 }}>{l}</div></div>)}
         </div>
       </div>
 
@@ -2161,7 +2250,7 @@ function PlatformPage() {
       <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 16, marginBottom: 16 }}>
         <div style={{ fontWeight: 700, fontSize: 13.5, marginBottom: 12, color: c.terra }}>{P.bankDash}</div>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {[[P.bankTopPersona, lang === "ar" ? PERSONA_META.social.ar : PERSONA_META.social.en], [P.bankAvgAware, "64%"], [P.bankTopCh, lang === "ar" ? "تحدّي القهوة" : "Coffee challenge"]].map(([l, v], i) => <div key={i} style={{ display: "flex", justifyContent: "space-between", background: c.card2, borderRadius: 12, padding: "10px 14px", fontSize: 12.5 }}><span style={{ color: c.textSoft }}>{l}</span><span style={{ fontWeight: 700 }}>{v}</span></div>)}
+          {[[P.bankTopPersona, lang === "ar" ? PERSONA_META.social.ar : PERSONA_META.social.en], [P.bankAvgAware, "64%"], [P.bankTopCh, lang === "ar" ? "تحدّي القهوة" : "Coffee challenge"]].map(([l, v], i) => <div key={i} style={{ display: "flex", justifyContent: "space-between", background: c.card2, borderRadius: 12, padding: "10px 14px", fontSize: 12.5 }}><span style={{ color: c.textSoft }}>{l}</span><span style={{ fontWeight: 700 }}><Metric value={v} /></span></div>)}
         </div>
         <div style={{ marginTop: 10, fontSize: 11, color: c.muted, display: "flex", justifyContent: "center", alignItems: "center", gap: 6, textAlign: "center" }}><Lock size={13} aria-hidden="true" />{P.bankAnon}</div>
       </div>
@@ -2238,7 +2327,7 @@ function JobsPage() {
       <FullPage title={j.t[lang]} sub={j.org[lang]} onClose={() => setSel(null)}>
         <div style={{ display: "flex", alignItems: "center", gap: 14, background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 16 }}>
           <IconBubble icon={j.icon} color={c.accentText} bg={c.card2} size={27} box={54} radius={16} />
-          <div style={{ flex: 1 }}><div style={{ fontWeight: 800, fontSize: 22 }}>{fmt(j.pay)} <RS size="0.6em" /></div><div style={{ fontSize: 11.5, color: c.muted }}>{j.unit[lang]} · {j.dur[lang]}</div></div>
+          <div style={{ flex: 1 }}><div style={{ fontWeight: 800, fontSize: 22 }}><Metric value={j.pay} /> <RS size="0.6em" /></div><div style={{ fontSize: 11.5, color: c.muted }}>{j.unit[lang]} · {j.dur[lang]}</div></div>
         </div>
         <div style={{ display: "flex", gap: 7, flexWrap: "wrap", margin: "14px 0" }}>
           {[j.mode[lang], j.loc[lang], s.jobSlots(j.slots)].map((tg) => <span key={tg} style={{ background: c.card2, border: `1px solid ${c.line}`, color: c.textSoft, borderRadius: 999, padding: "5px 12px", fontSize: 11.5 }}>{tg}</span>)}
@@ -2262,7 +2351,7 @@ function JobsPage() {
                 <div style={{ fontWeight: 700, fontSize: 14.5 }}>{j.t[lang]}</div>
                 <div style={{ fontSize: 11.5, color: c.muted }}>{j.org[lang]} · {j.loc[lang]}</div>
               </div>
-              <div style={{ textAlign: "end" }}><div style={{ fontWeight: 800, fontSize: 16 }}>{fmt(j.pay)} <RS /></div><div style={{ fontSize: 10.5, color: c.muted }}>{j.unit[lang]}</div></div>
+              <div style={{ textAlign: "end" }}><div style={{ fontWeight: 800, fontSize: 16 }}><Metric value={j.pay} /> <RS /></div><div style={{ fontSize: 10.5, color: c.muted }}>{j.unit[lang]}</div></div>
             </div>
             <div style={{ display: "flex", gap: 7, flexWrap: "wrap", marginTop: 12, alignItems: "center" }}>
               {[j.dur[lang], j.mode[lang]].map((tg) => <span key={tg} style={{ background: c.card2, border: `1px solid ${c.line}`, color: c.textSoft, borderRadius: 999, padding: "4px 11px", fontSize: 11 }}>{tg}</span>)}
@@ -2289,7 +2378,7 @@ function CashbackPage() {
       <FullPage title={x.cat[lang]} sub={s.cashOffersSub} onClose={() => setSel(null)}>
         <div style={{ display: "flex", alignItems: "center", gap: 14, background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 16, marginBottom: 14 }}>
           <IconBubble icon={x.icon} color={c.onAccent} bg={c[x.ck]} size={27} box={54} radius={16} />
-          <div style={{ flex: 1 }}><div style={{ fontWeight: 800, fontSize: 18 }}>{x.cat[lang]}</div><div style={{ color: c[x.ck], fontWeight: 800, fontSize: 15 }}>{x.back}% <span style={{ fontSize: 11.5, color: c.muted, fontWeight: 600 }}>{s.backWord}</span></div></div>
+          <div style={{ flex: 1 }}><div style={{ fontWeight: 800, fontSize: 18 }}>{x.cat[lang]}</div><div style={{ color: c[x.ck], fontWeight: 800, fontSize: 15 }}><Metric value={`${x.back}%`} /> <span style={{ fontSize: 11.5, color: c.muted, fontWeight: 600 }}>{s.backWord}</span></div></div>
         </div>
         <div style={{ fontWeight: 700, fontSize: 13.5, color: c.accentText, marginBottom: 10 }}>{s.cashOffersList}</div>
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -2308,7 +2397,7 @@ function CashbackPage() {
     <FullPage title={s.cashTitle} sub={s.cashPageSub} onClose={() => setOverlay(null)}>
       <div style={{ borderRadius: 22, padding: "18px 20px", marginBottom: 16, background: `linear-gradient(135deg, ${c.terra}, ${c.terraText})`, color: c.onTerra }}>
         <div style={{ fontSize: 12.5, fontWeight: 600, opacity: 0.9 }}>{s.cashEarned}</div>
-        <div style={{ fontSize: 32, fontWeight: 800 }}>{fmt(earned)} <RS size="0.55em" /></div>
+        <div style={{ fontSize: 32, fontWeight: 800 }}><Metric value={earned} /> <RS size="0.55em" /></div>
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
         {CASH.map((x, i) => {
@@ -2318,8 +2407,8 @@ function CashbackPage() {
               <button type="button" onClick={() => setSel(i)} style={{ width: "100%", background: "transparent", border: "none", padding: 0, color: c.text, fontFamily: "inherit", textAlign: "start", cursor: "pointer" }}>
               <IconBubble icon={x.icon} color={c.onAccent} bg={c[x.ck]} size={22} box={44} radius={13} />
               <div style={{ fontWeight: 700, fontSize: 13.5, marginTop: 10 }}>{x.cat[lang]}</div>
-              <div style={{ color: c[x.ck], fontWeight: 800, fontSize: 17 }}>{x.back}% <span style={{ fontSize: 11, color: c.muted, fontWeight: 600 }}>{s.backWord}</span></div>
-              <div style={{ fontSize: 11, color: c.muted, marginTop: 4 }}>{x.offers.length} {s.cashOffersCount} ←</div>
+              <div style={{ color: c[x.ck], fontWeight: 800, fontSize: 17 }}><Metric value={`${x.back}%`} /> <span style={{ fontSize: 11, color: c.muted, fontWeight: 600 }}>{s.backWord}</span></div>
+              <div style={{ fontSize: 11, color: c.muted, marginTop: 4 }}><Metric value={x.offers.length} /> {s.cashOffersCount} ←</div>
               </button>
               <button onClick={(ev) => { ev.stopPropagation(); activate(i); }} disabled={on} style={{ ...btn(on ? c.card2 : c.accent, on ? c.green : c.onAccent), height: 36, marginTop: 10, fontSize: 12.5, border: on ? `1px solid ${c.line}` : "none" }}>{on ? s.cashActive : s.cashActivate}</button>
             </div>
@@ -2335,14 +2424,14 @@ function LbRow({ rank, row, c, s, lang }) {
   const av = LB_COLORS[rank % LB_COLORS.length];
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", borderRadius: 16, marginBottom: 8, background: row.you ? c.accent : c.card2, color: row.you ? c.onAccent : c.text, border: row.you ? "none" : `1px solid ${c.line}` }}>
-      <span style={{ fontSize: 14, fontWeight: 800, width: 22, textAlign: "center", opacity: row.you ? 1 : 0.9 }}>{rank}</span>
+      <span style={{ fontSize: 14, fontWeight: 800, width: 22, textAlign: "center", opacity: row.you ? 1 : 0.9 }}><Metric value={rank} /></span>
       <span style={{ width: 38, height: 38, borderRadius: 999, flexShrink: 0, background: row.you ? "rgba(255,255,255,0.25)" : av, display: "grid", placeItems: "center", fontSize: 15, fontWeight: 700, color: row.you ? c.onAccent : "#0A1822" }}>{row.you ? (lang === "ar" ? "و" : "W") : row.id[0]}</span>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: 13.5, fontWeight: row.you ? 800 : 600 }}>{handle}</div>
-        <div style={{ fontSize: 10.5, opacity: 0.75 }}>{row.done} {s.chDoneLabel}</div>
+        <div style={{ fontSize: 10.5, opacity: 0.75 }}><Metric value={row.done} /> {s.chDoneLabel}</div>
       </div>
       <div style={{ textAlign: "end" }}>
-        <div style={{ fontSize: 18, fontWeight: 800, color: row.you ? c.onAccent : lbColor(c, row.pct) }}>{row.pct}%</div>
+        <div style={{ fontSize: 18, fontWeight: 800, color: row.you ? c.onAccent : lbColor(c, row.pct) }}><Metric value={`${row.pct}%`} /></div>
         <div style={{ fontSize: 9.5, opacity: 0.7 }}>{s.commit}</div>
       </div>
     </div>
@@ -2385,9 +2474,9 @@ function LeaderboardPage() {
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
                 <div style={{ fontSize: 12.5, fontWeight: 600, opacity: 0.85 }}>{s.yourRank}</div>
-                <div style={{ fontSize: 34, fontWeight: 800, lineHeight: 1.1 }}>#{myRank} <span style={{ fontSize: 14, fontWeight: 600, opacity: 0.85 }}>{s.ofN(LB.length)}</span></div>
+                <div style={{ fontSize: 34, fontWeight: 800, lineHeight: 1.1 }}>#<Metric value={myRank} /> <span style={{ fontSize: 14, fontWeight: 600, opacity: 0.85 }}>{s.ofN(LB.length)}</span></div>
               </div>
-              <div style={{ textAlign: "end" }}><div style={{ fontSize: 30, fontWeight: 800 }}>{me.pct}%</div><div style={{ fontSize: 11, opacity: 0.8 }}>{s.commit}</div></div>
+              <div style={{ textAlign: "end" }}><div style={{ fontSize: 30, fontWeight: 800 }}><Metric value={`${me.pct}%`} /></div><div style={{ fontSize: 11, opacity: 0.8 }}>{s.commit}</div></div>
             </div>
             <div style={{ fontSize: 12.5, fontWeight: 600, marginTop: 10, opacity: 0.95 }}>{above ? s.lbGap(above.pct - me.pct, myRank - 1) : s.lbTop}</div>
           </div>
@@ -2448,7 +2537,7 @@ function WeeklyCard() {
           const barH = total > 0 ? Math.max(10, (total / maxT) * AREA) : 6;
           return (
             <button key={i} type="button" onClick={() => setSel(active ? null : i)} style={{ flex: 1, textAlign: "center", cursor: "pointer", background: "transparent", border: "none", padding: 0, color: c.text, fontFamily: "inherit" }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: future ? c.muted : c.text, marginBottom: 5 }}>{future ? "—" : total}</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: future ? c.muted : c.text, marginBottom: 5 }}>{future ? "—" : <Metric value={total} />}</div>
               <div style={{ height: AREA, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
                 <motion.div initial={{ scaleY: 0.08 }} whileInView={{ scaleY: 1 }} viewport={{ once: true, amount: 0.4 }} transition={{ duration: 0.5, delay: i * 0.06, ease: easeOut }} style={{ width: "78%", height: barH, borderRadius: "8px 8px 3px 3px", overflow: "hidden", display: "flex", flexDirection: "column", transformOrigin: "bottom", background: future ? c.inputBg : c.card2, boxShadow: active ? `0 0 0 2px ${c.accent}` : on ? `0 0 0 1.5px ${c.line}` : "none", opacity: sel != null && !active ? 0.55 : 1, transition: "opacity .2s" }}>
                   {total > 0 && segs.map((sg) => { const h = (w[sg.k] / total) * 100; return h > 0 ? <div key={sg.k} style={{ height: `${h}%`, background: sg.col }} /> : null; })}
@@ -2469,14 +2558,14 @@ function WeeklyCard() {
       {sel != null && <WeekDetails week={sel} entries={entries.filter((e) => e.week === sel)} colOf={colOf} />}
 
       <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
-        <MiniBox label={s.leftSpend} value={`${fmt(leftToSpend)} ر.س`} tone={c.text} />
-        <MiniBox label={s.canSave} value={`${fmt(save)} ر.س`} tone={c.green} />
+        <MiniBox label={s.leftSpend} value={<><Metric value={leftToSpend} /> <RS /></>} tone={c.text} />
+        <MiniBox label={s.canSave} value={<><Metric value={save} /> <RS /></>} tone={c.green} />
       </div>
       <div style={{ marginTop: 12, background: c.card2, border: `1px solid ${c.line}`, borderRadius: 14, padding: "11px 13px", fontSize: 12.5, lineHeight: 1.7, color: c.textSoft, display: "flex", gap: 8, alignItems: "flex-start" }}>
         <InlineIcon icon={Lightbulb} color={c.accentText} size={16} />
         {lang === "ar"
-          ? <span>أنت في الأسبوع {s.weekOrd[curWeek]} — بمعدّلك الحالي ({fmt(avg)} <RS />/أسبوع) راح توفّر ~<b style={{ color: c.green }}>{fmt(save)} <RS /></b> نهاية الشهر. لو قلّلت <b>{s.cats[topKey]}</b> 20% تضيف <b style={{ color: c.accentText }}>{fmt(extra)} <RS /></b> لمحفظتك.</span>
-          : <span>You're in week {curWeek + 1} — at your pace ({fmt(avg)} <RS />/wk) you'll save ~<b style={{ color: c.green }}>{fmt(save)} <RS /></b> by month-end. Cut <b>{s.cats[topKey]}</b> 20% to add <b style={{ color: c.accentText }}>{fmt(extra)} <RS /></b> to your portfolio.</span>}
+          ? <span>أنت في الأسبوع {s.weekOrd[curWeek]} — بمعدّلك الحالي ({fmt(avg)} <RS />/أسبوع) راح توفّر ~<b style={{ color: c.green }}><Metric value={save} /> <RS /></b> نهاية الشهر. لو قلّلت <b>{s.cats[topKey]}</b> 20% تضيف <b style={{ color: c.accentText }}><Metric value={extra} /> <RS /></b> لمحفظتك.</span>
+          : <span>You're in week {curWeek + 1} — at your pace ({fmt(avg)} <RS />/wk) you'll save ~<b style={{ color: c.green }}><Metric value={save} /> <RS /></b> by month-end. Cut <b>{s.cats[topKey]}</b> 20% to add <b style={{ color: c.accentText }}><Metric value={extra} /> <RS /></b> to your portfolio.</span>}
       </div>
     </div>
   );
@@ -2490,7 +2579,7 @@ function WeekDetails({ week, entries, colOf }) {
     <div style={{ marginTop: 14, background: c.card2, border: `1px solid ${c.line}`, borderRadius: 16, padding: 12, animation: "wUp .3s ease both" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "2px 4px 8px" }}>
         <div style={{ fontWeight: 700, fontSize: 13.5 }}>{s.weekDetails(s.weekOrd[week])}</div>
-        <div style={{ fontSize: 11, color: c.muted }}>{s.weekLimit} {WEEK_LIMIT} <RS /></div>
+        <div style={{ fontSize: 11, color: c.muted }}>{s.weekLimit} <Metric value={WEEK_LIMIT} /> <RS /></div>
       </div>
       {entries.length === 0 && <div style={{ textAlign: "center", color: c.muted, fontSize: 12.5, padding: "14px 0" }}>{s.noExpenses}</div>}
       {entries.map((e, i) => {
@@ -2499,7 +2588,7 @@ function WeekDetails({ week, entries, colOf }) {
           <button key={e.id} type="button" onClick={() => setOpen(isOpen ? null : e.id)} style={{ width: "100%", cursor: "pointer", padding: "10px 6px", border: "none", borderBottom: i < entries.length - 1 ? `1px solid ${c.line}` : "none", background: "transparent", color: c.text, fontFamily: "inherit", textAlign: "start" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
-                <div style={{ fontWeight: 700, fontSize: 15, color: c.terraText }}>−{fmt(e.amt)} <RS /></div>
+                <div style={{ fontWeight: 700, fontSize: 15, color: c.terraText }}>−<Metric value={e.amt} /> <RS /></div>
                 <div style={{ fontSize: 10.5, color: remain < 0 ? c.terraText : c.muted, marginTop: 1 }}>{s.leftOfLimit(remain)}</div>
               </div>
               <div style={{ textAlign: "end" }}>
@@ -2551,7 +2640,7 @@ function Analytics() {
       <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 24, padding: 18 }}>
         <div style={{ fontSize: 12.5, color: c.muted }}>{s.totalSavings}</div>
         <div style={{ fontSize: 30, fontWeight: 700 }}><AnimatedNumber value={savings} formatter={(n) => `${fmt(n)}.00`} /> <RS size="0.6em" color={c.muted} /></div>
-        <div style={{ color: c.accentText, fontSize: 13, fontWeight: 600 }}>▲ +1,560.00 {s.thisTerm}</div>
+        <div style={{ color: c.accentText, fontSize: 13, fontWeight: 600 }}>▲ <AnimatedNumber value={1560} formatter={(n) => `+${fmt(n)}.00`} /> {s.thisTerm}</div>
         <Spark data={trend} />
       </div>
       <div style={{ display: "flex", gap: 12 }}>
@@ -2559,10 +2648,10 @@ function Analytics() {
         <MetricCard label={s.remaining} value={fmt(available)} tone={available > 0 ? c.green : c.terra} sign={available > 0 ? s.onTrack : s.over} />
       </div>
       <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 24, padding: 18 }}>
-        <div style={{ fontWeight: 700, marginBottom: 12 }}>{lang === "ar" ? <>أين صرفت {fmt(spent)} <RS />؟</> : <>Where did {fmt(spent)} <RS /> go?</>}</div>
+        <div style={{ fontWeight: 700, marginBottom: 12 }}>{lang === "ar" ? <>أين صرفت <Metric value={spent} /> <RS />؟</> : <>Where did <Metric value={spent} /> <RS /> go?</>}</div>
         {list.map((x, i) => (
           <div key={x.k} style={{ marginBottom: 12 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 5 }}><span>{s.cats[x.k]}</span><span style={{ color: c.muted }}>{cats[x.k]} <RS /></span></div>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 5 }}><span>{s.cats[x.k]}</span><span style={{ color: c.muted }}><Metric value={cats[x.k]} /> <RS /></span></div>
             <div style={{ height: 7, background: c.inputBg, borderRadius: 9 }}><motion.div initial={{ scaleX: 0 }} whileInView={{ scaleX: cats[x.k] / maxV }} viewport={{ once: true, amount: 0.5 }} transition={{ duration: 0.55, delay: i * 0.06, ease: easeOut }} style={{ width: "100%", height: "100%", background: x.col, borderRadius: 9, transformOrigin: dir === "rtl" ? "right center" : "left center" }} /></div>
           </div>
         ))}
@@ -2572,7 +2661,7 @@ function Analytics() {
         {tx.map((t, i) => (
           <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "7px 0", borderBottom: i < tx.length - 1 ? `1px solid ${c.line}` : "none" }}>
             <span style={{ fontSize: 13.5 }}>{t.place[lang]}</span>
-            <span style={{ fontSize: 12.5, color: t.cat === "topup" ? c.green : c.muted }}>{s.cats[t.cat]} · {t.cat === "topup" ? "+" : "−"}{fmt(t.amt)} <RS /></span>
+            <span style={{ fontSize: 12.5, color: t.cat === "topup" ? c.green : c.muted }}>{s.cats[t.cat]} · {t.cat === "topup" ? "+" : "−"}<Metric value={t.amt} /> <RS /></span>
           </div>
         ))}
       </div>
@@ -2758,7 +2847,7 @@ function Invest() {
       <ScreenHead title={s.nav.invest} />
       <div style={{ borderRadius: 24, padding: 20, marginTop: 6, background: `linear-gradient(135deg, ${c.accent} 0%, ${c.accentText} 100%)`, color: c.onAccent }}>
         <div style={{ fontSize: 12.5, fontWeight: 600, opacity: .85 }}>{s.portfolio}</div>
-        <div style={{ fontSize: 30, fontWeight: 700 }}>{fmt(invested)}.00 <RS size="0.6em" /></div>
+        <div style={{ fontSize: 30, fontWeight: 700 }}><AnimatedNumber value={invested} formatter={(n) => `${fmt(n)}.00`} /> <RS size="0.6em" /></div>
         <div style={{ fontSize: 13, fontWeight: 700 }}>{riyalText(s.expRet(fmt(invested * 1.25)))}</div>
       </div>
       <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 24, padding: 18, marginTop: 14 }}>
@@ -2766,15 +2855,15 @@ function Invest() {
         <div style={{ fontSize: 12, color: c.muted, lineHeight: 1.7, marginTop: 4 }}>
           {lang === "ar"
             ? <>باستمرار الادّخار + الاستثمار، تحوّل 60,000 خلال دراستك إلى <b style={{ color: c.accentText }}>75,000+ <RS /></b> عند التخرّج.</>
-            : <>By saving + investing, turn 60,000 during your studies into <b style={{ color: c.accentText }}>75,000+ <RS /></b> by graduation.</>}
+            : <>By saving + investing, turn 60,000 during your studies into <b style={{ color: c.accentText }}><Metric value="75,000+" /> <RS /></b> by graduation.</>}
         </div>
         <div style={{ height: 8, background: c.inputBg, borderRadius: 9, marginTop: 12 }}><div style={{ width: "42%", height: "100%", background: `linear-gradient(90deg, ${c.accent}, ${c.terra})`, borderRadius: 9 }} /></div>
-        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: c.muted, marginTop: 6 }}><span>{fmt(savings)} <RS /> {s.now2}</span><span>{s.goal} 75,000</span></div>
+        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: c.muted, marginTop: 6 }}><span><Metric value={savings} /> <RS /> {s.now2}</span><span>{s.goal} <Metric value="75,000" /></span></div>
       </div>
       <div style={{ fontWeight: 700, margin: "16px 2px 8px" }}>{s.suggested}</div>
       {[300, 500, 1000].map((a) => (
         <div key={a} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: c.card, border: `1px solid ${c.line}`, borderRadius: 18, padding: "14px 16px", marginBottom: 10 }}>
-          <div><div style={{ fontWeight: 700 }}>{fmt(a)} <RS /></div><div style={{ fontSize: 11.5, color: c.muted }}>{riyalText(s.inYear(fmt(a * 1.25)))}</div></div>
+          <div><div style={{ fontWeight: 700 }}><Metric value={a} /> <RS /></div><div style={{ fontSize: 11.5, color: c.muted }}>{riyalText(s.inYear(fmt(a * 1.25)))}</div></div>
           <button onClick={() => put(a)} style={{ ...btn(c.accent, c.onAccent), width: "auto", padding: "0 20px", height: 40, marginTop: 0 }}>{s.investBtn}</button>
         </div>
       ))}
@@ -3080,8 +3169,8 @@ function InvestWidget({ w }) {
       <div style={{ marginTop: 10 }}>
         {w.types.map((t, i) => (
           <div key={t.name} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 0", borderBottom: i < w.types.length - 1 ? `1px solid ${c.line}` : "none" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}><span style={{ width: 9, height: 9, borderRadius: 9, background: colors[i % 4] }} /><div><div style={{ fontSize: 13, fontWeight: 600 }}>{t.name} · {Math.round(t.r * 100)}%</div><div style={{ fontSize: 10.5, color: c.muted }}>{t.risk}</div></div></div>
-            <div style={{ textAlign: "end" }}><div style={{ fontSize: 13, fontWeight: 700 }}>{fmt(t.fv)} <RS /></div><div style={{ fontSize: 10.5, color: c.green }}>+{fmt(t.profit)}</div></div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}><span style={{ width: 9, height: 9, borderRadius: 9, background: colors[i % 4] }} /><div><div style={{ fontSize: 13, fontWeight: 600 }}>{t.name} · <Metric value={`${Math.round(t.r * 100)}%`} /></div><div style={{ fontSize: 10.5, color: c.muted }}>{t.risk}</div></div></div>
+            <div style={{ textAlign: "end" }}><div style={{ fontSize: 13, fontWeight: 700 }}><Metric value={t.fv} /> <RS /></div><div style={{ fontSize: 10.5, color: c.green }}>+<Metric value={t.profit} /></div></div>
           </div>
         ))}
       </div>
@@ -3106,8 +3195,8 @@ function LoanWidget({ w }) {
     <div style={{ marginTop: 12, background: c.card2, border: `1px solid ${c.line}`, borderRadius: 16, padding: 14 }}>
       <div style={{ fontSize: 13, lineHeight: 1.8 }}>
         {lang === "ar"
-          ? <>ينقصك <b style={{ color: c.terraText }}>{fmt(w.gap)} <RS /></b>. أقدر أعطيك قرض <b>{fmt(w.offer)} <RS /></b> من راتب الشهر الجاي — بينزل راتبك القادم إلى <b>{fmt(drop)} <RS /></b> بدل {fmt(STIPEND)}.</>
-          : <>You're short <b style={{ color: c.terraText }}>{fmt(w.gap)} <RS /></b>. I can lend you <b>{fmt(w.offer)} <RS /></b> from next month's salary — your next stipend becomes <b>{fmt(drop)} <RS /></b> instead of {fmt(STIPEND)}.</>}
+          ? <>ينقصك <b style={{ color: c.terraText }}><Metric value={w.gap} /> <RS /></b>. أقدر أعطيك قرض <b><Metric value={w.offer} /> <RS /></b> من راتب الشهر الجاي — بينزل راتبك القادم إلى <b><Metric value={drop} /> <RS /></b> بدل {fmt(STIPEND)}.</>
+          : <>You're short <b style={{ color: c.terraText }}><Metric value={w.gap} /> <RS /></b>. I can lend you <b><Metric value={w.offer} /> <RS /></b> from next month's salary — your next stipend becomes <b><Metric value={drop} /> <RS /></b> instead of {fmt(STIPEND)}.</>}
       </div>
       <button onClick={approve} disabled={done} style={{ ...btn(done ? c.green : c.terra, "#fff"), height: 42, marginTop: 10, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7 }}>{done && <Check size={16} aria-hidden="true" />}{done ? (lang === "ar" ? "تم اعتماد القرض" : "Loan approved") : s.approve}</button>
     </div>
@@ -3122,7 +3211,7 @@ function BreakdownWidget() {
       <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 8 }}>{s.breakdownTitle}</div>
       {list.map((x) => (
         <div key={x.k} style={{ marginBottom: 10 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, marginBottom: 4 }}><span>{s.cats[x.k]}</span><span style={{ color: c.muted }}>{cats[x.k]} <RS /></span></div>
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, marginBottom: 4 }}><span>{s.cats[x.k]}</span><span style={{ color: c.muted }}><Metric value={cats[x.k]} /> <RS /></span></div>
           <div style={{ height: 7, background: c.inputBg, borderRadius: 9 }}><div style={{ width: `${(cats[x.k] / max) * 100}%`, height: "100%", background: x.col, borderRadius: 9, transition: "width .4s" }} /></div>
         </div>
       ))}
@@ -3147,7 +3236,7 @@ function ProjectionWidget({ init }) {
       </div>
       <div style={{ background: c.card2, borderRadius: 14, padding: "10px 10px 6px", border: `1px solid ${c.line}` }}>
         <Spark data={cur.series} />
-        <div style={{ textAlign: "center", fontSize: 19, fontWeight: 800, marginTop: 2 }}>{fmt(total)} <RS /></div>
+        <div style={{ textAlign: "center", fontSize: 19, fontWeight: 800, marginTop: 2 }}><Metric value={total} /> <RS /></div>
       </div>
       <div style={{ fontSize: 12, color: c.textSoft, lineHeight: 1.7, marginTop: 8, display: "flex", gap: 8, alignItems: "flex-start" }}><InlineIcon icon={Lightbulb} color={c.accentText} size={15} /><span>{riyalText(cur.sugg(total))}</span></div>
     </div>

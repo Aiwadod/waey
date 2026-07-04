@@ -17,6 +17,10 @@ const MESHES = {
     "radial-gradient(120% 120% at 22% 16%, #DCEEDF 0%, transparent 52%)," +
     "radial-gradient(120% 120% at 82% 82%, #ECE5F6 0%, transparent 56%)," +
     "linear-gradient(150deg, #F1F5ED, #E6EEE6)",
+  terra:
+    "radial-gradient(120% 120% at 20% 14%, #F6DEC9 0%, transparent 52%)," +
+    "radial-gradient(120% 120% at 84% 84%, #E6E0F4 0%, transparent 56%)," +
+    "linear-gradient(150deg, #F6EFE6, #EFE6DB)",
 };
 
 export default function LandingImage({
