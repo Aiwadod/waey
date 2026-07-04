@@ -927,7 +927,8 @@ function RoleShell({ title, sub, onBack, children }) {
     gsap.from(Array.from(scope.current.children), { y: 16, opacity: 0, stagger: 0.06, duration: 0.5, ease: "power3.out", clearProps: "transform,opacity" });
   }, []);
   return (
-    <div dir={dir} data-waey-theme={theme} data-waey-shell style={{ fontFamily: "'IBM Plex Sans Arabic',system-ui,sans-serif", background: c.page, color: c.text, height: "100dvh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+    <div dir={dir} data-waey-theme={theme} data-waey-shell style={{ fontFamily: "'IBM Plex Sans Arabic',system-ui,sans-serif", background: c.page, color: c.text, height: "100dvh", display: "flex", flexDirection: "column", overflow: "hidden", position: "relative", zIndex: 0 }}>
+      <div style={{ position: "absolute", inset: 0, zIndex: -1, pointerEvents: "none" }}><WaeyFlowField tone={theme} /></div>
       <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "calc(env(safe-area-inset-top,0px) + 16px) 18px 12px", flexShrink: 0 }}>
         {onBack && <button onClick={onBack} style={{ width: 38, height: 38, borderRadius: 12, background: c.card, border: `1px solid ${c.line}`, color: c.text, display: "grid", placeItems: "center", cursor: "pointer" }}><Back size={20} /></button>}
         <div><div style={{ fontSize: 19, fontWeight: 800 }}>{title}</div>{sub && <div style={{ fontSize: 11.5, color: c.muted }}>{sub}</div>}</div>
@@ -937,7 +938,7 @@ function RoleShell({ title, sub, onBack, children }) {
   );
 }
 function RoleSelect() {
-  const { c, s, lang, dir, setScreen } = useCtx();
+  const { c, s, lang, dir, setScreen, theme } = useCtx();
   const R = s.role;
   const roles = [
     [GraduationCap, R.student, R.studentD, c.accent, () => setScreen("assess")],
@@ -946,7 +947,8 @@ function RoleSelect() {
   ];
   const Fwd = lang === "ar" ? ArrowLeft : ArrowRight;
   return (
-    <div dir={dir} style={{ fontFamily: "'IBM Plex Sans Arabic',system-ui,sans-serif", background: c.bg0, color: c.text, height: "100dvh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+    <div dir={dir} style={{ fontFamily: "'IBM Plex Sans Arabic',system-ui,sans-serif", background: c.bg0, color: c.text, height: "100dvh", display: "flex", flexDirection: "column", overflow: "hidden", position: "relative", zIndex: 0 }}>
+      <div style={{ position: "absolute", inset: 0, zIndex: -1, pointerEvents: "none" }}><WaeyFlowField tone={theme} /></div>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "calc(env(safe-area-inset-top,0px) + 16px) 18px 8px" }}>
         <button type="button" onClick={() => setScreen("landing")} aria-label={lang === "ar" ? "الصفحة الرئيسية" : "Home"} style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", background: "none", border: "none", color: c.text, fontFamily: "inherit", padding: 0 }}>
           <WaeyMark size={30} />
@@ -1315,7 +1317,7 @@ function Chips({ options, value, onChange, c }) {
   );
 }
 function Assessment() {
-  const { c, s, lang, dir, setScreen, setPersona, setAssess, enterGuest } = useCtx();
+  const { c, s, lang, dir, setScreen, setPersona, setAssess, enterGuest, theme } = useCtx();
   const A = s.as;
   const [step, setStep] = useState("intro");
   const [slide, setSlide] = useState(0);
@@ -1338,15 +1340,17 @@ function Assessment() {
   function finish() { const map = { social: 0, emotional: 1, impulsive: 2, planning: 0 }; setPersona(map[result.dominant] ?? 0); if (result) setAssess(result); enterGuest(); }
   function skip() { enterGuest(); }
   const Fwd = lang === "ar" ? ArrowLeft : ArrowRight;
-  const wrap = { fontFamily: "'IBM Plex Sans Arabic',system-ui,sans-serif", background: c.bg0, color: c.text, height: "100dvh", display: "flex", flexDirection: "column", overflow: "hidden" };
+  const wrap = { fontFamily: "'IBM Plex Sans Arabic',system-ui,sans-serif", background: c.bg0, color: c.text, height: "100dvh", display: "flex", flexDirection: "column", overflow: "hidden", position: "relative", zIndex: 0 };
   const body = { flex: 1, overflowY: "auto", padding: "8px 20px 28px", display: "flex", flexDirection: "column" };
   const inner = { width: "100%", maxWidth: 480, margin: "0 auto", flex: 1, display: "flex", flexDirection: "column" };
+  // Hero flow-field background, layered behind the content (z-index -1) on every step.
+  const bgField = <div style={{ position: "absolute", inset: 0, zIndex: -1, pointerEvents: "none" }}><WaeyFlowField tone={theme} /></div>;
 
   if (step === "intro") {
     const last = slide === A.introTitle.length - 1;
     const icons = [<Brain size={40} color={c.onAccent} />, <Zap size={40} color={c.onAccent} />, <Check size={40} color={c.onAccent} />];
     return (
-      <div dir={dir} style={wrap}><AsTopBar />
+      <div dir={dir} style={wrap}>{bgField}<AsTopBar />
         <div style={body}><div style={{ ...inner, justifyContent: "center", textAlign: "center", gap: 22 }}>
           <div style={{ width: 88, height: 88, borderRadius: 26, background: `linear-gradient(135deg, ${c.accent}, ${c.terra})`, display: "grid", placeItems: "center", margin: "0 auto" }}>{icons[slide]}</div>
           <div><div style={{ fontSize: 23, fontWeight: 800, lineHeight: 1.4 }}>{A.introTitle[slide]}</div><div style={{ fontSize: 14, color: c.muted, marginTop: 10, lineHeight: 1.7 }}>{A.introSub[slide]}</div></div>
@@ -1360,7 +1364,7 @@ function Assessment() {
   if (step === "profile") {
     const groups = [[A.age, A.ages, "age"], [A.uni, A.unis, "uni"], [A.city, A.cities, "city"], [A.income, A.incomes.map((x) => x[1]), "income"], [A.source, A.sources, "source"], [A.goal, A.goals, "goal"]];
     return (
-      <div dir={dir} style={wrap}><AsTopBar />
+      <div dir={dir} style={wrap}>{bgField}<AsTopBar />
         <div style={body}><div style={inner}>
           <div style={{ fontSize: 21, fontWeight: 800 }}>{A.profileTitle}</div>
           <div style={{ fontSize: 13, color: c.muted, marginBottom: 18 }}>{A.profileSub}</div>
@@ -1378,7 +1382,7 @@ function Assessment() {
   if (step === "quiz") {
     const q = ASSESS_Q[qi]; const pct = ((qi) / ASSESS_Q.length) * 100;
     return (
-      <div dir={dir} style={wrap}><AsTopBar />
+      <div dir={dir} style={wrap}>{bgField}<AsTopBar />
         <div style={body}><div style={inner}>
           <div style={{ height: 6, borderRadius: 9, background: c.card2, overflow: "hidden", marginBottom: 8 }}><div style={{ height: "100%", width: `${pct}%`, background: c.accent, borderRadius: 9, transition: "width .3s" }} /></div>
           <div style={{ fontSize: 12, color: c.muted, marginBottom: 26 }}>{A.qOf(qi + 1, ASSESS_Q.length)}</div>
@@ -1396,7 +1400,7 @@ function Assessment() {
   }
   if (step === "loading") {
     return (
-      <div dir={dir} style={wrap}>
+      <div dir={dir} style={wrap}>{bgField}
         <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 24, padding: 20 }}>
           <div style={{ width: 84, height: 84, borderRadius: 999, border: `4px solid ${c.card2}`, borderTopColor: c.accent, animation: "wSpin 1s linear infinite" }} />
           <div style={{ fontSize: 17, fontWeight: 700, textAlign: "center" }}>{A.analyzing}</div>
@@ -1411,7 +1415,7 @@ function Assessment() {
   const desc = lang === "ar" ? meta.descAr : meta.descEn, ch = lang === "ar" ? meta.chAr : meta.chEn;
   const bars = [["dnaPlanning", "planning", c.green], ["dnaSocial", "social", c.accentText], ["dnaEmotional", "emotional", c.terra], ["dnaImpulsive", "impulsive", c.terraText]];
   return (
-    <div dir={dir} style={wrap}><AsTopBar />
+    <div dir={dir} style={wrap}>{bgField}<AsTopBar />
       <div style={body}><div style={{ ...inner, gap: 14 }}>
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4, ease: easeOut }} style={{ textAlign: "center" }}>
           <div style={{ width: 76, height: 76, borderRadius: 24, background: `linear-gradient(135deg, ${c.accent}, ${c.terra})`, display: "grid", placeItems: "center", margin: "0 auto 12px" }}><Brain size={36} color="#fff" /></div>
