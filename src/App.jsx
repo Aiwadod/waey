@@ -245,7 +245,7 @@ const L = {
         { icon: Target, t: "تحديات أسبوعية مخصّصة", d: "مبنية على شخصيتك تحديداً، ترفع وعيك المالي تدريجياً." },
         { icon: Trophy, t: "لوحة الالتزام", d: "نافس على إتمام التحديات لا على المبالغ — خصوصيتك محفوظة." },
       ],
-      stats: [{ v: "1.6%", l: "معدل ادخار السعوديين" }, { v: "2.2M", l: "طالب جامعي سنوياً" }, { v: "2030", l: "داعم لرؤية المملكة", raw: true }],
+      stats: [{ v: "2.4%", l: "معدل الادخار" }, { v: "1,103,986", l: "عدد طلاب الجامعات" }, { v: "2030", l: "داعم لرؤية المملكة", raw: true }],
       howTitle: "كيف يشتغل وعي؟",
       steps: [
         { t: "حلّل شخصيتك", d: "وعي يقرأ نمط صرفك ويحدّد شخصيتك المالية." },
@@ -437,7 +437,7 @@ const L = {
         { icon: Target, t: "Personalized weekly challenges", d: "Built for your personality, raising your money awareness step by step." },
         { icon: Trophy, t: "Commitment leaderboard", d: "Compete on completing challenges, not amounts — privacy kept." },
       ],
-      stats: [{ v: "1.6%", l: "Saudi savings rate" }, { v: "2.2M", l: "students yearly" }, { v: "2030", l: "supports the Vision", raw: true }],
+      stats: [{ v: "2.4%", l: "Savings rate" }, { v: "1,103,986", l: "University students" }, { v: "2030", l: "supports the Vision", raw: true }],
       howTitle: "How Waey works",
       steps: [
         { t: "Analyze your personality", d: "Waey reads your spending pattern and finds your money type." },
