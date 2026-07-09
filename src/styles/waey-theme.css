@@ -43,6 +43,27 @@ body {
   outline-offset: 2px;
 }
 
+/* Skip-to-content: visually hidden until focused, then slides into view. */
+.waey-skip {
+  position: absolute;
+  top: -56px;
+  inset-inline-start: 14px;
+  z-index: 100;
+  background: var(--waey-card);
+  color: var(--waey-ink);
+  border: 1px solid var(--waey-line);
+  border-radius: 12px;
+  padding: 12px 18px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: top 150ms var(--waey-ease-out);
+}
+
+.waey-skip:focus-visible {
+  top: 14px;
+}
+
 .waey-pressable {
   transform: translateZ(0);
   transition:

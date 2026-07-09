@@ -44,7 +44,8 @@ test("valid login and guest entry persist the student app on reload", async ({ p
   await page.getByRole("button", { name: /تسجيل الدخول|Sign in/ }).first().click();
   await page.getByLabel(/البريد|Email/).fill("student@example.com");
   await page.getByLabel(/كلمة المرور|Password/).fill("secret");
-  await page.getByRole("button", { name: /^دخول$|^Sign in$/ }).click();
+  // Submit with Enter — the login is a real <form>.
+  await page.getByLabel(/كلمة المرور|Password/).press("Enter");
 
   await expect(page).toHaveURL(/#\/student/);
   await expect(page.getByText(/رصيد الحساب|Balance/)).toBeVisible();
@@ -81,12 +82,15 @@ test("loan success and insufficient-loan block are visible in the browser flow",
   await expect(page.getByText(/الرصيد لا يكفي|balance/i)).toBeVisible();
 });
 
-test("language switch updates document direction", async ({ page }) => {
+test("language switch updates document direction and persists across reload", async ({ page }) => {
   await page.goto("/#/landing");
   await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
 
   await page.getByRole("button", { name: /تغيير اللغة|Change language/ }).click();
 
+  await expect(page.locator("html")).toHaveAttribute("dir", "ltr");
+
+  await page.reload();
   await expect(page.locator("html")).toHaveAttribute("dir", "ltr");
 });
 
@@ -112,9 +116,10 @@ test("mobile viewport renders the student app", async ({ page }) => {
 test("landing opens in Waey light mode by default", async ({ page }) => {
   await page.goto("/#/landing");
 
-  // Deep links play the splash intro first; wait for the landing hero so the
-  // palette check reads the marketing shell, not the splash (pre-existing race).
-  await expect(page.getByRole("heading", { level: 1 })).toBeVisible({ timeout: 15000 });
+  // Deep links play the splash intro first; wait for the landing hero heading
+  // (the splash h1 is the brand name) so the palette check reads the marketing
+  // shell, not the splash (pre-existing race).
+  await expect(page.getByRole("heading", { name: /وعيك المالي|Money awareness/ })).toBeVisible({ timeout: 15000 });
 
   await expect(page.locator("[data-waey-theme='light']")).toBeVisible();
   await expect(page.locator("[data-waey-shell]")).toBeVisible();

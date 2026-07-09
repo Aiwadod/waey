@@ -31,28 +31,23 @@ export default function WaeyFlowField({ tone = "light" }) {
       return;
     }
 
+    // pathLength=1 on the paths makes the draw-on exact regardless of geometry.
     gsap.fromTo(
       ".waey-flow-line",
-      { strokeDashoffset: 620, opacity: 0.08 },
+      { strokeDashoffset: 1, opacity: 0.08 },
       { strokeDashoffset: 0, opacity: 0.42, duration: 1.4, stagger: 0.18, ease: "power3.out" },
     );
 
+    // Finite drift (~30s), then the field settles: long-running ambient motion
+    // must stop on its own (WCAG 2.2.2) and stop costing battery.
     gsap.to(".waey-flow-dot", {
       y: -10,
       opacity: 0.85,
       duration: 1.9,
       stagger: 0.16,
-      repeat: -1,
+      repeat: 15,
       yoyo: true,
       ease: "sine.inOut",
-    });
-
-    gsap.to(".waey-flow-orb", {
-      rotate: 360,
-      transformOrigin: "50% 50%",
-      duration: 18,
-      repeat: -1,
-      ease: "none",
     });
   }, []);
 
@@ -79,7 +74,8 @@ export default function WaeyFlowField({ tone = "light" }) {
             stroke={stroke}
             strokeWidth="2"
             strokeLinecap="round"
-            strokeDasharray="620"
+            pathLength="1"
+            strokeDasharray="1"
           />
         ))}
         {dots.map(([cx, cy]) => (

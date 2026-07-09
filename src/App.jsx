@@ -25,6 +25,11 @@ import { useGsap } from "./motion/gsap.js";
 
 const LANDING_IMG = `${import.meta.env.BASE_URL}images/landing/`;
 
+// Photo-anchored glass chips keep their white glass in BOTH themes (the photo
+// beneath never changes), so their ink pins to the light ramp instead of
+// following the active theme — otherwise dark mode paints light text on white.
+const GLASS = { ink: themes.light, blur: { backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" } };
+
 /*  وعي (Waey) — تطبيق الوعي المالي لطلاب الجامعات
     متجاوب لكل الأجهزة · عربي/إنجليزي · ألوان المسابقة: كحلي #002134 / بنفسجي #8685D8 / تراكوتا #CA6C46  */
 
@@ -108,9 +113,9 @@ const L = {
     stuPrefix: "طالب#", lbMetric: "حسب نسبة إكمال التحديات", periodW: "أسبوعي", periodM: "شهري", viewAll: "عرض اللوحة كاملة",
     yourRank: "ترتيبك", ofN: (n) => `من ${n}`, lbGap: (d, r) => `يفصلك ${d}% عن المركز ${r}`, lbTop: "أنت في الصدارة!", chDoneLabel: "تحديات",
     periodY: "سنوي", projTitle: "توقّع الادخار والنمو", breakdownTitle: "توزيع صرفك حسب الفئة",
-    projW: (v) => `وفّر 50 ر.س أسبوعياً (قهوة أقل) → خلال شهرين ~${fmt(v)} ر.س.`,
-    projM: (v) => `حوّل 200 ر.س ادخار أول كل شهر مع استثمار ~10% → بعد سنة ~${fmt(v)} ر.س.`,
-    projY: (v) => `استمر على 200 ر.س شهرياً مستثمرة → عند التخرّج (4 سنوات) ~${fmt(v)} ر.س.`,
+    projW: (v) => `وفّر 50 ر.س أسبوعياً (قهوة أقل) ← خلال شهرين ~${fmt(v)} ر.س.`,
+    projM: (v) => `حوّل 200 ر.س ادخار أول كل شهر مع استثمار ~10% ← بعد سنة ~${fmt(v)} ر.س.`,
+    projY: (v) => `استمر على 200 ر.س شهرياً مستثمرة ← عند التخرّج (4 سنوات) ~${fmt(v)} ر.س.`,
     jobsTitle: "وظائف مؤقتة · دخل إضافي", jobsSub: "اشتغل وقت فراغك وادّخر من دخلك", jobsPageSub: "وعي يدّخر لك 20% من كل دخل تلقائياً",
     jobAvg: "متوسط دخل الطلاب على وعي ~600 ر.س/شهر", jobApply: "اشتغلها", jobEarned: (p, sv) => `كسبت ${fmt(p)} ر.س · ادّخرنا لك ${fmt(sv)} ر.س`,
     jobDetails: "التفاصيل", jobAbout: "عن الوظيفة", jobReqs: "المتطلبات", jobHow: "طريقة التقديم", jobLoc: "الموقع", jobSlots: (n) => `${n} مقاعد متاحة`,
@@ -156,9 +161,9 @@ const L = {
       title: "مدرّب وعي", sub: "اختر ما تحتاجه أو اسأل أي شيء",
       analyze: "حلّل سلوكي", save: "ساعدني أوفّر", explain: "فسّر درجتي", suggest: "اقترح تحدّي",
       analyzeR: "شخصيتك المالية اجتماعية-مخطّطة: تخطّط قبل الشراء لكن الإنفاق الاجتماعي يرتفع بالإجازات. ركّز على ميزانية أسبوعية للخروجات.",
-      saveR: "قلّل صرف المطاعم 80 ر.س هذا الأسبوع → توفير محتمل 320 ر.س/شهر. فعّل كنز الفكّة عشان يدّخر تلقائياً.",
+      saveR: "قلّل صرف المطاعم 80 ر.س هذا الأسبوع ← توفير محتمل 320 ر.س/شهر. فعّل كنز الفكّة عشان يدّخر تلقائياً.",
       explainR: ["تخطيط ممتاز قبل الشراء", "عادة ادخار جيدة", "إنفاق عاطفي في الإجازات"],
-      suggestR: "تحدّي هذا الأسبوع: لا مطاعم بعد 8 مساءً لمدة 3 أيام → +5 نقاط. بسيط ويصنع فرق.",
+      suggestR: "تحدّي هذا الأسبوع: لا مطاعم بعد 8 مساءً لمدة 3 أيام ← +5 نقاط. بسيط ويصنع فرق.",
       askMore: "أو اكتب سؤالك بالأسفل",
     },
     awarenessTitle: "درجة وعيك المالي", dnaTitle: "الحمض السلوكي", aiConf: "ثقة الذكاء",
@@ -172,7 +177,7 @@ const L = {
       archTitle: "المعمارية", layer: "طبقة الواجهات الآمنة (Secure APIs)",
       nodeStudent: "تطبيق الطالب", nodeUni: "بوابة الجامعة", nodeBank: "لوحة البنك",
       engBehavior: "محرك السلوك", engAI: "محرك الذكاء", engAnalytics: "محرك التحليلات",
-      pStudent: "الطالب", pStudentD: "يجيب الأسئلة → يحصل على الحمض السلوكي، درجة الوعي، المدرّب، والتحدي. بدون حساب بنكي في الـMVP.",
+      pStudent: "الطالب", pStudentD: "يجيب الأسئلة ← يحصل على الحمض السلوكي، درجة الوعي، المدرّب، والتحدي. بدون حساب بنكي في الـMVP.",
       pUni: "جامعة جدة", pUniD: "شريك مؤسسي: تطلق البرنامج، وتتابع المشاركة والوعي — كله مجهّل بدون أفراد.",
       pBank: "بنك الإنماء", pBankD: "يحصل على تحليلات سلوكية مجمّعة فقط (أكثر الشخصيات، متوسط الوعي) لتصميم منتجات الشباب — بدون بيانات فردية.",
       uniDash: "لوحة الجامعة (عرض)", uniStudents: "طلاب مشاركون", uniAwareness: "متوسط الوعي المالي", uniComplete: "إكمال التحديات",
@@ -217,7 +222,7 @@ const L = {
     cashTitle: "كاش باك وعروض", cashSub: "استرجع جزء من مصاريفك اليومية", cashPageSub: "فعّل فئاتك واسترجع كاش باك مع كل عملية",
     cashEarned: "كاش باك هذا الشهر", cashActivate: "تفعيل", cashActive: "مفعّل", cashOn: "تم تفعيل الكاش باك", backWord: "كاش باك",
     mk: {
-      home: "الرئيسية", about: "عن وعي", login: "تسجيل الدخول", start: "ابدأ الآن", openApp: "افتح التطبيق",
+      home: "الرئيسية", about: "عن وعي", login: "تسجيل الدخول", start: "ابدأ الآن", openApp: "افتح التطبيق", skip: "تجاوز إلى المحتوى",
       heroTitle: "وعيك المالي يبدأ من الجامعة",
       heroSub: "منصة ذكاء سلوكي تحوّل مصاريفك اليومية إلى عادات ادخار ذكية — تجربة مثل Duolingo لكن للمال.",
       ctaPrimary: "ابدأ مجاناً", ctaSecondary: "عندي حساب",
@@ -228,7 +233,8 @@ const L = {
         { icon: Target, t: "تحديات أسبوعية مخصّصة", d: "مبنية على شخصيتك تحديداً، ترفع وعيك المالي تدريجياً." },
         { icon: Trophy, t: "لوحة الالتزام", d: "نافس على إتمام التحديات لا على المبالغ — خصوصيتك محفوظة." },
       ],
-      stats: [{ v: "2.4%", l: "معدل الادخار" }, { v: "1,103,986", l: "عدد طلاب الجامعات" }, { v: "2030", l: "داعم لرؤية المملكة", raw: true }],
+      stats: [{ v: "2.4%", l: "معدل الادخار الوطني اليوم" }, { v: "1,103,986", l: "عدد طلاب الجامعات" }, { v: "2030", l: "داعم لرؤية المملكة", raw: true }],
+      bandStats: [{ v: "3", l: "واجهات: طالب · جامعة · بنك", raw: true }, { v: "100%", l: "بيانات مجمّعة ومجهّلة الهوية" }, { v: "3 دقائق", l: "لاكتشاف شخصيتك المالية", raw: true }],
       howTitle: "كيف يشتغل وعي؟",
       steps: [
         { t: "حلّل شخصيتك", d: "وعي يقرأ نمط صرفك ويحدّد شخصيتك المالية." },
@@ -241,7 +247,7 @@ const L = {
       solutionTitle: "الحل", solutionText: "وعي منصة ذكاء سلوكي تحوّل بياناتك المالية اليومية إلى رؤى عملية تغيّر طريقة تفكيرك في المال — لا مجرد تتبّع أرقام.",
       visionTitle: "الرؤية", whyTitle: "لماذا الآن", whyText: "كل طالب يستخدم وعي اليوم هو عميل واعٍ ومستقر غداً — استثمار استراتيجي في جيل كامل قبل أي منافس.",
       lgTitle: "تسجيل الدخول", lgSub: "ادخل لحسابك في وعي", lgId: "البريد أو رقم الجوال", lgPass: "كلمة المرور",
-      lgBtn: "دخول", lgGuest: "الدخول كضيف", lgNo: "ما عندك حساب؟", lgSignup: "أنشئ حساب", lgBack: "رجوع للرئيسية", lgOut: "تسجيل الخروج",
+      lgBtn: "دخول", lgGuest: "الدخول كضيف", lgNo: "ما عندك حساب؟", lgSignup: "جرّب وعي كضيف الآن", lgBack: "رجوع للرئيسية", lgOut: "تسجيل الخروج",
     },
     leaderRows: [{ h: "طالب#A12", pct: 94 }, { h: "طالب#K77", pct: 90 }, { you: true, pct: 85 }, { h: "طالب#M03", pct: 81 }, { h: "طالب#R56", pct: 78 }],
     about: "عن وعي", aboutMission: "نرفع وعي جيل كامل بالمال — تجربة مثل Duolingo لكن للمال.", aboutStat: "معدل ادخار السعوديين 1.6% فقط — وعي يغيّر السلوك من الجامعة، دعماً لرؤية 2030.", aboutPartner: "شريك استراتيجي مقترح: بنك إنماء",
@@ -317,7 +323,7 @@ const L = {
     roundAdded: (x) => `+${x.toFixed(2)} ر.س change`,
     cashOffersSub: "Offers available in this category", cashOffersList: "Available offers", cashOffersCount: "offers",
     as: {
-      introTitle: ["Discover why you spend — not just how much", "Answer simple questions ← find your type ← get your decision", "Your data is safe — no bank account needed"],
+      introTitle: ["Discover why you spend — not just how much", "Answer simple questions → find your type → get your decision", "Your data is safe — no bank account needed"],
       introSub: ["Waey understands your money behavior before guiding you", "Under 3 minutes to know yourself financially", "You enter all data yourself, never shared"],
       next: "Next", start: "Start",
       profileTitle: "Tell us about you", profileSub: "Quick info to help Waey understand you",
@@ -388,7 +394,7 @@ const L = {
       college: "College", allColleges: "All colleges",
       colleges: ["Computer Science", "Engineering", "Business", "Medicine", "Science"],
       participation: "Participation", awareness: "Avg awareness", completion: "Challenge completion", activeUsers: "Active users",
-      personaMix: "Financial personality mix", tapForDetail: "Tap for details ←",
+      personaMix: "Financial personality mix", tapForDetail: "Tap for details →",
       chTitle: "Most successful challenges", chAccept: "Accept rate", chDone: "Completion rate",
       collegeTitle: "Awareness by college", students: "students",
       habitsTitle: "Most common negative habits", oppTitle: "Opportunities for the bank", ageGroup: "Age group",
@@ -409,7 +415,7 @@ const L = {
     cashTitle: "Cashback & offers", cashSub: "Get part of your daily spending back", cashPageSub: "Activate your categories and earn cashback on every purchase",
     cashEarned: "Cashback this month", cashActivate: "Activate", cashActive: "Active", cashOn: "Cashback activated", backWord: "cashback",
     mk: {
-      home: "Home", about: "About", login: "Sign in", start: "Get started", openApp: "Open app",
+      home: "Home", about: "About", login: "Sign in", start: "Get started", openApp: "Open app", skip: "Skip to content",
       heroTitle: "Money awareness starts at university",
       heroSub: "A behavioral AI platform that turns your daily spending into smart saving habits — a Duolingo for money.",
       ctaPrimary: "Start free", ctaSecondary: "I have an account",
@@ -420,7 +426,8 @@ const L = {
         { icon: Target, t: "Personalized weekly challenges", d: "Built for your personality, raising your money awareness step by step." },
         { icon: Trophy, t: "Commitment leaderboard", d: "Compete on completing challenges, not amounts — privacy kept." },
       ],
-      stats: [{ v: "2.4%", l: "Savings rate" }, { v: "1,103,986", l: "University students" }, { v: "2030", l: "supports the Vision", raw: true }],
+      stats: [{ v: "2.4%", l: "national savings rate today" }, { v: "1,103,986", l: "University students" }, { v: "2030", l: "supports the Vision", raw: true }],
+      bandStats: [{ v: "3", l: "interfaces: student · university · bank", raw: true }, { v: "100%", l: "aggregated, anonymized data" }, { v: "3 min", l: "to discover your money personality", raw: true }],
       howTitle: "How Waey works",
       steps: [
         { t: "Analyze your personality", d: "Waey reads your spending pattern and finds your money type." },
@@ -433,7 +440,7 @@ const L = {
       solutionTitle: "The solution", solutionText: "Waey is a behavioral AI platform that turns your daily financial data into practical insights that change how you think about money — not just number tracking.",
       visionTitle: "The vision", whyTitle: "Why now", whyText: "Every student using Waey today is an aware, stable customer tomorrow — a strategic investment in a whole generation before any competitor.",
       lgTitle: "Sign in", lgSub: "Access your Waey account", lgId: "Email or phone", lgPass: "Password",
-      lgBtn: "Sign in", lgGuest: "Continue as guest", lgNo: "No account?", lgSignup: "Create one", lgBack: "Back to home", lgOut: "Log out",
+      lgBtn: "Sign in", lgGuest: "Continue as guest", lgNo: "No account?", lgSignup: "Try Waey as a guest", lgBack: "Back to home", lgOut: "Log out",
     },
     leaderRows: [{ h: "Student#A12", pct: 94 }, { h: "Student#K77", pct: 90 }, { you: true, pct: 85 }, { h: "Student#M03", pct: 81 }, { h: "Student#R56", pct: 78 }],
     about: "About Waey", aboutMission: "Raising a generation's money awareness — a Duolingo for money.", aboutStat: "Saudi savings rate is just 1.6% — Waey changes behavior from university, supporting Vision 2030.", aboutPartner: "Proposed strategic partner: Bank Alinma",
@@ -495,8 +502,10 @@ const useCtx = () => useContext(Ctx);
 
 // رمز الريال السعودي الرسمي (المسار الرسمي من ساما)
 function RS({ size = "0.92em", color = "currentColor", style }) {
+  const ctx = useContext(Ctx);
+  const label = ctx?.lang === "en" ? "Saudi riyal" : "ريال سعودي";
   return (
-    <svg viewBox="0 0 1124.14 1256.39" width={size} height={size} fill={color} style={{ display: "inline-block", verticalAlign: "-0.04em", margin: "0 0.12em", ...style }} aria-label="SAR">
+    <svg viewBox="0 0 1124.14 1256.39" width={size} height={size} fill={color} style={{ display: "inline-block", verticalAlign: "-0.04em", margin: "0 0.12em", ...style }} role="img" aria-label={label}>
       <path d="M699.62,1113.02h0c-20.06,44.48-33.32,92.75-38.4,143.37l424.51-90.24c20.06-44.47,33.31-92.75,38.4-143.37l-424.51,90.24Z" />
       <path d="M1085.73,895.8c20.06-44.47,33.32-92.75,38.4-143.37l-330.68,70.33v-135.2l292.27-62.11c20.06-44.47,33.32-92.75,38.4-143.37l-330.68,70.27V66.13c-50.67,28.45-95.67,66.32-132.25,110.99v403.35l-132.25,28.11V0c-50.67,28.44-95.67,66.32-132.25,110.99v525.69l-295.91,62.88c-20.06,44.47-33.33,92.75-38.42,143.37l334.33-71.05v170.26l-358.3,76.14c-20.06,44.47-33.32,92.75-38.4,143.37l375.04-79.7c30.53-6.35,56.77-24.4,73.83-49.24l68.78-101.97v-.02c7.14-10.55,11.3-23.27,11.3-36.97v-149.98l132.25-28.11v270.4l424.53-90.28Z" />
     </svg>
@@ -602,7 +611,7 @@ function loanLocal(st, msg, lang) {
     const hrs = Math.max(1, Math.ceil(gap / 35));
     return {
       text: lang === "ar"
-        ? `محتاج ${fmt(need)} ومعك ${fmt(have)} → ينقصك ${fmt(gap)} ر.س. عندك 3 حلول:\n\n١) اشتغلها — توصيل أوقات الفراغ ~35 ر.س/ساعة، ${hrs} ساعات تغطّي الفرق (افتح صفحة الوظائف).\n٢) سلفة — وعي يعطيك ${fmt(offer)} ر.س تُخصم من راتب الشهر الجاي (بتنزل ${fmt(STIPEND - (st.loanTaken + offer))} بدل 1,000). اعتمدها بالزر تحت.\n٣) قلّلها — وفّر الفرق من القهوة والترفيه هالأسبوع.\n\nوش يناسبك؟`
+        ? `محتاج ${fmt(need)} ومعك ${fmt(have)} ← ينقصك ${fmt(gap)} ر.س. عندك 3 حلول:\n\n١) اشتغلها — توصيل أوقات الفراغ ~35 ر.س/ساعة، ${hrs} ساعات تغطّي الفرق (افتح صفحة الوظائف).\n٢) سلفة — وعي يعطيك ${fmt(offer)} ر.س تُخصم من راتب الشهر الجاي (بتنزل ${fmt(STIPEND - (st.loanTaken + offer))} بدل 1,000). اعتمدها بالزر تحت.\n٣) قلّلها — وفّر الفرق من القهوة والترفيه هالأسبوع.\n\nوش يناسبك؟`
         : `You need ${fmt(need)} but have ${fmt(have)} → short ${fmt(gap)} ر.س. You've got 3 options:\n\n1) Earn it — flexible delivery ~35 ر.س/hr, ${hrs} hrs covers the gap (open Jobs).\n2) Loan — Waey lends ${fmt(offer)} ر.س deducted from next month (drops to ${fmt(STIPEND - (st.loanTaken + offer))} instead of 1,000). Approve with the button below.\n3) Trim it — save the gap from coffee & fun this week.\n\nWhich works for you?`,
     };
   }
@@ -666,8 +675,16 @@ function completeChallenge(score, points = 15) { const nw = Math.min(100, score 
 
 /* ===================== التطبيق ===================== */
 export default function App() {
-  const [theme, setTheme] = useState("light");
-  const [lang, setLang] = useState("ar");
+  const [theme, setTheme] = useState(() => {
+    if (typeof window === "undefined") return "light";
+    const saved = window.localStorage.getItem("waey.theme");
+    return saved === "dark" || saved === "light" ? saved : "light";
+  });
+  const [lang, setLang] = useState(() => {
+    if (typeof window === "undefined") return "ar";
+    const saved = window.localStorage.getItem("waey.lang");
+    return saved === "en" || saved === "ar" ? saved : "ar";
+  });
   const [tab, setTab] = useState("home");
   const [entries, setEntries] = useState(seedEntries());
   const curWeek = 2;
@@ -699,10 +716,14 @@ export default function App() {
   const [vw, setVw] = useState(typeof window !== "undefined" ? window.innerWidth : 420);
 
   useEffect(() => { injectAssets(); const on = () => setVw(window.innerWidth); window.addEventListener("resize", on); return () => window.removeEventListener("resize", on); }, []);
-  useEffect(() => applyLanguageMetadata(lang), [lang]);
+  useEffect(() => {
+    applyLanguageMetadata(lang);
+    try { window.localStorage.setItem("waey.lang", lang); } catch { /* storage unavailable */ }
+  }, [lang]);
   useEffect(() => {
     if (typeof document === "undefined") return;
     applyThemeVars(theme);
+    try { window.localStorage.setItem("waey.theme", theme); } catch { /* storage unavailable */ }
   }, [theme]);
   useEffect(() => {
     if (typeof window === "undefined") return undefined;
@@ -859,9 +880,9 @@ function Splash() {
     tl.from(".splash-mark", { y: 18, scale: 0.92, opacity: 0, duration: 0.55 })
       .from(".splash-title", { y: 16, opacity: 0, duration: 0.42 }, "-=0.22")
       .from(".splash-chip", { y: 10, opacity: 0, stagger: 0.08, duration: 0.34 }, "-=0.16")
-      .fromTo(".splash-progress", { scaleX: 0 }, { scaleX: 1, duration: 1.4, transformOrigin: "left center" }, "-=0.14")
+      .fromTo(".splash-progress", { scaleX: 0 }, { scaleX: 1, duration: 1.4, transformOrigin: dir === "rtl" ? "right center" : "left center" }, "-=0.14")
       .to(".splash-mark", { y: -5, repeat: 1, yoyo: true, duration: 0.36, ease: "sine.inOut" }, "-=1.1");
-  }, []);
+  }, [dir]);
 
   return (
     <button
@@ -870,7 +891,7 @@ function Splash() {
       dir={dir}
       data-waey-theme={theme}
       data-waey-shell
-      aria-label={s.splash.start}
+      aria-label={`${s.brand} — ${s.splash.tagline}. ${s.splash.start}`}
       onClick={() => setScreen("landing")}
       style={{ fontFamily: FONT_STACK, background: c.page, color: c.text, height: "100dvh", width: "100%", border: "none", padding: 0, display: "grid", placeItems: "center", cursor: "pointer", position: "relative", overflow: "hidden" }}
     >
@@ -880,18 +901,18 @@ function Splash() {
           <WaeyMark size={104} />
         </div>
         <div className="splash-title" style={{ textAlign: "center" }}>
-          <div style={{ fontSize: 42, fontWeight: 850 }}>{s.brand}</div>
+          <h1 style={{ fontSize: 42, fontWeight: 850, margin: 0 }}>{s.brand}</h1>
           <div style={{ fontSize: 14, color: c.muted, marginTop: 6 }}>{s.splash.tagline}</div>
         </div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center" }}>
           {[s.nav.home, s.nav.analytics, s.nav.ai].map((label) => (
-            <span key={label} className="splash-chip" style={{ border: `1px solid ${c.line}`, background: "rgba(255,255,255,0.68)", borderRadius: 999, padding: "7px 12px", fontSize: 12, fontWeight: 700, color: c.textSoft }}>
+            <span key={label} className="splash-chip" style={{ border: `1px solid ${c.line}`, background: c.card, borderRadius: 999, padding: "7px 12px", fontSize: 12, fontWeight: 700, color: c.textSoft }}>
               {label}
             </span>
           ))}
         </div>
         <div style={{ width: 150, height: 5, borderRadius: 999, background: c.card2, overflow: "hidden", marginTop: 4 }}>
-          <div className="splash-progress" style={{ height: "100%", background: `linear-gradient(90deg, ${c.accent}, ${c.green})`, borderRadius: 999, transformOrigin: "left center" }} />
+          <div className="splash-progress" style={{ height: "100%", background: `linear-gradient(${dir === "rtl" ? 270 : 90}deg, ${c.accent}, ${c.green})`, borderRadius: 999, transformOrigin: dir === "rtl" ? "right center" : "left center" }} />
         </div>
       </div>
     </button>
@@ -910,8 +931,8 @@ function RoleShell({ title, sub, onBack, children }) {
     <div dir={dir} data-waey-theme={theme} data-waey-shell style={{ fontFamily: FONT_STACK, background: c.page, color: c.text, height: "100dvh", display: "flex", flexDirection: "column", overflow: "hidden", position: "relative", zIndex: 0 }}>
       <div style={{ position: "absolute", inset: 0, zIndex: -1, pointerEvents: "none" }}><WaeyFlowField tone={theme} /></div>
       <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "calc(env(safe-area-inset-top,0px) + 16px) 18px 12px", flexShrink: 0 }}>
-        {onBack && <button onClick={onBack} style={{ width: 38, height: 38, borderRadius: 12, background: c.card, border: `1px solid ${c.line}`, color: c.text, display: "grid", placeItems: "center", cursor: "pointer" }}><Back size={20} /></button>}
-        <div><div style={{ fontSize: 19, fontWeight: 800 }}>{title}</div>{sub && <div style={{ fontSize: 11.5, color: c.muted }}>{sub}</div>}</div>
+        {onBack && <button onClick={onBack} aria-label={s.role.back} style={{ width: 44, height: 44, borderRadius: 13, background: c.card, border: `1px solid ${c.line}`, color: c.text, display: "grid", placeItems: "center", cursor: "pointer" }}><Back size={20} aria-hidden="true" /></button>}
+        <div><h1 style={{ fontSize: 19, fontWeight: 800, margin: 0 }}>{title}</h1>{sub && <div style={{ fontSize: 11.5, color: c.muted }}>{sub}</div>}</div>
       </div>
       <div className="wscroll" style={{ flex: 1, overflowY: "auto", padding: "4px 18px 28px" }}><div ref={scope} style={{ maxWidth: 560, margin: "0 auto" }}>{children}</div></div>
     </div>
@@ -927,7 +948,7 @@ function RoleSelect() {
   ];
   const Fwd = lang === "ar" ? ArrowLeft : ArrowRight;
   return (
-    <div dir={dir} style={{ fontFamily: FONT_STACK, background: c.bg0, color: c.text, height: "100dvh", display: "flex", flexDirection: "column", overflow: "hidden", position: "relative", zIndex: 0 }}>
+    <div dir={dir} data-waey-theme={theme} data-waey-shell style={{ fontFamily: FONT_STACK, background: c.page, color: c.text, height: "100dvh", display: "flex", flexDirection: "column", overflow: "hidden", position: "relative", zIndex: 0 }}>
       <div style={{ position: "absolute", inset: 0, zIndex: -1, pointerEvents: "none" }}><WaeyFlowField tone={theme} /></div>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "calc(env(safe-area-inset-top,0px) + 16px) 18px 8px" }}>
         <button type="button" onClick={() => setScreen("landing")} aria-label={lang === "ar" ? "الصفحة الرئيسية" : "Home"} style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", background: "none", border: "none", color: c.text, fontFamily: "inherit", padding: 0 }}>
@@ -935,15 +956,15 @@ function RoleSelect() {
           <span style={{ fontWeight: 800, fontSize: 16 }}>{s.brand}</span>
         </button>
       </div>
-      <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", justifyContent: "center", padding: "20px 20px 32px" }}>
-        <div style={{ width: "100%", maxWidth: 460, margin: "0 auto" }}>
+      <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", padding: "20px 20px 32px" }}>
+        <div style={{ width: "100%", maxWidth: 460, marginInline: "auto", marginBlock: "auto" }}>
           <div style={{ textAlign: "center", marginBottom: 24 }}>
-            <div style={{ fontSize: 25, fontWeight: 800 }}>{R.title}</div>
+            <h1 style={{ fontSize: 25, fontWeight: 800, margin: 0 }}>{R.title}</h1>
             <div style={{ fontSize: 13.5, color: c.muted, marginTop: 8, lineHeight: 1.6 }}>{R.sub}</div>
           </div>
           <motion.div initial="hidden" animate="visible" variants={revealContainer} style={{ display: "flex", flexDirection: "column", gap: 13 }}>
-            {roles.map(([Icon, name, desc, col, go], i) => (
-              <motion.button key={i} type="button" onClick={go} variants={revealItem} whileHover={{ y: -3, boxShadow: "0 24px 60px -34px rgba(15,34,48,0.45)" }} whileTap={{ scale: 0.98 }} style={{ width: "100%", display: "flex", alignItems: "center", gap: 14, background: c.card, border: `1px solid ${c.line}`, borderRadius: 22, padding: 18, cursor: "pointer", position: "relative", color: c.text, fontFamily: "inherit", textAlign: "start" }}>
+            {roles.map(([Icon, name, desc, col, go]) => (
+              <motion.button key={String(name)} type="button" onClick={go} variants={revealItem} whileHover={{ y: -3, boxShadow: c.liftShadow }} whileTap={{ scale: 0.98 }} style={{ width: "100%", display: "flex", alignItems: "center", gap: 14, background: c.card, border: `1px solid ${c.line}`, borderRadius: 22, padding: 18, cursor: "pointer", position: "relative", color: c.text, fontFamily: "inherit", textAlign: "start" }}>
                 <IconBubble icon={Icon} color={col} bg={col + "22"} size={27} box={54} radius={16} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontWeight: 800, fontSize: 16 }}>{name}</div>
@@ -1443,65 +1464,40 @@ function mkBtn(bg, color, border) { return { padding: "13px 26px", borderRadius:
 function mkH2(c) { return { fontSize: "clamp(24px,3.5vw,38px)", fontWeight: 800, textAlign: "center", margin: 0, letterSpacing: "-0.01em" }; }
 
 function Marketing() {
-  const { c, dir, screen, theme } = useCtx();
+  const { c, s, dir, screen, theme } = useCtx();
   const bg = `linear-gradient(180deg, ${c.bg1} 0%, ${c.bg0} 100%)`;
   return (
     <div dir={dir} data-waey-theme={theme} data-waey-shell className="wscroll" style={{ fontFamily: FONT_STACK, background: bg, color: c.text, height: "100dvh", overflowY: "auto" }}>
+      <button type="button" className="waey-skip" onClick={() => document.getElementById("waey-main")?.focus()}>{s.mk.skip}</button>
       <MkNav />
-      {screen === "landing" && <Landing />}
-      {screen === "about" && <AboutPage />}
-      {screen === "login" && <LoginPage />}
+      <main id="waey-main" tabIndex={-1} style={{ outline: "none" }}>
+        {screen === "landing" && <Landing />}
+        {screen === "about" && <AboutPage />}
+        {screen === "login" && <LoginPage />}
+      </main>
       {screen !== "login" && <MkFooter />}
     </div>
   );
 }
 
 function MkNav() {
-  const { c, s, vw, theme, setTheme, lang, setLang, screen, setScreen } = useCtx();
-  const narrow = vw < 720;
-  const ic = { width: 38, height: 38, borderRadius: 12, background: c.card, border: `1px solid ${c.line}`, color: c.text, display: "grid", placeItems: "center", cursor: "pointer" };
-  const link = (k, label) => <button onClick={() => setScreen(k)} style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 14, fontWeight: screen === k ? 700 : 500, color: screen === k ? c.text : c.muted }}>{label}</button>;
+  const { c, s, theme, setTheme, lang, setLang, screen, setScreen } = useCtx();
+  const ic = { width: 44, height: 44, borderRadius: 13, background: c.card, border: `1px solid ${c.line}`, color: c.text, display: "grid", placeItems: "center", cursor: "pointer" };
+  const link = (k, label) => <button onClick={() => setScreen(k)} aria-current={screen === k ? "page" : undefined} style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 14, fontWeight: screen === k ? 700 : 500, color: screen === k ? c.text : c.muted, padding: "12px 6px" }}>{label}</button>;
   return (
-    <div style={{ position: "sticky", top: 0, zIndex: 20, backdropFilter: "blur(12px)", background: c.bg0 + "cc", borderBottom: `1px solid ${c.line}` }}>
-      <div style={{ maxWidth: 1120, margin: "0 auto", padding: "12px 18px", display: "flex", alignItems: "center", gap: 14 }}>
+    <header style={{ position: "sticky", top: 0, zIndex: 20, backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", background: c.bg0 + "cc", borderBottom: `1px solid ${c.line}` }}>
+      <div style={{ maxWidth: 1120, margin: "0 auto", padding: "10px 18px", display: "flex", alignItems: "center", gap: 12 }}>
         <button type="button" onClick={() => setScreen("landing")} aria-label={lang === "ar" ? "الصفحة الرئيسية" : "Home"} style={{ display: "flex", alignItems: "center", gap: 9, cursor: "pointer", background: "none", border: "none", color: c.text, fontFamily: "inherit", padding: 0 }}>
           <WaeyMark size={34} />
-          <span style={{ fontWeight: 800, fontSize: 18, color: screen === "landing" ? c.text : c.text }}>{s.brand}</span>
+          <span style={{ fontWeight: 800, fontSize: 18 }}>{s.brand}</span>
         </button>
-        {!narrow && <div style={{ display: "flex", gap: 18, marginInlineStart: 12 }}>{link("about", s.mk.about)}</div>}
+        <nav aria-label={lang === "ar" ? "التنقل الرئيسي" : "Main navigation"} style={{ display: "flex", gap: 10, marginInlineStart: 8 }}>{link("about", s.mk.about)}</nav>
         <div style={{ flex: 1 }} />
-        <button aria-label={lang === "ar" ? "تغيير المظهر" : "Change theme"} onClick={() => setTheme(theme === "dark" ? "light" : "dark")} style={ic}>{theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}</button>
-        <button aria-label={lang === "ar" ? "تغيير اللغة" : "Change language"} onClick={() => setLang(lang === "ar" ? "en" : "ar")} style={ic}><Globe size={18} /></button>
-        <button onClick={() => setScreen("login")} style={{ ...mkBtn(c.accent, c.onAccent), padding: "9px 16px", fontSize: 13.5 }}>{s.mk.login}</button>
+        <button aria-label={lang === "ar" ? "تغيير المظهر" : "Change theme"} onClick={() => setTheme(theme === "dark" ? "light" : "dark")} style={ic}>{theme === "dark" ? <Sun size={18} aria-hidden="true" /> : <Moon size={18} aria-hidden="true" />}</button>
+        <button aria-label={lang === "ar" ? "تغيير اللغة" : "Change language"} onClick={() => setLang(lang === "ar" ? "en" : "ar")} style={ic}><Globe size={18} aria-hidden="true" /></button>
+        <button onClick={() => setScreen("login")} style={{ ...mkBtn(c.accent, c.onAccent), padding: "9px 16px", fontSize: 13.5, minHeight: 44 }}>{s.mk.login}</button>
       </div>
-    </div>
-  );
-}
-
-function HeroMock() {
-  const { c, lang } = useCtx();
-  const scope = useRef(null);
-
-  useGsap(scope, (gsap, { reduce }) => {
-    if (reduce || !scope.current) return;
-    gsap.to(scope.current, { y: -10, rotate: -1.5, duration: 2.4, yoyo: true, repeat: -1, ease: "sine.inOut" });
-    gsap.from(".hero-cardlet", { y: 16, opacity: 0, stagger: 0.12, duration: 0.5, ease: "power3.out", clearProps: "transform,opacity" });
-  }, []);
-
-  return (
-    <div ref={scope} className="hero-phone" style={{ width: "clamp(230px,32vw,300px)", borderRadius: 38, padding: 14, background: `linear-gradient(160deg, ${c.card2}, ${c.bg1})`, border: `1px solid ${c.line}`, boxShadow: c.shadow, flexShrink: 0, position: "relative", zIndex: 1 }}>
-      <div className="hero-cardlet" style={{ background: `linear-gradient(135deg, ${c.bg1}, ${c.card2})`, border: `1px solid ${c.line}`, borderRadius: 22, padding: 16 }}>
-        <div style={{ fontSize: 11, color: c.muted }}>{lang === "ar" ? "رصيد الحساب" : "Balance"}</div>
-        <div style={{ fontSize: 26, fontWeight: 800 }}><AnimatedNumber value={1240} formatter={(n) => fmt(n)} /> <RS size="0.58em" color={c.muted} /></div>
-      </div>
-      <div className="hero-cardlet" style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 18, padding: 14, marginTop: 12 }}>
-        <Spark data={[40, 46, 44, 52, 50, 58, 62, 70]} />
-        <div style={{ fontSize: 11, color: c.muted, textAlign: "center", marginTop: 2 }}>{lang === "ar" ? "نمو مدّخراتك" : "Savings growth"}</div>
-      </div>
-      <div className="hero-cardlet" style={{ display: "flex", gap: 8, marginTop: 12 }}>
-        {[Brain, Target, Trophy].map((Icon, i) => <div key={i} style={{ flex: 1, textAlign: "center", background: c.card, border: `1px solid ${c.line}`, borderRadius: 14, padding: "10px 0" }}><Icon size={20} color={i === 1 ? c.green : c.accentText} aria-hidden="true" /></div>)}
-      </div>
-    </div>
+    </header>
   );
 }
 
@@ -1541,7 +1537,7 @@ function WaeyMark({ size = 56 }) {
 
 // Real Waey loading-screen UI, composited on the hero (crisp + localized, not baked into the photo).
 function LoadingPhone() {
-  const { c, s } = useCtx();
+  const { c, s, dir } = useCtx();
   return (
     <div style={{ width: "clamp(146px,16vw,184px)", borderRadius: 30, padding: 9, background: `linear-gradient(160deg, ${c.bg1}, ${c.card2})`, border: `1px solid ${c.line}`, boxShadow: c.shadow }}>
       <div style={{ borderRadius: 23, background: c.page, aspectRatio: "9 / 17.5", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 11, padding: "18px 16px", overflow: "hidden", position: "relative" }}>
@@ -1549,7 +1545,7 @@ function LoadingPhone() {
         <div style={{ fontSize: 19, fontWeight: 850 }}>{s.brand}</div>
         <div style={{ fontSize: 10, color: c.muted, textAlign: "center", lineHeight: 1.5 }}>{s.splash.tagline}</div>
         <div style={{ width: 88, height: 5, borderRadius: 999, background: c.card2, overflow: "hidden", marginTop: 2 }}>
-          <motion.div initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ duration: 1.6, ease: easeOut, repeat: Infinity, repeatType: "loop", repeatDelay: 0.3 }} style={{ height: "100%", background: `linear-gradient(90deg, ${c.accent}, ${c.green})`, transformOrigin: "left center" }} />
+          <motion.div initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ duration: 1.6, ease: easeOut, repeat: Infinity, repeatType: "loop", repeatDelay: 0.3 }} style={{ height: "100%", background: `linear-gradient(${dir === "rtl" ? 270 : 90}deg, ${c.accent}, ${c.green})`, transformOrigin: dir === "rtl" ? "right center" : "left center" }} />
         </div>
       </div>
     </div>
@@ -1561,7 +1557,9 @@ function HeroShowcase() {
   const scope = useRef(null);
   useGsap(scope, (gsap, { reduce }) => {
     if (reduce || !scope.current) return;
-    gsap.from(".hero-photo", { scale: 1.06, opacity: 0, duration: 1.1, ease: "power3.out", clearProps: "opacity" });
+    // Scale-only entrance: the hero photo is the LCP element, so it must stay
+    // painted from the first frame (no opacity fade).
+    gsap.from(".hero-photo", { scale: 1.06, duration: 1.1, ease: "power3.out" });
     gsap.from([".hero-float-phone", ".hero-float-card", ".hero-float-card2"], { y: 34, opacity: 0, stagger: 0.15, duration: 0.7, ease: "power3.out", delay: 0.3, clearProps: "opacity" });
     gsap.to(".hero-float-phone", { y: -12, duration: 3, yoyo: true, repeat: -1, ease: "sine.inOut", delay: 1 });
     gsap.to(".hero-float-card", { y: 10, duration: 3.4, yoyo: true, repeat: -1, ease: "sine.inOut", delay: 1.2 });
@@ -1588,17 +1586,17 @@ function HeroShowcase() {
         {/* Tucked into the bottom-right corner and scaled down so it accents the
             frame without riding up over the student's face. Scale lives on an inner
             wrapper so GSAP's float animation on .hero-float-phone stays conflict-free. */}
-        <div className="hero-float-phone" style={{ position: "absolute", bottom: "4%", ...phoneSide, zIndex: 3, pointerEvents: "none" }}>
+        <div className="hero-float-phone" aria-hidden="true" style={{ position: "absolute", bottom: "4%", ...phoneSide, zIndex: 3, pointerEvents: "none" }}>
           <div style={{ transform: "scale(0.6)", transformOrigin: "right bottom" }}><LoadingPhone /></div>
         </div>
-        <div className="hero-float-card waey-soft-card" style={{ position: "absolute", top: "6%", insetInlineStart: dir === "rtl" ? "auto" : "-13%", insetInlineEnd: dir === "rtl" ? "-13%" : "auto", background: "rgba(255,255,255,0.86)", backdropFilter: "blur(10px)", border: `1px solid ${c.line}`, borderRadius: 18, padding: "12px 15px", boxShadow: c.shadow, zIndex: 3 }}>
-          <div style={{ fontSize: 10.5, color: c.muted }}>{lang === "ar" ? "متوسط الادخار" : "Avg. saved"}</div>
-          <div style={{ fontSize: 22, fontWeight: 850, color: c.accentText }}><Metric value={447} /> <RS size="0.5em" color={c.muted} /></div>
-          <div style={{ fontSize: 10, color: c.green, fontWeight: 700, marginTop: 2 }}>▲ <Metric value="12%" /></div>
+        <div className="hero-float-card waey-soft-card" style={{ position: "absolute", top: "6%", insetInlineStart: dir === "rtl" ? "auto" : "-13%", insetInlineEnd: dir === "rtl" ? "-13%" : "auto", background: "rgba(255,255,255,0.86)", ...GLASS.blur, border: `1px solid ${GLASS.ink.line}`, borderRadius: 18, padding: "12px 15px", boxShadow: c.shadow, zIndex: 3 }}>
+          <div style={{ fontSize: 10.5, color: GLASS.ink.muted }}>{lang === "ar" ? "متوسط الادخار" : "Avg. saved"}</div>
+          <div style={{ fontSize: 22, fontWeight: 850, color: GLASS.ink.accentText }}><Metric value={447} /> <RS size="0.5em" color={GLASS.ink.muted} /></div>
+          <div style={{ fontSize: 10, color: GLASS.ink.green, fontWeight: 700, marginTop: 2 }}>▲ <Metric value="12%" /></div>
         </div>
-        <div className="hero-float-card2 waey-soft-card" style={{ position: "absolute", bottom: "27%", insetInlineEnd: dir === "rtl" ? "auto" : "-10%", insetInlineStart: dir === "rtl" ? "-10%" : "auto", background: "rgba(255,255,255,0.86)", backdropFilter: "blur(10px)", border: `1px solid ${c.line}`, borderRadius: 16, padding: "10px 13px", boxShadow: c.shadow, zIndex: 3 }}>
-          <div style={{ fontSize: 10, color: c.muted }}>{lang === "ar" ? "درجة الوعي" : "Awareness"}</div>
-          <div style={{ fontSize: 19, fontWeight: 850, color: c.green }}><Metric value={62} /><span style={{ fontSize: 11, color: c.muted }}>/100</span></div>
+        <div className="hero-float-card2 waey-soft-card" style={{ position: "absolute", bottom: "27%", insetInlineEnd: dir === "rtl" ? "auto" : "-10%", insetInlineStart: dir === "rtl" ? "-10%" : "auto", background: "rgba(255,255,255,0.86)", ...GLASS.blur, border: `1px solid ${GLASS.ink.line}`, borderRadius: 16, padding: "10px 13px", boxShadow: c.shadow, zIndex: 3 }}>
+          <div style={{ fontSize: 10, color: GLASS.ink.muted }}>{lang === "ar" ? "درجة الوعي" : "Awareness"}</div>
+          <div style={{ fontSize: 19, fontWeight: 850, color: GLASS.ink.green }}><Metric value={62} /><span style={{ fontSize: 11, color: GLASS.ink.muted }}>/100</span></div>
         </div>
       </div>
     </div>
@@ -1617,7 +1615,7 @@ function Landing() {
         <WaeyFlowField tone={theme} />
         <div style={{ maxWidth: 1180, margin: "0 auto", padding: "clamp(26px,5vw,60px) 20px clamp(36px,5vw,72px)", display: "grid", gridTemplateColumns: narrow ? "1fr" : "1.02fr 0.98fr", alignItems: "center", gap: "clamp(30px,5vw,54px)", position: "relative", zIndex: 1 }}>
           <ScrollReveal style={{ textAlign: narrow ? "center" : "start" }}>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 12.5, fontWeight: 700, color: c.accentText, background: "rgba(255,255,255,0.7)", backdropFilter: "blur(8px)", border: `1px solid ${c.line}`, borderRadius: 999, padding: "7px 14px", marginBottom: 20 }}><Sparkles size={13} /> Waey · {s.mk.visionTitle} 2030</div>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 12.5, fontWeight: 700, color: c.accentText, background: c.card, border: `1px solid ${c.line}`, borderRadius: 999, padding: "7px 14px", marginBottom: 20 }}><Sparkles size={13} aria-hidden="true" /> Waey · {s.mk.visionTitle} 2030</div>
             <h1 style={{ fontSize: "clamp(36px,6vw,66px)", fontWeight: 850, lineHeight: 1.04, letterSpacing: "-0.03em", margin: 0 }}>{s.mk.heroTitle}</h1>
             <p style={{ fontSize: "clamp(15px,1.6vw,20px)", color: c.textSoft, lineHeight: 1.7, marginTop: 20, maxWidth: 540, marginInline: narrow ? "auto" : 0 }}>{s.mk.heroSub}</p>
             <div style={{ display: "flex", gap: 12, marginTop: 28, flexWrap: "wrap", justifyContent: narrow ? "center" : "flex-start" }}>
@@ -1657,9 +1655,9 @@ function Landing() {
           {/* Tile A — campus (tall hero of the mosaic) */}
           <motion.div variants={revealItem} whileHover={{ y: -4 }} transition={{ duration: 0.2, ease: easeOut }} style={{ position: "relative", borderRadius: 26, overflow: "hidden", border: `1px solid ${c.line}`, boxShadow: c.shadow, ...(vw >= 1000 ? { gridColumn: "span 7", gridRow: "1 / span 2" } : { minHeight: "clamp(230px,44vw,320px)" }) }}>
             <LandingImage src={`${LANDING_IMG}waey-campus-budgeting.webp`} alt={lang === "ar" ? "ثلاثة طلاب يخططون مصاريفهم حول هاتف ولابتوب" : "Three students budgeting together around a phone and laptop"} tone="warm" overlay="linear-gradient(0deg, rgba(15,34,48,0.64), transparent 55%)" style={{ position: "absolute", inset: 0 }} />
-            <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.2, ease: easeOut }} style={{ position: "absolute", top: "7%", insetInlineEnd: "6%", background: "rgba(255,255,255,0.9)", backdropFilter: "blur(10px)", border: `1px solid ${c.line}`, borderRadius: 16, padding: "10px 14px", boxShadow: c.shadow }}>
-              <div style={{ fontSize: 22, fontWeight: 850, color: c.accentText, letterSpacing: "-0.02em" }}><Metric value="1.9M" /> <RS size="0.4em" color={c.muted} /></div>
-              <div style={{ fontSize: 10.5, color: c.muted }}>{lang === "ar" ? "ريال ادّخرها الطلاب" : "saved by students"}</div>
+            <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.2, ease: easeOut }} style={{ position: "absolute", top: "7%", insetInlineEnd: "6%", background: "rgba(255,255,255,0.9)", ...GLASS.blur, border: `1px solid ${GLASS.ink.line}`, borderRadius: 16, padding: "10px 14px", boxShadow: c.shadow }}>
+              <div style={{ fontSize: 22, fontWeight: 850, color: GLASS.ink.accentText, letterSpacing: "-0.02em" }}><Metric value="1.9M" /> <RS size="0.4em" color={GLASS.ink.muted} /></div>
+              <div style={{ fontSize: 10.5, color: GLASS.ink.muted }}>{lang === "ar" ? "ريال ادّخرها طلاب الجامعة" : "saved by campus students"}</div>
             </motion.div>
             <div style={{ position: "absolute", insetInline: 0, bottom: 0, padding: "clamp(18px,3vw,28px)", color: "#fff", textAlign: "start" }}>
               <div style={{ fontSize: "clamp(19px,2.4vw,27px)", fontWeight: 850, letterSpacing: "-0.02em" }}>{lang === "ar" ? "عادات مالية تبدأ من الحرم الجامعي" : "Money habits that start on campus"}</div>
@@ -1669,9 +1667,9 @@ function Landing() {
           {/* Tile B — cafe insight */}
           <motion.div variants={revealItem} whileHover={{ y: -4 }} transition={{ duration: 0.2, ease: easeOut }} style={{ position: "relative", borderRadius: 26, overflow: "hidden", border: `1px solid ${c.line}`, boxShadow: c.shadow, ...(vw >= 1000 ? { gridColumn: "8 / span 5", gridRow: 1 } : { minHeight: "clamp(180px,42vw,240px)" }) }}>
             <LandingImage src={`${LANDING_IMG}waey-cafe-insight.webp`} alt={lang === "ar" ? "طالب يراجع تحليلات إنفاقه اللحظية" : "A student reviewing real-time spending insights"} tone="green" overlay="linear-gradient(0deg, rgba(15,34,48,0.55), transparent 60%)" style={{ position: "absolute", inset: 0 }} />
-            <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.3, ease: easeOut }} style={{ position: "absolute", top: "9%", insetInlineStart: "6%", background: "rgba(255,255,255,0.9)", backdropFilter: "blur(10px)", border: `1px solid ${c.line}`, borderRadius: 14, padding: "8px 12px", boxShadow: c.shadow }}>
-              <div style={{ fontSize: 18, fontWeight: 850, color: c.green }}><Metric value="94%" /></div>
-              <div style={{ fontSize: 10, color: c.muted }}>{lang === "ar" ? "تحكّم أكبر" : "in control"}</div>
+            <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.3, ease: easeOut }} style={{ position: "absolute", top: "9%", insetInlineStart: "6%", background: "rgba(255,255,255,0.9)", ...GLASS.blur, border: `1px solid ${GLASS.ink.line}`, borderRadius: 14, padding: "8px 12px", boxShadow: c.shadow }}>
+              <div style={{ fontSize: 18, fontWeight: 850, color: GLASS.ink.green }}><Metric value="94%" /></div>
+              <div style={{ fontSize: 10, color: GLASS.ink.muted }}>{lang === "ar" ? "تحكّم أكبر" : "in control"}</div>
             </motion.div>
             <div style={{ position: "absolute", insetInline: 0, bottom: 0, padding: 18, color: "#fff", textAlign: "start" }}>
               <div style={{ fontSize: "clamp(16px,1.8vw,20px)", fontWeight: 800 }}>{lang === "ar" ? "تحليلات لحظية لإنفاقك" : "Real-time spending insight"}</div>
@@ -1685,6 +1683,7 @@ function Landing() {
             </div>
             <div style={{ fontSize: 12.5, color: c.muted, marginTop: 4 }}>{lang === "ar" ? "طالب يمكن الوصول إليهم — ووعي مالي يرتفع" : "students reachable — awareness rising"}</div>
             <div style={{ marginTop: 12 }}><Spark data={[40, 44, 52, 50, 58, 62, 70, 78]} /></div>
+            <div style={{ fontSize: 9.5, color: c.muted, marginTop: 6 }}>{lang === "ar" ? "رسم توضيحي" : "Illustrative"}</div>
           </motion.div>
         </motion.div>
       </div>
@@ -1698,10 +1697,10 @@ function Landing() {
       <div style={{ background: c.card2, borderTop: `1px solid ${c.line}`, borderBottom: `1px solid ${c.line}` }}>
         <div style={{ maxWidth: 1120, margin: "0 auto", padding: "clamp(30px,5vw,54px) 20px" }}>
           <ScrollReveal style={{ textAlign: "center", marginBottom: "clamp(18px,3vw,28px)" }}>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 12.5, fontWeight: 700, color: c.accentText, background: "rgba(255,255,255,0.6)", border: `1px solid ${c.line}`, borderRadius: 999, padding: "7px 15px" }}><Sparkles size={13} />{lang === "ar" ? "طبقة سلوكية بين الطالب والجامعة والبنك" : "A Behavior Layer between student, university & bank"}</div>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 12.5, fontWeight: 700, color: c.accentText, background: c.card, border: `1px solid ${c.line}`, borderRadius: 999, padding: "7px 15px" }}><Sparkles size={13} aria-hidden="true" />{lang === "ar" ? "طبقة سلوكية بين الطالب والجامعة والبنك" : "A Behavior Layer between student, university & bank"}</div>
           </ScrollReveal>
           <motion.div initial="hidden" whileInView="visible" viewport={viewportOnce} variants={revealContainer} style={{ display: "flex", flexWrap: "wrap", gap: 24, justifyContent: "space-around", textAlign: "center" }}>
-            {s.mk.stats.map((st, i) => (
+            {s.mk.bandStats.map((st, i) => (
               <motion.div key={i} variants={revealItem} style={{ flex: "1 1 160px" }}>
                 <div style={{ fontSize: "clamp(30px,5vw,46px)", fontWeight: 800, color: c.accentText }}><Metric value={st.v} group={!st.raw} /></div>
                 <div style={{ fontSize: 13.5, color: c.muted, marginTop: 4 }}>{st.l}</div>
@@ -1745,13 +1744,13 @@ function Landing() {
             <ScrollReveal>
               <motion.div whileHover={{ y: -4 }} transition={{ duration: 0.2, ease: easeOut }} style={{ position: "relative", aspectRatio: "1672 / 941", borderRadius: 28, overflow: "hidden", border: `1px solid ${c.line}`, boxShadow: c.shadow }}>
                 <LandingImage src={`${LANDING_IMG}waey-university-dashboard.webp`} alt={lang === "ar" ? "مكتب إرشاد أكاديمي يعرض لوحة تحليلات وعي على اللابتوب" : "Academic-advising office viewing the Waey analytics dashboard on a laptop"} tone="hero" overlay="linear-gradient(120deg, rgba(15,34,48,0.30), rgba(15,34,48,0.04))" style={{ position: "absolute", inset: 0 }} />
-                <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.15, ease: easeOut }} style={{ position: "absolute", insetInlineEnd: "6%", top: "10%", background: "rgba(255,255,255,0.92)", backdropFilter: "blur(10px)", border: `1px solid ${c.line}`, borderRadius: 16, padding: "10px 15px", boxShadow: c.shadow }}>
-                  <div style={{ fontSize: 10.5, color: c.muted }}>{lang === "ar" ? "المشاركة" : "Participation"}</div>
-                  <div style={{ fontSize: 23, fontWeight: 850, color: c.accent }}><Metric value={4250} /></div>
+                <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.15, ease: easeOut }} style={{ position: "absolute", insetInlineEnd: "6%", top: "10%", background: "rgba(255,255,255,0.92)", ...GLASS.blur, border: `1px solid ${GLASS.ink.line}`, borderRadius: 16, padding: "10px 15px", boxShadow: c.shadow }}>
+                  <div style={{ fontSize: 10.5, color: GLASS.ink.muted }}>{lang === "ar" ? "المشاركة" : "Participation"}</div>
+                  <div style={{ fontSize: 23, fontWeight: 850, color: GLASS.ink.accent }}><Metric value={4250} /></div>
                 </motion.div>
-                <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.3, ease: easeOut }} style={{ position: "absolute", insetInlineStart: "6%", bottom: "10%", background: "rgba(255,255,255,0.92)", backdropFilter: "blur(10px)", border: `1px solid ${c.line}`, borderRadius: 16, padding: "10px 15px", boxShadow: c.shadow }}>
-                  <div style={{ fontSize: 10.5, color: c.muted }}>{lang === "ar" ? "الوعي المالي" : "Awareness"}</div>
-                  <div style={{ fontSize: 23, fontWeight: 850, color: c.green }}><Metric value="64%" /></div>
+                <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.3, ease: easeOut }} style={{ position: "absolute", insetInlineStart: "6%", bottom: "10%", background: "rgba(255,255,255,0.92)", ...GLASS.blur, border: `1px solid ${GLASS.ink.line}`, borderRadius: 16, padding: "10px 15px", boxShadow: c.shadow }}>
+                  <div style={{ fontSize: 10.5, color: GLASS.ink.muted }}>{lang === "ar" ? "الوعي المالي" : "Awareness"}</div>
+                  <div style={{ fontSize: 23, fontWeight: 850, color: GLASS.ink.green }}><Metric value="64%" /></div>
                 </motion.div>
               </motion.div>
             </ScrollReveal>
@@ -1765,13 +1764,13 @@ function Landing() {
             <ScrollReveal>
               <motion.div whileHover={{ y: -4 }} transition={{ duration: 0.2, ease: easeOut }} style={{ position: "relative", aspectRatio: "1672 / 941", borderRadius: 28, overflow: "hidden", border: `1px solid ${c.line}`, boxShadow: c.shadow }}>
                 <LandingImage src={`${LANDING_IMG}waey-bank-partner-dashboard.webp`} alt={lang === "ar" ? "شريكان من البنك يراجعان لوحة تحليلات وعي المجمّعة والمجهّلة" : "Two bank partners reviewing Waey's aggregated, anonymized analytics dashboard"} tone="terra" overlay="linear-gradient(240deg, rgba(15,34,48,0.30), rgba(15,34,48,0.04))" style={{ position: "absolute", inset: 0 }} />
-                <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.15, ease: easeOut }} style={{ position: "absolute", insetInlineStart: "6%", top: "10%", background: "rgba(255,255,255,0.92)", backdropFilter: "blur(10px)", border: `1px solid ${c.line}`, borderRadius: 16, padding: "10px 15px", boxShadow: c.shadow }}>
-                  <div style={{ fontSize: 10.5, color: c.muted }}>{lang === "ar" ? "طلاب نشطون" : "Active students"}</div>
-                  <div style={{ fontSize: 23, fontWeight: 850, color: c.terra }}><Metric value="4,200" /></div>
+                <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.15, ease: easeOut }} style={{ position: "absolute", insetInlineStart: "6%", top: "10%", background: "rgba(255,255,255,0.92)", ...GLASS.blur, border: `1px solid ${GLASS.ink.line}`, borderRadius: 16, padding: "10px 15px", boxShadow: c.shadow }}>
+                  <div style={{ fontSize: 10.5, color: GLASS.ink.muted }}>{lang === "ar" ? "طلاب نشطون" : "Active students"}</div>
+                  <div style={{ fontSize: 23, fontWeight: 850, color: GLASS.ink.terra }}><Metric value="4,200" /></div>
                 </motion.div>
-                <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.3, ease: easeOut }} style={{ position: "absolute", insetInlineEnd: "6%", bottom: "10%", background: "rgba(255,255,255,0.92)", backdropFilter: "blur(10px)", border: `1px solid ${c.line}`, borderRadius: 16, padding: "10px 15px", boxShadow: c.shadow }}>
-                  <div style={{ fontSize: 10.5, color: c.muted }}>{lang === "ar" ? "متوسط الوعي" : "Avg awareness"}</div>
-                  <div style={{ fontSize: 23, fontWeight: 850, color: c.green }}><Metric value="64%" /></div>
+                <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.3, ease: easeOut }} style={{ position: "absolute", insetInlineEnd: "6%", bottom: "10%", background: "rgba(255,255,255,0.92)", ...GLASS.blur, border: `1px solid ${GLASS.ink.line}`, borderRadius: 16, padding: "10px 15px", boxShadow: c.shadow }}>
+                  <div style={{ fontSize: 10.5, color: GLASS.ink.muted }}>{lang === "ar" ? "متوسط الوعي" : "Avg awareness"}</div>
+                  <div style={{ fontSize: 23, fontWeight: 850, color: GLASS.ink.green }}><Metric value="64%" /></div>
                 </motion.div>
               </motion.div>
             </ScrollReveal>
@@ -1780,7 +1779,7 @@ function Landing() {
               <h3 style={{ fontSize: "clamp(20px,2.6vw,30px)", fontWeight: 850, letterSpacing: "-0.02em", margin: 0, lineHeight: 1.15 }}>{lang === "ar" ? "تحليلات سلوكية مجمّعة لتصميم منتجات الشباب" : "Aggregated behavior analytics to design youth products"}</h3>
               <p style={{ fontSize: 14.5, color: c.textSoft, lineHeight: 1.7, marginTop: 12, maxWidth: 440 }}>{lang === "ar" ? "شريك مؤسسي (بنك الإنماء المقترح) يرى الأنماط والفرص — كل البيانات مجمّعة ومجهّلة بالكامل." : "An institutional partner (proposed: Bank Alinma) sees patterns and opportunities — all data aggregated and fully anonymized."}</p>
               <motion.div initial="hidden" whileInView="visible" viewport={viewportOnce} variants={revealContainer} style={{ display: "flex", gap: "clamp(18px,3vw,30px)", marginTop: 22, flexWrap: "wrap" }}>
-                {[["8.4M", lang === "ar" ? "ريال ادّخرها الطلاب" : "riyals saved", c.green], ["34%", lang === "ar" ? "أعلى شخصية" : "top persona", c.terra], ["82%", lang === "ar" ? "أعمار 18–24" : "ages 18–24", c.accentText]].map(([v, l, col], i) => (
+                {[["8.4M", lang === "ar" ? "ريال ادّخرها الطلاب عبر 5 جامعات" : "riyals saved across 5 universities", c.green], ["34%", lang === "ar" ? "أعلى شخصية" : "top persona", c.terra], ["82%", lang === "ar" ? "أعمار 18–24" : "ages 18–24", c.accentText]].map(([v, l, col], i) => (
                   <motion.div key={i} variants={revealItem}><div style={{ fontSize: "clamp(22px,2.6vw,30px)", fontWeight: 850, color: col }}><Metric value={v} /></div><div style={{ fontSize: 12, color: c.muted }}>{l}</div></motion.div>
                 ))}
               </motion.div>
@@ -1805,7 +1804,7 @@ function AboutPage() {
   const cols4 = vw >= 900 ? 4 : vw >= 560 ? 2 : 1;
   const block = (title, text) => (
     <div style={{ marginBottom: 18 }}>
-      <h3 style={{ fontSize: 18, fontWeight: 800, margin: "0 0 8px", color: c.accentText }}>{title}</h3>
+      <h2 style={{ fontSize: 18, fontWeight: 800, margin: "0 0 8px", color: c.accentText }}>{title}</h2>
       <p style={{ fontSize: 15, color: c.textSoft, lineHeight: 1.9, margin: 0 }}>{riyalText(text)}</p>
     </div>
   );
@@ -1841,45 +1840,48 @@ function LoginPage() {
   function submit() {
     const nextSession = createLoginSession(id, pw);
     if (!nextSession) {
-      setError(lang === "ar" ? "اكتب رقمك الجامعي وكلمة المرور للمتابعة" : "Enter your ID and password to continue");
+      setError(lang === "ar" ? "اكتب بريدك أو رقم جوالك وكلمة المرور للمتابعة" : "Enter your email or phone and your password to continue");
       return;
     }
     setError("");
     startSession(nextSession);
   }
+  const labelStyle = { display: "block", fontSize: 12.5, fontWeight: 700, color: c.textSoft, marginBottom: 6 };
   return (
     <div style={{ minHeight: "calc(100dvh - 66px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "30px 20px" }}>
-      <div style={{ width: "100%", maxWidth: 400, background: c.card, border: `1px solid ${c.line}`, borderRadius: 26, padding: "clamp(24px,4vw,34px)" }}>
-        <div style={{ width: 54, height: 54, borderRadius: 16, background: `linear-gradient(135deg, ${c.accent}, ${c.terra})`, display: "grid", placeItems: "center", color: "#fff", fontWeight: 800, fontSize: 24, margin: "0 auto 14px" }}>{lang === "ar" ? "و" : "W"}</div>
+      <form noValidate onSubmit={(e) => { e.preventDefault(); submit(); }} style={{ width: "100%", maxWidth: 400, background: c.card, border: `1px solid ${c.line}`, borderRadius: 26, padding: "clamp(24px,4vw,34px)" }}>
+        <div style={{ width: 54, margin: "0 auto 14px" }}><WaeyMark size={54} /></div>
         <h1 style={{ fontSize: 24, fontWeight: 800, textAlign: "center", margin: 0 }}>{s.mk.lgTitle}</h1>
         <p style={{ fontSize: 13.5, color: c.muted, textAlign: "center", marginTop: 6, marginBottom: 20 }}>{s.mk.lgSub}</p>
-        <input aria-label={s.mk.lgId} value={id} onChange={(e) => setId(e.target.value)} placeholder={s.mk.lgId} style={{ ...inp(c), marginBottom: 12 }} />
-        <input aria-label={s.mk.lgPass} type="password" value={pw} onChange={(e) => setPw(e.target.value)} placeholder={s.mk.lgPass} style={inp(c)} />
-        {error && <div role="alert" style={{ color: c.terraText, fontSize: 12.5, marginTop: 10, lineHeight: 1.6 }}>{error}</div>}
-        <button onClick={submit} style={btn(c.accent, c.onAccent)}>{s.mk.lgBtn}</button>
-        <button onClick={enterGuest} style={{ ...btn(c.card2, c.text), border: `1px solid ${c.line}`, marginTop: 10 }}>{s.mk.lgGuest}</button>
-        <div style={{ textAlign: "center", fontSize: 13, color: c.muted, marginTop: 16 }}>{s.mk.lgNo} <button onClick={enterGuest} style={{ background: "none", border: "none", color: c.accentText, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>{s.mk.lgSignup}</button></div>
-        <div style={{ textAlign: "center", marginTop: 10 }}><button onClick={() => setScreen("landing")} style={{ background: "none", border: "none", color: c.muted, fontSize: 12.5, cursor: "pointer", fontFamily: "inherit" }}>{s.mk.lgBack}</button></div>
-      </div>
+        <label htmlFor="waey-login-id" style={labelStyle}>{s.mk.lgId}</label>
+        <input id="waey-login-id" name="username" type="text" inputMode="email" autoComplete="username" dir="ltr" aria-invalid={!!error && !id.trim()} aria-describedby={error ? "waey-login-error" : undefined} value={id} onChange={(e) => { setId(e.target.value); if (error) setError(""); }} placeholder="name@university.edu" style={{ ...inp(c), marginBottom: 12, textAlign: "start" }} />
+        <label htmlFor="waey-login-pw" style={labelStyle}>{s.mk.lgPass}</label>
+        <input id="waey-login-pw" name="password" type="password" autoComplete="current-password" dir="ltr" aria-invalid={!!error && !pw.trim()} aria-describedby={error ? "waey-login-error" : undefined} value={pw} onChange={(e) => { setPw(e.target.value); if (error) setError(""); }} style={{ ...inp(c), textAlign: "start" }} />
+        {error && <div id="waey-login-error" role="alert" style={{ color: c.terraText, fontSize: 12.5, marginTop: 10, lineHeight: 1.6 }}>{error}</div>}
+        <button type="submit" style={btn(c.accent, c.onAccent)}>{s.mk.lgBtn}</button>
+        <button type="button" onClick={enterGuest} style={{ ...btn(c.card2, c.text), border: `1px solid ${c.line}`, marginTop: 10 }}>{s.mk.lgGuest}</button>
+        <div style={{ textAlign: "center", fontSize: 13, color: c.muted, marginTop: 16 }}>{s.mk.lgNo} <button type="button" onClick={enterGuest} style={{ background: "none", border: "none", color: c.accentText, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", padding: "10px 6px" }}>{s.mk.lgSignup}</button></div>
+        <div style={{ textAlign: "center", marginTop: 4 }}><button type="button" onClick={() => setScreen("landing")} style={{ background: "none", border: "none", color: c.muted, fontSize: 12.5, cursor: "pointer", fontFamily: "inherit", padding: "10px 6px" }}>{s.mk.lgBack}</button></div>
+      </form>
     </div>
   );
 }
 
 function MkFooter() {
   const { c, s, setScreen } = useCtx();
-  const fl = { background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", color: c.muted, fontSize: 13 };
+  const fl = { background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", color: c.muted, fontSize: 13, padding: "12px 8px" };
   return (
-    <div style={{ borderTop: `1px solid ${c.line}`, background: c.bg0 }}>
+    <footer style={{ borderTop: `1px solid ${c.line}`, background: c.bg0 }}>
       <div style={{ maxWidth: 1120, margin: "0 auto", padding: "30px 20px", display: "flex", flexWrap: "wrap", gap: 16, alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ fontSize: 13, color: c.muted, maxWidth: 520, lineHeight: 1.7 }}>“{s.tagline}”</div>
-        <div style={{ display: "flex", gap: 16 }}>
+        <div style={{ display: "flex", gap: 8 }}>
           <button onClick={() => setScreen("landing")} style={fl}>{s.mk.home}</button>
           <button onClick={() => setScreen("about")} style={fl}>{s.mk.about}</button>
           <button onClick={() => setScreen("login")} style={fl}>{s.mk.login}</button>
         </div>
       </div>
       <div style={{ textAlign: "center", fontSize: 11.5, color: c.muted, padding: "0 20px 24px" }}>{s.mk.rights}</div>
-    </div>
+    </footer>
   );
 }
 
@@ -3251,6 +3253,8 @@ function Spark({ data }) {
 function Signal({ col }) { return <svg width="18" height="12" viewBox="0 0 18 12"><g fill={col}>{[0, 1, 2, 3].map((i) => <rect key={i} x={i * 4.5} y={9 - i * 2.7} width="3" height={3 + i * 2.7} rx="1" />)}</g></svg>; }
 function Wifi({ col }) { return <svg width="17" height="12" viewBox="0 0 17 12" fill="none" stroke={col} strokeWidth="1.6"><path d="M1 4.2C4-.4 13-.4 16 4.2M3.4 6.7c2.4-3 7.8-3 10.2 0M5.9 9.2c1-1.3 4.2-1.3 5.2 0" /><circle cx="8.5" cy="10.8" r="1" fill={col} stroke="none" /></svg>; }
 function Battery({ col }) { return <svg width="26" height="13" viewBox="0 0 26 13"><rect x="1" y="1" width="22" height="11" rx="3" fill="none" stroke={col} strokeOpacity="0.5" /><rect x="3" y="3" width="16" height="7" rx="1.5" fill={col} /><rect x="24" y="4" width="2" height="5" rx="1" fill={col} /></svg>; }
-function inp(c) { return { flex: 1, background: c.inputBg, border: `1px solid ${c.line}`, borderRadius: 13, padding: "11px 14px", fontSize: 14, fontFamily: "inherit", color: c.text, outline: "none", minWidth: 0, width: "100%" }; }
+// No outline:none here — the global :focus-visible ring (waey-theme.css) is
+// the keyboard focus treatment for every input.
+function inp(c) { return { flex: 1, background: c.inputBg, border: `1px solid ${c.line}`, borderRadius: 13, padding: "11px 14px", fontSize: 14, fontFamily: "inherit", color: c.text, minWidth: 0, width: "100%" }; }
 function btn(bg, color) { return { marginTop: 12, width: "100%", height: 46, background: bg, color, border: "none", borderRadius: 13, fontSize: 14.5, fontWeight: 700, fontFamily: "inherit", cursor: "pointer" }; }
 function chip(c) { return { background: c.card, border: `1px solid ${c.line}`, borderRadius: 999, padding: "8px 14px", fontSize: 13, fontWeight: 600, fontFamily: "inherit", color: c.textSoft, cursor: "pointer", flex: 1 }; }
