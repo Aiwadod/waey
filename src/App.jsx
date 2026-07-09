@@ -1483,7 +1483,7 @@ function Marketing() {
 function MkNav() {
   const { c, s, theme, setTheme, lang, setLang, screen, setScreen } = useCtx();
   const ic = { width: 44, height: 44, borderRadius: 13, background: c.card, border: `1px solid ${c.line}`, color: c.text, display: "grid", placeItems: "center", cursor: "pointer" };
-  const link = (k, label) => <button onClick={() => setScreen(k)} aria-current={screen === k ? "page" : undefined} style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 14, fontWeight: screen === k ? 700 : 500, color: screen === k ? c.text : c.muted, padding: "12px 6px" }}>{label}</button>;
+  const link = (k, label) => <button onClick={() => setScreen(k)} aria-current={screen === k ? "page" : undefined} style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 14, fontWeight: screen === k ? 700 : 500, color: screen === k ? c.text : c.muted, padding: "12px 6px", whiteSpace: "nowrap" }}>{label}</button>;
   return (
     <header style={{ position: "sticky", top: 0, zIndex: 20, backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", background: c.bg0 + "cc", borderBottom: `1px solid ${c.line}` }}>
       <div style={{ maxWidth: 1120, margin: "0 auto", padding: "10px 18px", display: "flex", alignItems: "center", gap: 12 }}>
