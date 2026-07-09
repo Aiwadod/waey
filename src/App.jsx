@@ -1,4 +1,4 @@
-import { Fragment, useState, useEffect, useRef, createContext, useContext } from "react";
+import { Fragment, useState, useEffect, useId, useRef, createContext, useContext } from "react";
 import { callConfiguredAi } from "./lib/ai.js";
 import { applyAcceptedSpend, evaluateSpend } from "./lib/finance.js";
 import { applyLanguageMetadata, translateSystemMessages } from "./lib/i18n.js";
@@ -21,7 +21,7 @@ import ScrollReveal from "./components/motion/ScrollReveal.jsx";
 import WaeyFlowField from "./components/motion/WaeyFlowField.jsx";
 import LandingImage from "./components/LandingImage.jsx";
 import { easeOut, hoverLift, pressProps, revealContainer, revealItem, sheetVariants, toastVariants, viewportOnce } from "./motion/presets.js";
-import { useGsap } from "./motion/gsap.js";
+import { prefersReducedMotion, useGsap } from "./motion/gsap.js";
 
 const LANDING_IMG = `${import.meta.env.BASE_URL}images/landing/`;
 
@@ -34,7 +34,13 @@ const GLASS = { ink: themes.light, blur: { backdropFilter: "blur(10px)", WebkitB
     متجاوب لكل الأجهزة · عربي/إنجليزي · ألوان المسابقة: كحلي #002134 / بنفسجي #8685D8 / تراكوتا #CA6C46  */
 
 const STIPEND = 1000, SPENDABLE = 800, WEEK_LIMIT = 200;
+// Total micro-loan debt allowed against next month's stipend (25% of it).
+const MAX_TOTAL_LOAN = 250;
 const fmt = (n) => new Intl.NumberFormat("en-US").format(Math.round(n));
+// Money with real cents — never a rounded figure with a fabricated ".00".
+const fmt2 = (n) => new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+// Visually hidden but announced by screen readers.
+const SR_ONLY = { position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0 0 0 0)", whiteSpace: "nowrap", border: 0 };
 
 // Design tokens live in src/lib/theme.js (single source of truth, AA-audited
 // by theme.test.js). `themes` and FONT_STACK are re-consumed here unchanged.
@@ -126,7 +132,7 @@ const L = {
     roundHowTitle: "كيف يشتغل؟", roundExA: "تدفع 5.40 ر.س", roundExB: "نسحب 6.00 ر.س", roundExC: "0.60 ر.س تروح لكنزك",
     roundWhy: "الفكّة الصغيرة تتجمّع بدون ما تأثر عليك، وبوقت الحاجة تلقى مبلغ جاهز ادّخرته بنفسك.",
     roundOn: "مفعّل", roundCollected: "تجمّع لك", roundMult: "مضاعف التقريب", roundConvert: "حوّل للادخار",
-    roundConverted: (x) => `حوّلنا ${fmt(x)} ر.س فكّة لمدّخراتك`, roundEmpty: "ما تجمّع فكّة بعد — اصرف وبتشوفها تكبر",
+    roundConverted: (x) => `حوّلنا ${x.toFixed(2)} ر.س فكّة لمدّخراتك`, roundEmpty: "ما تجمّع فكّة بعد — اصرف وبتشوفها تكبر",
     roundAdded: (x) => `+${x.toFixed(2)} ر.س فكّة`,
     cashOffersSub: "العروض المتاحة في هذه الفئة", cashOffersList: "العروض المتاحة", cashOffersCount: "عروض", 
     as: {
@@ -252,6 +258,10 @@ const L = {
     leaderRows: [{ h: "طالب#A12", pct: 94 }, { h: "طالب#K77", pct: 90 }, { you: true, pct: 85 }, { h: "طالب#M03", pct: 81 }, { h: "طالب#R56", pct: 78 }],
     about: "عن وعي", aboutMission: "نرفع وعي جيل كامل بالمال — تجربة مثل Duolingo لكن للمال.", aboutStat: "معدل ادخار السعوديين 1.6% فقط — وعي يغيّر السلوك من الجامعة، دعماً لرؤية 2030.", aboutPartner: "شريك استراتيجي مقترح: بنك إنماء",
     plus: "وعي بلس", plusSub: "افتح التحليل السلوكي المتقدم والتحديات الحصرية", plusPrice: "20 ر.س / شهر", upgrade: "ترقية", plusDone: "أهلاً بك في وعي بلس",
+    confirmPlus: "تأكيد الترقية · 20 ر.س/شهر", confirmSend: (x, to) => `تأكيد إرسال ${fmt(x)} ر.س إلى ${to}؟`,
+    illustrative: "رسم توضيحي", loanCap: "وصلت حد السلفة لهذا الشهر — سدّدها أولاً من راتبك الجاي",
+    jobAppliedBtn: "تم إرسال طلبك", overBy: (x) => `تجاوزت بـ ${fmt(x)} ر.س`,
+    homeSections: { behavior: "وعيك وسلوكك", spending: "إنفاقك هذا الشهر", challenges: "تحدياتك ومكافآتك", opportunities: "فرص لك" },
     revenue: "نموذج الإيراد", revenueText: "Freemium للطلاب · اشتراك 20 ر.س شهرياً للمزايا المتقدمة · شراكة بيانات مجهّلة مع إنماء · توسّع لاحق للمبتعثين.",
     tagline: "وعي لا تخبر الطلاب ماذا يفعلون بأموالهم — تبني الجيل الذي يحتاجه القطاع المصرفي.",
   },
@@ -319,7 +329,7 @@ const L = {
     roundHowTitle: "How it works", roundExA: "You pay 5.40 ر.س", roundExB: "We take 6.00 ر.س", roundExC: "0.60 ر.س goes to your vault",
     roundWhy: "Tiny change adds up without hurting you, so when you're short you'll find a sum you saved yourself.",
     roundOn: "On", roundCollected: "Collected", roundMult: "Round-up multiplier", roundConvert: "Move to savings",
-    roundConverted: (x) => `Moved ${fmt(x)} ر.س change to your savings`, roundEmpty: "No change yet — spend and watch it grow",
+    roundConverted: (x) => `Moved ${x.toFixed(2)} ر.س change to your savings`, roundEmpty: "No change yet — spend and watch it grow",
     roundAdded: (x) => `+${x.toFixed(2)} ر.س change`,
     cashOffersSub: "Offers available in this category", cashOffersList: "Available offers", cashOffersCount: "offers",
     as: {
@@ -445,6 +455,10 @@ const L = {
     leaderRows: [{ h: "Student#A12", pct: 94 }, { h: "Student#K77", pct: 90 }, { you: true, pct: 85 }, { h: "Student#M03", pct: 81 }, { h: "Student#R56", pct: 78 }],
     about: "About Waey", aboutMission: "Raising a generation's money awareness — a Duolingo for money.", aboutStat: "Saudi savings rate is just 1.6% — Waey changes behavior from university, supporting Vision 2030.", aboutPartner: "Proposed strategic partner: Bank Alinma",
     plus: "Waey Plus", plusSub: "Unlock advanced behavioral insights & exclusive challenges", plusPrice: "20 ر.س / mo", upgrade: "Upgrade", plusDone: "Welcome to Waey Plus ",
+    confirmPlus: "Confirm upgrade · 20 ر.س/mo", confirmSend: (x, to) => `Confirm sending ${fmt(x)} ر.س to ${to}?`,
+    illustrative: "Illustrative", loanCap: "You've reached this month's loan limit — repay from your next stipend first",
+    jobAppliedBtn: "Application sent", overBy: (x) => `Over by ${fmt(x)} ر.س`,
+    homeSections: { behavior: "Your awareness & behavior", spending: "Your spending this month", challenges: "Challenges & rewards", opportunities: "Opportunities for you" },
     revenue: "Revenue model", revenueText: "Freemium for students · 20 ر.س/mo for advanced features · anonymized data partnership with Alinma · later expansion to scholarship students.",
     tagline: "Waey doesn't tell students what to do with their money — it builds the generation banking needs.",
   },
@@ -700,6 +714,9 @@ export default function App() {
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [overlay, setOverlay] = useState(null);
   const [persona, setPersona] = useState(0);
+  // Challenge completion lives here (not in the card) so switching tabs can't
+  // reset it while the earned points persist — that allowed infinite points.
+  const [chDone, setChDone] = useState([false, false, false]);
   const [roundOn, setRoundOn] = useState(true);
   const [roundMult, setRoundMult] = useState(1);
   const [roundVault, setRoundVault] = useState(3.6);
@@ -780,7 +797,7 @@ export default function App() {
   const pushTx = (t) => setTx((p) => [t, ...p].slice(0, 8));
   function addSpend(cat, amt, place) {
     setEntries((p) => [...p, { id: Date.now(), week: curWeek, cat, amt, place, date: { ar: s.today, en: L.en.today }, time: { ar: s.now, en: L.en.now }, location: { ar: s.yourLoc, en: L.en.yourLoc } }]);
-    setBalance((b) => b - amt); pushTx({ amt, place, cat });
+    setBalance((b) => +(b - amt).toFixed(2)); pushTx({ amt, place, cat });
     // كنز الفكّة: قرّب لأعلى ريال واسحب الباقي للوعاء
     if (roundOn) {
       const change = (Math.ceil(amt) - amt) * roundMult;
@@ -791,7 +808,7 @@ export default function App() {
   const value = {
     c, s, lang, setLang, dir, mobile, theme, setTheme, tab, setTab, cats, weeks, weekCats, entries, setEntries, curWeek, tx, setTx, addSpend, pushTx,
     balance, setBalance, points, setPoints, savings, setSavings, loanTaken, setLoanTaken, invested, setInvested,
-    spent, available, nextStipend, loanOffer, setLoanOffer, demoPay, setDemoPay, sheet, setSheet, showLeaderboard, setShowLeaderboard, overlay, setOverlay, persona, setPersona, vw, screen, setScreen, session, startSession, enterGuest, logout, roundOn, setRoundOn, roundMult, setRoundMult, roundVault, setRoundVault, assess, setAssess, flash,
+    spent, available, nextStipend, loanOffer, setLoanOffer, demoPay, setDemoPay, sheet, setSheet, showLeaderboard, setShowLeaderboard, overlay, setOverlay, persona, setPersona, chDone, setChDone, vw, screen, setScreen, session, startSession, enterGuest, logout, roundOn, setRoundOn, roundMult, setRoundMult, roundVault, setRoundVault, assess, setAssess, flash,
   };
   const appBg = `linear-gradient(180deg, ${c.bg1} 0%, ${c.bg0} 100%)`;
 
@@ -828,6 +845,8 @@ export default function App() {
             {toast && (
               <motion.div
                 key={toast}
+                role="status"
+                aria-live="polite"
                 variants={toastVariants}
                 initial="hidden"
                 animate="visible"
@@ -1357,7 +1376,7 @@ function Assessment() {
           <div><div style={{ fontSize: 23, fontWeight: 800, lineHeight: 1.4 }}>{A.introTitle[slide]}</div><div style={{ fontSize: 14, color: c.muted, marginTop: 10, lineHeight: 1.7 }}>{A.introSub[slide]}</div></div>
           <div style={{ display: "flex", gap: 6, justifyContent: "center" }}>{A.introTitle.map((_, i) => <span key={i} style={{ width: i === slide ? 22 : 7, height: 7, borderRadius: 9, background: i === slide ? c.accent : c.line, transition: "all .2s" }} />)}</div>
           <button onClick={() => (last ? setStep("profile") : setSlide(slide + 1))} style={btn(c.accent, c.onAccent)}>{last ? A.start : A.next}</button>
-          <button onClick={skip} style={{ background: "none", border: "none", color: c.muted, fontSize: 13, cursor: "pointer", fontFamily: "inherit", padding: 6, marginTop: 2 }}>{A.skip} ›</button>
+          <button onClick={skip} style={{ background: "none", border: "none", color: c.muted, fontSize: 13, cursor: "pointer", fontFamily: "inherit", padding: 6, marginTop: 2 }}>{A.skip} {dir === "rtl" ? "‹" : "›"}</button>
         </div></div>
       </div>
     );
@@ -1375,7 +1394,7 @@ function Assessment() {
             ))}
           </div>
           <button onClick={() => setStep("quiz")} style={{ ...btn(c.accent, c.onAccent), marginTop: 20 }}>{A.continue}</button>
-          <button onClick={skip} style={{ background: "none", border: "none", color: c.muted, fontSize: 13, cursor: "pointer", fontFamily: "inherit", padding: 6, marginTop: 6, alignSelf: "center" }}>{A.skip} ›</button>
+          <button onClick={skip} style={{ background: "none", border: "none", color: c.muted, fontSize: 13, cursor: "pointer", fontFamily: "inherit", padding: 6, marginTop: 6, alignSelf: "center" }}>{A.skip} {dir === "rtl" ? "‹" : "›"}</button>
         </div></div>
       </div>
     );
@@ -1394,7 +1413,7 @@ function Assessment() {
               return <button key={o.k} onClick={() => answer(o.k)} style={{ textAlign: dir === "rtl" ? "right" : "left", padding: "16px 18px", borderRadius: 16, border: on ? `2px solid ${c.accent}` : `1px solid ${c.line}`, background: on ? c.accent + "1A" : c.card, color: c.text, fontWeight: 600, fontFamily: "inherit", fontSize: 15, cursor: "pointer", transition: "all .15s" }}>{o[lang]}</button>;
             })}
           </div>
-          <button onClick={skip} style={{ background: "none", border: "none", color: c.muted, fontSize: 13, cursor: "pointer", fontFamily: "inherit", padding: 6, marginTop: 18, alignSelf: "center" }}>{A.skip} ›</button>
+          <button onClick={skip} style={{ background: "none", border: "none", color: c.muted, fontSize: 13, cursor: "pointer", fontFamily: "inherit", padding: 6, marginTop: 18, alignSelf: "center" }}>{A.skip} {dir === "rtl" ? "‹" : "›"}</button>
         </div></div>
       </div>
     );
@@ -1896,25 +1915,26 @@ function InvestCalc() {
   const rate = [0.04, 0.07, 0.10][pf]; // عائد سنوي تقديري حسب المحفظة
   // حساب القيمة المستقبلية: مبلغ البداية + دفعات شهرية مركّبة
   const months = years * 12, mr = rate / 12;
+  // Zero-rate annuity is monthly * m (the compound formula divides by the rate).
+  const annuity = (m) => (mr === 0 ? monthly * m : monthly * ((Math.pow(1 + mr, m) - 1) / mr));
   const fvStart = start * Math.pow(1 + mr, months);
-  const fvMonthly = monthly * ((Math.pow(1 + mr, months) - 1) / (mr || 1));
-  const invested = Math.round(fvStart + fvMonthly);
+  const invested = Math.round(fvStart + annuity(months));
   const contributed = start + monthly * months; // بدون استثمار
   const diff = invested - contributed;
   // نقاط الرسم عبر السنوات
   const pts = Array.from({ length: years + 1 }, (_, y) => {
     const m = y * 12;
-    const inv = start * Math.pow(1 + mr, m) + monthly * ((Math.pow(1 + mr, m) - 1) / (mr || 1));
+    const inv = start * Math.pow(1 + mr, m) + annuity(m);
     const flat = start + monthly * m;
     return { y, inv, flat };
   });
   const maxV = Math.max(...pts.map((p) => p.inv), 1);
   const W = 300, H = 120;
   const path = (key) => pts.map((p, i) => `${i === 0 ? "M" : "L"} ${(i / years) * W} ${H - (p[key] / maxV) * H}`).join(" ");
-  const Slider = ({ label, val, set, min, max, step, fmtV }) => (
+  const Slider = ({ label, val, set, min, max, step, fmtV, vtext }) => (
     <div style={{ marginBottom: 14 }}>
       <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, marginBottom: 7 }}><span style={{ color: c.textSoft }}>{label}</span><span style={{ fontWeight: 700, color: c.accentText }}>{fmtV}</span></div>
-      <input type="range" min={min} max={max} step={step} value={val} onChange={(e) => set(+e.target.value)} style={{ width: "100%", accentColor: c.accent, cursor: "pointer" }} />
+      <input type="range" min={min} max={max} step={step} value={val} aria-label={label} aria-valuetext={vtext} onChange={(e) => set(+e.target.value)} style={{ width: "100%", accentColor: c.accent, cursor: "pointer" }} />
     </div>
   );
   return (
@@ -1923,21 +1943,25 @@ function InvestCalc() {
       <div style={{ fontSize: 11.5, color: c.muted, marginBottom: 16 }}>{K.sub}</div>
 
       <div style={{ fontSize: 12, color: c.textSoft, marginBottom: 7 }}>{K.portfolio}</div>
-      <div style={{ display: "flex", gap: 6, marginBottom: 16 }}>
-        {K.portfolios.map((p, i) => <button key={i} onClick={() => setPf(i)} style={{ flex: 1, padding: "9px 4px", borderRadius: 12, border: pf === i ? "none" : `1px solid ${c.line}`, background: pf === i ? c.accent : "transparent", color: pf === i ? c.onAccent : c.muted, fontWeight: 700, fontFamily: "inherit", fontSize: 12.5, cursor: "pointer" }}>{p}</button>)}
+      <div role="radiogroup" aria-label={K.portfolio} style={{ display: "flex", gap: 6, marginBottom: 16 }}>
+        {K.portfolios.map((p, i) => <button key={i} role="radio" aria-checked={pf === i} onClick={() => setPf(i)} style={{ flex: 1, padding: "12px 4px", borderRadius: 12, border: pf === i ? "none" : `1px solid ${c.line}`, background: pf === i ? c.accent : "transparent", color: pf === i ? c.onAccent : c.muted, fontWeight: 700, fontFamily: "inherit", fontSize: 12.5, cursor: "pointer" }}>{p}</button>)}
       </div>
 
-      <Slider label={K.savings} val={start} set={setStart} min={0} max={10000} step={100} fmtV={riyalText(`${fmt(start)} ر.س`)} />
-      <Slider label={K.monthly} val={monthly} set={setMonthly} min={0} max={3000} step={50} fmtV={riyalText(`${fmt(monthly)} ر.س`)} />
-      <Slider label={K.years} val={years} set={setYears} min={1} max={30} step={1} fmtV={K.yearsUnit(years)} />
+      <Slider label={K.savings} val={start} set={setStart} min={0} max={10000} step={100} fmtV={riyalText(`${fmt(start)} ر.س`)} vtext={`${fmt(start)} ${lang === "ar" ? "ريال" : "SAR"}`} />
+      <Slider label={K.monthly} val={monthly} set={setMonthly} min={0} max={3000} step={50} fmtV={riyalText(`${fmt(monthly)} ر.س`)} vtext={`${fmt(monthly)} ${lang === "ar" ? "ريال" : "SAR"}`} />
+      <Slider label={K.years} val={years} set={setYears} min={1} max={30} step={1} fmtV={K.yearsUnit(years)} vtext={K.yearsUnit(years)} />
 
       <div style={{ background: c.card2, borderRadius: 16, padding: "14px 14px 8px", marginTop: 6, marginBottom: 14 }}>
-        <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} preserveAspectRatio="none" style={{ overflow: "visible" }}>
+        <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} preserveAspectRatio="none" style={{ overflow: "visible" }} role="img" aria-label={`${K.withWaey}: ${fmt(invested)} — ${K.noInvest}: ${fmt(contributed)}`}>
           <path d={`${path("inv")} L ${W} ${H} L 0 ${H} Z`} fill={c.accent} opacity="0.12" />
           <path d={path("flat")} fill="none" stroke={c.muted} strokeWidth="2" strokeDasharray="4 4" />
           <path d={path("inv")} fill="none" stroke={c.accent} strokeWidth="2.5" />
         </svg>
         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 9.5, color: c.muted, marginTop: 4 }}><span>{K.yearsUnit(0)}</span><span>{K.yearsUnit(years)}</span></div>
+        <div style={{ display: "flex", gap: 14, marginTop: 6, fontSize: 10.5, color: c.muted, flexWrap: "wrap" }}>
+          <span style={{ display: "flex", alignItems: "center", gap: 5 }}><span style={{ width: 14, height: 0, borderTop: `2.5px solid ${c.accent}` }} />{K.withWaey}</span>
+          <span style={{ display: "flex", alignItems: "center", gap: 5 }}><span style={{ width: 14, height: 0, borderTop: `2px dashed ${c.muted}` }} />{K.noInvest}</span>
+        </div>
       </div>
 
       <div style={{ display: "flex", gap: 10 }}>
@@ -1958,8 +1982,9 @@ function InvestCalc() {
   );
 }
 function HomeScreen() {
-  const { c, s, lang, setLang, points, theme, setTheme, setOverlay } = useCtx();
+  const { c, s, lang, setLang, points, theme, setTheme, setOverlay, flash } = useCtx();
   const stack = useRef(null);
+  const level = Math.max(1, Math.floor(points / 100) + 1);
   useGsap(stack, (gsap, { reduce }) => {
     if (reduce || !stack.current) return;
     gsap.from(Array.from(stack.current.children), { y: 18, opacity: 0, stagger: 0.05, duration: 0.5, ease: "power3.out", clearProps: "transform,opacity" });
@@ -1968,9 +1993,9 @@ function HomeScreen() {
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 6 }}>
         <div style={{ display: "flex", gap: 10 }}>
-          <IconBtn onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>{theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}</IconBtn>
-          <IconBtn onClick={() => setLang(lang === "ar" ? "en" : "ar")}><Globe size={18} /></IconBtn>
-          <IconBtn dot><Bell size={18} /></IconBtn>
+          <IconBtn label={lang === "ar" ? "تغيير المظهر" : "Change theme"} onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>{theme === "dark" ? <Sun size={18} aria-hidden="true" /> : <Moon size={18} aria-hidden="true" />}</IconBtn>
+          <IconBtn label={lang === "ar" ? "تغيير اللغة" : "Change language"} onClick={() => setLang(lang === "ar" ? "en" : "ar")}><Globe size={18} aria-hidden="true" /></IconBtn>
+          <IconBtn dot label={lang === "ar" ? "التنبيهات — تنبيه واحد" : "Notifications — 1 unread"} onClick={() => flash(s.helpSoon)}><Bell size={18} aria-hidden="true" /></IconBtn>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 7, background: c.card, border: `1px solid ${c.line}`, padding: "7px 14px", borderRadius: 999 }}>
           <Coins size={16} color={c.accentText} /><span style={{ fontWeight: 700, fontSize: 14 }}><Metric value={points} /></span><span style={{ fontSize: 11, color: c.muted }}>{s.pts}</span>
@@ -1987,15 +2012,19 @@ function HomeScreen() {
 
       <div ref={stack} style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 16 }}>
         <BalanceCard />
+        <SectionTitle icon={Brain}>{s.homeSections.behavior}</SectionTitle>
         <PersonaCard />
         <AwarenessCard />
         <InsightCard />
+        <SectionTitle icon={BarChart2}>{s.homeSections.spending}</SectionTitle>
         <WeeklyCard />
         <PeerCard />
+        <SectionTitle icon={Trophy}>{s.homeSections.challenges}</SectionTitle>
         <ChallengesCard />
         <ProgressCard />
         <RewardsCard />
         <LeaderboardCard />
+        <SectionTitle icon={Sparkles}>{s.homeSections.opportunities}</SectionTitle>
         <RoundUpCard />
         <EntryCard icon={Briefcase} title={s.jobsTitle} sub={s.jobsSub} onClick={() => setOverlay("jobs")} />
         <EntryCard icon={Gift} title={s.cashTitle} sub={s.cashSub} onClick={() => setOverlay("cashback")} />
@@ -2013,7 +2042,7 @@ function HomeScreen() {
         </div>
         <div style={{ display: "flex", justifyContent: "space-around", alignItems: "center", background: c.card, border: `1px solid ${c.line}`, borderRadius: 22, padding: "16px 8px" }}>
           <Stat icon={<Sparkles size={16} color={c.accentText} />} value="35" label={s.stats.streak} />
-          <Divider /><Stat icon={<Trophy size={16} color={c.accentText} />} value="8" label={s.stats.level} />
+          <Divider /><Stat icon={<Trophy size={16} color={c.accentText} />} value={String(level)} label={s.stats.level} />
           <Divider /><Stat icon={<Target size={16} color={c.accentText} />} value="85%" label={s.stats.adhere} />
         </div>
       </div>
@@ -2023,13 +2052,22 @@ function HomeScreen() {
 
 function PersonaCard() {
   const { c, s, persona, setPersona } = useCtx();
+  const [analyzing, setAnalyzing] = useState(false);
   const idx = persona;
   const p = s.personalities[idx];
+  function reanalyze() {
+    if (analyzing) return;
+    setAnalyzing(true);
+    setTimeout(() => { setPersona((persona + 1) % s.personalities.length); setAnalyzing(false); }, 900);
+  }
   return (
-    <div style={{ borderRadius: 24, padding: 18, background: `linear-gradient(135deg, ${c.card2}, ${c.card})`, border: `1px solid ${c.line}` }}>
+    <div style={{ borderRadius: 24, padding: 18, background: `linear-gradient(135deg, ${c.card2}, ${c.card})`, border: `1px solid ${c.line}`, opacity: analyzing ? 0.75 : 1, transition: "opacity .2s" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div style={{ fontSize: 11.5, color: c.accentText, fontWeight: 700, display: "flex", alignItems: "center", gap: 6 }}><Sparkles size={14} />{s.persona}</div>
-        <button onClick={() => setPersona((idx + 1) % s.personalities.length)} style={{ background: c.card, border: `1px solid ${c.line}`, color: c.textSoft, borderRadius: 999, padding: "5px 12px", fontSize: 11.5, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>{s.reanalyze}</button>
+        <div style={{ fontSize: 11.5, color: c.accentText, fontWeight: 700, display: "flex", alignItems: "center", gap: 6 }}><Sparkles size={14} aria-hidden="true" />{s.persona}</div>
+        <button onClick={reanalyze} disabled={analyzing} style={{ background: c.card, border: `1px solid ${c.line}`, color: c.textSoft, borderRadius: 999, padding: "10px 14px", fontSize: 11.5, fontWeight: 600, cursor: analyzing ? "default" : "pointer", fontFamily: "inherit", display: "inline-flex", alignItems: "center", gap: 6 }}>
+          {analyzing && <span aria-hidden="true" style={{ width: 11, height: 11, borderRadius: 999, border: `2px solid ${c.line}`, borderTopColor: c.accent, animation: "wSpin .8s linear infinite" }} />}
+          {analyzing ? s.as.analyzing : s.reanalyze}
+        </button>
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 12 }}>
         <IconBubble icon={p.icon} color={c.onAccent} bg={c.accent} size={27} box={54} radius={16} />
@@ -2043,26 +2081,28 @@ function PersonaCard() {
   );
 }
 function PeerCard() {
-  const { c, s } = useCtx();
+  const { c, s, dir } = useCtx();
   const pct = 68;
   return (
     <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 24, padding: 18 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 700 }}><Users2 size={16} color={c.accentText} />{s.peer}</div>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 700 }}><Users2 size={16} color={c.accentText} aria-hidden="true" />{s.peer}</div>
       <div style={{ fontSize: 11.5, color: c.muted, marginBottom: 12 }}>{s.peerDesc}</div>
-      <div style={{ fontSize: 13.5, color: c.textSoft, marginBottom: 10 }}>{s.peerLine(pct)}</div>
+      <div style={{ fontSize: 13.5, color: c.textSoft, marginBottom: 22 }}>{s.peerLine(pct)}</div>
       <div style={{ position: "relative", height: 10, background: c.inputBg, borderRadius: 9 }}>
-        <div style={{ width: `${pct}%`, height: "100%", background: `linear-gradient(90deg, ${c.accent}, ${c.green})`, borderRadius: 9 }} />
-        <div style={{ position: "absolute", insetInlineStart: `calc(${pct}% - 8px)`, top: -3, width: 16, height: 16, borderRadius: 999, background: "#fff", border: `3px solid ${c.accent}` }} />
+        <div style={{ width: `${pct}%`, height: "100%", background: `linear-gradient(${dir === "rtl" ? 270 : 90}deg, ${c.accent}, ${c.green})`, borderRadius: 9 }} />
+        {/* The "you" label rides the marker itself — the axis endpoints are 0/100%. */}
+        <div style={{ position: "absolute", insetInlineStart: `calc(${pct}% - 8px)`, top: -3, width: 16, height: 16, borderRadius: 999, background: "#fff", border: `3px solid ${c.accent}` }}>
+          <span style={{ position: "absolute", top: -18, insetInlineStart: "50%", transform: "translateX(" + (dir === "rtl" ? "50%" : "-50%") + ")", fontSize: 10, fontWeight: 800, color: c.accentText, whiteSpace: "nowrap" }}>{s.peerYou}</span>
+        </div>
       </div>
-      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10.5, color: c.muted, marginTop: 6 }}><span>{s.peerYou}</span><span><Metric value="100%" /></span></div>
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10.5, color: c.muted, marginTop: 6 }}><span>0%</span><span><Metric value="100%" /></span></div>
     </div>
   );
 }
 function ChallengesCard() {
-  const { c, s, setPoints, flash } = useCtx();
-  const [done, setDone] = useState([false, false, false]);
-  function toggle(i, pts) { if (done[i]) return; setDone((d) => d.map((v, j) => (j === i ? true : v))); setPoints((p) => p + pts); flash(s.chDoneMsg(pts)); }
-  const count = done.filter(Boolean).length;
+  const { c, s, lang, chDone, setChDone, setPoints, flash } = useCtx();
+  function toggle(i, pts) { if (chDone[i]) return; setChDone((d) => d.map((v, j) => (j === i ? true : v))); setPoints((p) => p + pts); flash(s.chDoneMsg(pts)); }
+  const count = chDone.filter(Boolean).length;
   return (
     <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 24, padding: 18 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
@@ -2071,13 +2111,13 @@ function ChallengesCard() {
       </div>
       <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 10 }}>
         {s.challengeList.map((ch, i) => (
-          <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", borderRadius: 16, border: `1px solid ${c.line}`, background: c.card2, opacity: done[i] ? 0.55 : 1 }}>
+          <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "8px 8px 8px 14px", borderRadius: 16, border: `1px solid ${c.line}`, background: c.card2, opacity: chDone[i] ? 0.72 : 1 }}>
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 13.5, fontWeight: 600, textDecoration: done[i] ? "line-through" : "none" }}>{riyalText(ch.t)}</div>
+              <div style={{ fontSize: 13.5, fontWeight: 600, textDecoration: chDone[i] ? "line-through" : "none" }}>{riyalText(ch.t)}</div>
               <div style={{ fontSize: 11, color: c.accentText, fontWeight: 700 }}>+<Metric value={ch.pts} /> {s.pts}</div>
             </div>
-            <button onClick={() => toggle(i, ch.pts)} disabled={done[i]} style={{ width: 34, height: 34, borderRadius: 11, border: `1px solid ${done[i] ? c.green : c.line}`, background: done[i] ? c.green : "transparent", display: "grid", placeItems: "center", cursor: done[i] ? "default" : "pointer" }}>
-              <Check size={18} color={done[i] ? "#fff" : c.muted} />
+            <button onClick={() => toggle(i, ch.pts)} disabled={chDone[i]} aria-pressed={chDone[i]} aria-label={`${lang === "ar" ? "أكمل التحدي:" : "Complete challenge:"} ${ch.t}`} style={{ width: 44, height: 44, borderRadius: 13, border: `1.5px solid ${chDone[i] ? c.green : c.muted}`, background: chDone[i] ? c.green : "transparent", display: "grid", placeItems: "center", cursor: chDone[i] ? "default" : "pointer", flexShrink: 0 }}>
+              <Check size={18} color={chDone[i] ? c.onGreen : c.muted} aria-hidden="true" />
             </button>
           </div>
         ))}
@@ -2086,12 +2126,19 @@ function ChallengesCard() {
   );
 }
 function FullPage({ title, sub, onClose, children }) {
-  const { c, lang } = useCtx();
+  const { c, lang, s } = useCtx();
   const Back = lang === "ar" ? ChevronRight : ChevronLeft;
+  const backRef = useRef(null);
+  useEffect(() => {
+    backRef.current?.focus();
+    const onKey = (e) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
   return (
-    <div style={{ position: "absolute", inset: 0, zIndex: 55, background: c.bg0, display: "flex", flexDirection: "column", animation: "wUp .3s ease both" }}>
+    <div role="dialog" aria-modal="true" aria-label={typeof title === "string" ? title : undefined} style={{ position: "absolute", inset: 0, zIndex: 55, background: c.bg0, display: "flex", flexDirection: "column", animation: "wUp .3s ease both" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "calc(env(safe-area-inset-top,0px) + 16px) 18px 12px", flexShrink: 0 }}>
-        <button onClick={onClose} style={{ width: 38, height: 38, borderRadius: 12, background: c.card, border: `1px solid ${c.line}`, color: c.text, display: "grid", placeItems: "center", cursor: "pointer" }}><Back size={20} /></button>
+        <button ref={backRef} onClick={onClose} aria-label={s.dash.back} style={{ width: 44, height: 44, borderRadius: 13, background: c.card, border: `1px solid ${c.line}`, color: c.text, display: "grid", placeItems: "center", cursor: "pointer" }}><Back size={20} aria-hidden="true" /></button>
         <div><div style={{ fontSize: 19, fontWeight: 800 }}>{title}</div>{sub && <div style={{ fontSize: 11.5, color: c.muted }}>{sub}</div>}</div>
       </div>
       <div className="wscroll" style={{ flex: 1, overflowY: "auto", padding: "4px 18px 28px" }}>
@@ -2146,14 +2193,14 @@ function InsightCard() {
   );
 }
 function ProgressCard() {
-  const { c, s, lang } = useCtx();
+  const { c, s, lang, dir } = useCtx();
   const weeks = [{ done: 2, score: 58 }, { done: 3, score: 64 }, { done: 3, score: 70 }, { done: 4, score: 76 }];
   const maxScore = 80;
   return (
     <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 24, padding: 18 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 700, marginBottom: 4 }}><BarChart2 size={17} color={c.accentText} />{s.progTitle}</div>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 700, marginBottom: 4 }}><BarChart2 size={17} color={c.accentText} aria-hidden="true" />{s.progTitle}</div>
       <div style={{ fontSize: 11.5, color: c.muted, marginBottom: 4 }}>{lang === "ar" ? "درجة وعيك المالي ترتفع كل أسبوع مع إكمال التحديات" : "Your awareness score rises each week as you finish challenges"}</div>
-      <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: c.green + "1A", color: c.green, borderRadius: 999, padding: "3px 10px", fontSize: 11, fontWeight: 700, marginBottom: 14 }}>▲ <Metric value={58} /> → <Metric value={76} /> {lang === "ar" ? "خلال 4 أسابيع" : "in 4 weeks"}</div>
+      <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: c.green + "1A", color: c.green, borderRadius: 999, padding: "3px 10px", fontSize: 11, fontWeight: 700, marginBottom: 14 }}>▲ <Metric value={58} /> {dir === "rtl" ? "←" : "→"} <Metric value={76} /> {lang === "ar" ? "خلال 4 أسابيع" : "in 4 weeks"}</div>
       <div style={{ display: "flex", alignItems: "flex-end", gap: 10, height: 96 }}>
         {weeks.map((w, i) => (
           <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
@@ -2172,10 +2219,11 @@ function ProgressCard() {
   );
 }
 function RewardsCard() {
-  const { c, s, points } = useCtx();
+  const { c, s, lang, points, chDone, savings, invested } = useCtx();
   const level = Math.max(1, Math.floor(points / 100) + 1);
   const badges = [Medal, CircleDollarSign, Flame, TrendingUp];
-  const earned = 2;
+  // Badges follow real state: first challenge done, saver, streak, first investor.
+  const earnedFlags = [chDone.some(Boolean), savings >= 50, true, invested > 0];
   return (
     <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 24, padding: 18 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
@@ -2184,12 +2232,16 @@ function RewardsCard() {
       </div>
       <div style={{ fontSize: 12, color: c.muted, marginBottom: 8 }}>{s.rewBadges}</div>
       <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
-        {badges.map((Icon, i) => (
-          <div key={i} style={{ flex: 1, textAlign: "center", background: c.card2, border: `1px solid ${c.line}`, borderRadius: 14, padding: "10px 4px", opacity: i < earned ? 1 : 0.35 }}>
-            <Icon size={22} color={i < earned ? c.accentText : c.muted} aria-hidden="true" />
-            <div style={{ fontSize: 9, color: c.muted, marginTop: 3 }}>{s.badgeNames[i]}</div>
-          </div>
-        ))}
+        {badges.map((Icon, i) => {
+          const got = earnedFlags[i];
+          return (
+            <div key={i} role="img" aria-label={`${s.badgeNames[i]} — ${got ? (lang === "ar" ? "مكتسبة" : "earned") : (lang === "ar" ? "مقفلة" : "locked")}`} style={{ flex: 1, textAlign: "center", background: c.card2, border: `1px solid ${c.line}`, borderRadius: 14, padding: "10px 4px", opacity: got ? 1 : 0.55, position: "relative" }}>
+              <Icon size={22} color={got ? c.accentText : c.muted} aria-hidden="true" />
+              {!got && <Lock size={11} color={c.muted} aria-hidden="true" style={{ position: "absolute", top: 6, insetInlineEnd: 6 }} />}
+              <div style={{ fontSize: 10.5, color: c.textSoft, marginTop: 3 }}>{s.badgeNames[i]}</div>
+            </div>
+          );
+        })}
       </div>
       <div style={{ background: c.card2, border: `1px dashed ${c.line}`, borderRadius: 14, padding: "10px 12px", fontSize: 12, color: c.textSoft, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, textAlign: "center" }}><Gift size={15} color={c.accentText} aria-hidden="true" />{s.rewFuture}</div>
     </div>
@@ -2268,7 +2320,8 @@ function PlatformPage() {
 }
 function RoundUpCard() {
   const { c, s, lang, roundOn, setRoundOn, roundMult, setRoundMult, roundVault, setRoundVault, setSavings, flash } = useCtx();
-  function convert() { if (roundVault <= 0) return flash(s.roundEmpty); const x = roundVault; setSavings((v) => v + Math.round(x)); setRoundVault(0); flash(s.roundConverted(x)); }
+  // Move the EXACT vault amount — rounding here would create or destroy money.
+  function convert() { if (roundVault <= 0) return flash(s.roundEmpty); const x = roundVault; setSavings((v) => +(v + x).toFixed(2)); setRoundVault(0); flash(s.roundConverted(x)); }
   const Arrow = lang === "ar" ? ArrowLeft : ArrowRight;
   return (
     <div style={{ borderRadius: 24, padding: 18, background: `linear-gradient(135deg, ${c.card2}, ${c.card})`, border: `1px solid ${c.line}` }}>
@@ -2298,22 +2351,26 @@ function RoundUpCard() {
         <div style={{ fontSize: 32, fontWeight: 800 }}><AnimatedNumber value={roundVault} formatter={(n) => n.toFixed(2)} duration={0.6} /> <RS size="0.55em" color={c.muted} /></div>
       </div>
       <div style={{ fontSize: 11, color: c.muted, textAlign: "center", lineHeight: 1.7, margin: "0 4px 6px" }}>{s.roundWhy}</div>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: c.card2, border: `1px solid ${c.line}`, borderRadius: 14, padding: "8px 12px", marginTop: 8 }}>
+      {/* The switch has visible consequence: off dims and disables the controls. */}
+      <div role="radiogroup" aria-label={s.roundMult} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: c.card2, border: `1px solid ${c.line}`, borderRadius: 14, padding: "8px 12px", marginTop: 8, opacity: roundOn ? 1 : 0.45 }}>
         <span style={{ fontSize: 12.5, color: c.textSoft }}>{s.roundMult}</span>
         <div style={{ display: "flex", gap: 6 }}>
-          {[1, 2, 3].map((m) => <button key={m} onClick={() => setRoundMult(m)} style={{ width: 36, height: 32, borderRadius: 9, border: roundMult === m ? "none" : `1px solid ${c.line}`, background: roundMult === m ? c.accent : "transparent", color: roundMult === m ? c.onAccent : c.muted, fontWeight: 700, fontFamily: "inherit", cursor: "pointer", fontSize: 13 }}>×{m}</button>)}
+          {[1, 2, 3].map((m) => <button key={m} role="radio" aria-checked={roundMult === m} disabled={!roundOn} onClick={() => setRoundMult(m)} style={{ width: 44, height: 40, borderRadius: 9, border: roundMult === m ? "none" : `1px solid ${c.line}`, background: roundMult === m ? c.accent : "transparent", color: roundMult === m ? c.onAccent : c.muted, fontWeight: 700, fontFamily: "inherit", cursor: roundOn ? "pointer" : "default", fontSize: 13 }}>×{m}</button>)}
         </div>
       </div>
-      <button onClick={convert} style={{ ...btn(c.accent, c.onAccent), height: 40, marginTop: 10 }}>{s.roundConvert}</button>
+      <button onClick={convert} disabled={!roundOn && roundVault <= 0} style={{ ...btn(c.accent, c.onAccent), height: 44, marginTop: 10, opacity: roundOn || roundVault > 0 ? 1 : 0.45 }}>{s.roundConvert}</button>
     </div>
   );
 }
 function JobsPage() {
-  const { c, s, lang, setOverlay, setBalance, setSavings, flash } = useCtx();
+  const { c, s, lang, setOverlay } = useCtx();
   const [sel, setSel] = useState(null);
-  function work(j) { const save = Math.round(j.pay * 0.2); setBalance((b) => b + j.pay); setSavings((v) => v + save); flash(s.jobEarned(j.pay, save)); }
+  // Applying submits a request — money only moves once a job is actually done,
+  // so nothing is credited here (the old instant-credit contradicted the copy).
+  const [applied, setApplied] = useState(() => new Set());
   if (sel !== null) {
     const j = JOBS[sel];
+    const isApplied = applied.has(sel);
     return (
       <FullPage title={j.t[lang]} sub={j.org[lang]} onClose={() => setSel(null)}>
         <div style={{ display: "flex", alignItems: "center", gap: 14, background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 16 }}>
@@ -2326,7 +2383,7 @@ function JobsPage() {
         <Sect title={s.jobAbout} c={c}><div style={{ fontSize: 13.5, color: c.textSoft, lineHeight: 1.8 }}>{j.desc[lang]}</div></Sect>
         <Sect title={s.jobReqs} c={c}>{j.reqs[lang].map((r, i) => <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: c.textSoft, padding: "4px 0" }}><Check size={15} color={c.green} />{r}</div>)}</Sect>
         <Sect title={s.jobHow} c={c}>{s.jobSteps.map((st, i) => <div key={i} style={{ display: "flex", gap: 10, padding: "5px 0" }}><span style={{ width: 22, height: 22, borderRadius: 999, background: c.accent, color: c.onAccent, display: "grid", placeItems: "center", fontSize: 11, fontWeight: 700, flexShrink: 0 }}>{i + 1}</span><span style={{ fontSize: 13, color: c.textSoft, lineHeight: 1.6 }}>{st}</span></div>)}</Sect>
-        <button onClick={() => { work(j); flash(s.jobApplied); setSel(null); }} style={btn(c.accent, c.onAccent)}>{s.jobApplyNow}</button>
+        <button onClick={() => { if (isApplied) return; setApplied((a) => new Set(a).add(sel)); flash(s.jobApplied); setSel(null); }} disabled={isApplied} style={btn(isApplied ? c.card2 : c.accent, isApplied ? c.muted : c.onAccent)}>{isApplied ? s.jobAppliedBtn : s.jobApplyNow}</button>
       </FullPage>
     );
   }
@@ -2346,7 +2403,7 @@ function JobsPage() {
             </div>
             <div style={{ display: "flex", gap: 7, flexWrap: "wrap", marginTop: 12, alignItems: "center" }}>
               {[j.dur[lang], j.mode[lang]].map((tg) => <span key={tg} style={{ background: c.card2, border: `1px solid ${c.line}`, color: c.textSoft, borderRadius: 999, padding: "4px 11px", fontSize: 11 }}>{tg}</span>)}
-              <span style={{ marginInlineStart: "auto", fontSize: 12, color: c.accentText, fontWeight: 700 }}>{s.jobDetails} ←</span>
+              <span style={{ marginInlineStart: "auto", fontSize: 12, color: c.accentText, fontWeight: 700 }}>{s.jobDetails} {lang === "ar" ? "←" : "→"}</span>
             </div>
           </button>
         ))}
@@ -2362,7 +2419,8 @@ function CashbackPage() {
   const [earned, setEarned] = useState(0);
   const [active, setActive] = useState([]);
   const [sel, setSel] = useState(null);
-  function activate(i) { if (active.includes(i)) return; setActive((a) => [...a, i]); setEarned((e) => e + 15); flash(s.cashOn); }
+  // Activation alone earns nothing — cashback would accrue from purchases.
+  function activate(i) { if (active.includes(i)) return; setActive((a) => [...a, i]); flash(s.cashOn); }
   if (sel !== null) {
     const x = CASH[sel]; const on = active.includes(sel);
     return (
@@ -2399,7 +2457,7 @@ function CashbackPage() {
               <IconBubble icon={x.icon} color={c.onAccent} bg={c[x.ck]} size={22} box={44} radius={13} />
               <div style={{ fontWeight: 700, fontSize: 13.5, marginTop: 10 }}>{x.cat[lang]}</div>
               <div style={{ color: c[x.ck], fontWeight: 800, fontSize: 17 }}><Metric value={`${x.back}%`} /> <span style={{ fontSize: 11, color: c.muted, fontWeight: 600 }}>{s.backWord}</span></div>
-              <div style={{ fontSize: 11, color: c.muted, marginTop: 4 }}><Metric value={x.offers.length} /> {s.cashOffersCount} ←</div>
+              <div style={{ fontSize: 11, color: c.muted, marginTop: 4 }}><Metric value={x.offers.length} /> {s.cashOffersCount} {lang === "ar" ? "←" : "→"}</div>
               </button>
               <button onClick={(ev) => { ev.stopPropagation(); activate(i); }} disabled={on} style={{ ...btn(on ? c.card2 : c.accent, on ? c.green : c.onAccent), height: 36, marginTop: 10, fontSize: 12.5, border: on ? `1px solid ${c.line}` : "none" }}>{on ? s.cashActive : s.cashActivate}</button>
             </div>
@@ -2409,7 +2467,6 @@ function CashbackPage() {
     </FullPage>
   );
 }
-function lbColor(c, p) { return p >= 88 ? c.green : p >= 80 ? c.accentText : c.terraText; }
 function LbRow({ rank, row, c, s, lang }) {
   const handle = row.you ? s.peerYou : s.stuPrefix + row.id;
   const av = LB_COLORS[rank % LB_COLORS.length];
@@ -2422,7 +2479,9 @@ function LbRow({ rank, row, c, s, lang }) {
         <div style={{ fontSize: 10.5, opacity: 0.75 }}><Metric value={row.done} /> {s.chDoneLabel}</div>
       </div>
       <div style={{ textAlign: "end" }}>
-        <div style={{ fontSize: 18, fontWeight: 800, color: row.you ? c.onAccent : lbColor(c, row.pct) }}><Metric value={`${row.pct}%`} /></div>
+        {/* Peer rows stay a neutral ink — rank order already carries standing,
+            and tier-coloring strangers terracotta reads as quiet shaming. */}
+        <div style={{ fontSize: 18, fontWeight: 800, color: row.you ? c.onAccent : c.text }}><Metric value={`${row.pct}%`} /></div>
         <div style={{ fontSize: 9.5, opacity: 0.7 }}>{s.commit}</div>
       </div>
     </div>
@@ -2444,21 +2503,28 @@ function LeaderboardCard() {
 }
 function LeaderboardPage() {
   const { c, s, lang, setShowLeaderboard } = useCtx();
-  const [period, setPeriod] = useState(s.periodW);
+  const [period, setPeriod] = useState(0);
   const myRank = LB.findIndex((r) => r.you) + 1;
   const me = LB[myRank - 1];
   const above = LB[myRank - 2];
   const Back = lang === "ar" ? ChevronRight : ChevronLeft;
+  const backRef = useRef(null);
+  useEffect(() => {
+    backRef.current?.focus();
+    const onKey = (e) => { if (e.key === "Escape") setShowLeaderboard(false); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [setShowLeaderboard]);
   return (
-    <div style={{ position: "absolute", inset: 0, zIndex: 55, background: c.bg0, display: "flex", flexDirection: "column", animation: "wUp .3s ease both" }}>
+    <div role="dialog" aria-modal="true" aria-label={s.leader} style={{ position: "absolute", inset: 0, zIndex: 55, background: c.bg0, display: "flex", flexDirection: "column", animation: "wUp .3s ease both" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "calc(env(safe-area-inset-top,0px) + 16px) 18px 12px", flexShrink: 0 }}>
-        <button onClick={() => setShowLeaderboard(false)} style={{ width: 38, height: 38, borderRadius: 12, background: c.card, border: `1px solid ${c.line}`, color: c.text, display: "grid", placeItems: "center", cursor: "pointer" }}><Back size={20} /></button>
+        <button ref={backRef} onClick={() => setShowLeaderboard(false)} aria-label={s.dash.back} style={{ width: 44, height: 44, borderRadius: 13, background: c.card, border: `1px solid ${c.line}`, color: c.text, display: "grid", placeItems: "center", cursor: "pointer" }}><Back size={20} aria-hidden="true" /></button>
         <div><div style={{ fontSize: 19, fontWeight: 800 }}>{s.leader}</div><div style={{ fontSize: 11.5, color: c.muted }}>{s.lbMetric}</div></div>
       </div>
       <div className="wscroll" style={{ flex: 1, overflowY: "auto", padding: "4px 18px 28px" }}>
         <div style={{ maxWidth: 560, margin: "0 auto" }}>
           <div style={{ display: "flex", background: c.card, border: `1px solid ${c.line}`, borderRadius: 14, padding: 4, marginBottom: 14 }}>
-            {[s.periodW, s.periodM].map((o) => <button key={o} onClick={() => setPeriod(o)} style={{ flex: 1, padding: "9px 0", borderRadius: 10, border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 13, fontWeight: 600, background: period === o ? c.accent : "transparent", color: period === o ? c.onAccent : c.muted }}>{o}</button>)}
+            {[s.periodW, s.periodM].map((o, i) => <button key={o} onClick={() => setPeriod(i)} style={{ flex: 1, padding: "9px 0", borderRadius: 10, border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 13, fontWeight: 600, background: period === i ? c.accent : "transparent", color: period === i ? c.onAccent : c.muted }}>{o}</button>)}
           </div>
 
           <div style={{ borderRadius: 22, padding: "18px 20px", marginBottom: 16, background: `linear-gradient(135deg, ${c.accent}, ${c.accentText})`, color: c.onAccent }}>
@@ -2489,7 +2555,7 @@ function BalanceCard() {
   return (
     <div style={{ borderRadius: 26, padding: "20px 20px 16px", background: `linear-gradient(135deg, ${c.bg1} 0%, ${c.card2} 100%)`, border: `1px solid ${c.line}` }}>
       <div style={{ fontSize: 12.5, color: c.muted }}>{s.balance}</div>
-      <div style={{ fontSize: 33, fontWeight: 700, letterSpacing: "-0.02em", marginTop: 2 }}><AnimatedNumber value={balance} formatter={(n) => `${fmt(n)}.00`} /> <RS size="0.62em" color={c.muted} /></div>
+      <div style={{ fontSize: 33, fontWeight: 700, letterSpacing: "-0.02em", marginTop: 2 }}><AnimatedNumber value={balance} formatter={fmt2} /> <RS size="0.62em" color={c.muted} /></div>
       <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
         {actions.map((a) => { const I = a.icon; return (
           <motion.button key={a.t} onClick={a.go} whileHover={{ y: -2 }} whileTap={{ scale: 0.96 }} style={{ flex: 1, background: c.card, border: `1px solid ${c.line}`, borderRadius: 15, padding: "11px 0", display: "flex", flexDirection: "column", alignItems: "center", gap: 5, cursor: "pointer", fontFamily: "inherit", color: c.text }}>
@@ -2508,7 +2574,10 @@ function WeeklyCard() {
   const spentSoFar = weeks.reduce((a, b) => a + b, 0);
   const avg = Math.round(spentSoFar / (curWeek + 1));
   const projected = avg * 4;
-  const leftToSpend = Math.max(0, SPENDABLE - spentSoFar);
+  // Keep the deficit visible — hiding an overspend behind "0 left" isn't calm,
+  // it's dishonest. The over state renders as a gentle terra note below.
+  const leftRaw = SPENDABLE - spentSoFar;
+  const leftToSpend = Math.max(0, leftRaw);
   const save = Math.max(0, SPENDABLE - projected);
   const topKey = Object.keys(cats).reduce((a, b) => (cats[a] >= cats[b] ? a : b));
   const extra = Math.round(cats[topKey] * 0.2);
@@ -2527,7 +2596,7 @@ function WeeklyCard() {
           const total = weeks[i], on = i === curWeek, future = total === 0 && i > curWeek, active = sel === i;
           const barH = total > 0 ? Math.max(10, (total / maxT) * AREA) : 6;
           return (
-            <button key={i} type="button" onClick={() => setSel(active ? null : i)} style={{ flex: 1, textAlign: "center", cursor: "pointer", background: "transparent", border: "none", padding: 0, color: c.text, fontFamily: "inherit" }}>
+            <button key={i} type="button" onClick={() => setSel(active ? null : i)} aria-expanded={active} aria-label={`${s.week(i + 1)} — ${future ? "" : total}`} style={{ flex: 1, textAlign: "center", cursor: "pointer", background: "transparent", border: "none", padding: 0, color: c.text, fontFamily: "inherit" }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: future ? c.muted : c.text, marginBottom: 5 }}>{future ? "—" : <Metric value={total} />}</div>
               <div style={{ height: AREA, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
                 <motion.div initial={{ scaleY: 0.08 }} whileInView={{ scaleY: 1 }} viewport={{ once: true, amount: 0.4 }} transition={{ duration: 0.5, delay: i * 0.06, ease: easeOut }} style={{ width: "78%", height: barH, borderRadius: "8px 8px 3px 3px", overflow: "hidden", display: "flex", flexDirection: "column", transformOrigin: "bottom", background: future ? c.inputBg : c.card2, boxShadow: active ? `0 0 0 2px ${c.accent}` : on ? `0 0 0 1.5px ${c.line}` : "none", opacity: sel != null && !active ? 0.55 : 1, transition: "opacity .2s" }}>
@@ -2549,7 +2618,9 @@ function WeeklyCard() {
       {sel != null && <WeekDetails week={sel} entries={entries.filter((e) => e.week === sel)} colOf={colOf} />}
 
       <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
-        <MiniBox label={s.leftSpend} value={<><Metric value={leftToSpend} /> <RS /></>} tone={c.text} />
+        {leftRaw >= 0
+          ? <MiniBox label={s.leftSpend} value={<><Metric value={leftToSpend} /> <RS /></>} tone={c.text} />
+          : <MiniBox label={s.leftSpend} value={s.overBy(-leftRaw)} tone={c.terraText} />}
         <MiniBox label={s.canSave} value={<><Metric value={save} /> <RS /></>} tone={c.green} />
       </div>
       <div style={{ marginTop: 12, background: c.card2, border: `1px solid ${c.line}`, borderRadius: 14, padding: "11px 13px", fontSize: 12.5, lineHeight: 1.7, color: c.textSoft, display: "flex", gap: 8, alignItems: "flex-start" }}>
@@ -2576,7 +2647,7 @@ function WeekDetails({ week, entries, colOf }) {
       {entries.map((e, i) => {
         cum += e.amt; const remain = WEEK_LIMIT - cum; const isOpen = open === e.id;
         return (
-          <button key={e.id} type="button" onClick={() => setOpen(isOpen ? null : e.id)} style={{ width: "100%", cursor: "pointer", padding: "10px 6px", border: "none", borderBottom: i < entries.length - 1 ? `1px solid ${c.line}` : "none", background: "transparent", color: c.text, fontFamily: "inherit", textAlign: "start" }}>
+          <button key={e.id} type="button" onClick={() => setOpen(isOpen ? null : e.id)} aria-expanded={isOpen} style={{ width: "100%", cursor: "pointer", padding: "10px 6px", border: "none", borderBottom: i < entries.length - 1 ? `1px solid ${c.line}` : "none", background: "transparent", color: c.text, fontFamily: "inherit", textAlign: "start" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
                 <div style={{ fontWeight: 700, fontSize: 15, color: c.terraText }}>−<Metric value={e.amt} /> <RS /></div>
@@ -2606,19 +2677,21 @@ function Detail({ icon: Icon, text, c }) { return <div style={{ display: "flex",
 
 /* ===================== التحليلات ===================== */
 function Analytics() {
-  const { c, s, lang, dir, spent, available, savings, cats, tx, addSpend, setLoanOffer, flash } = useCtx();
-  const [period, setPeriod] = useState(s.seg[2]);
+  const { c, s, lang, dir, spent, available, savings, cats, tx, addSpend, setLoanOffer, loanTaken, flash } = useCtx();
+  const [period, setPeriod] = useState(2);
   const [amt, setAmt] = useState(""); const [why, setWhy] = useState("");
   const list = [{ k: "food", col: c.terra }, { k: "transport", col: c.accent }, { k: "fun", col: c.accentText }, { k: "other", col: c.green }];
   const maxV = Math.max(...list.map((x) => cats[x.k]), 1);
-  const trend = [60, 58, 62, 55, 50, 53, 47, 44, 46, 40];
+  // Illustrative savings curve — must agree with the "rising" caption above it.
+  const trend = [40, 44, 42, 47, 50, 48, 53, 57, 62, 65];
   function log() {
     const a = parseFloat(amt);
     if (!a || a <= 0) return flash(s.badAmount);
     if (!why.trim()) return flash(s.askReason);
     const place = { ar: why.trim(), en: why.trim() };
     const cat = catFromText(why);
-    const decision = evaluateSpend({ amount: a, available });
+    // Loan capacity shrinks with existing debt so total borrowing stays capped.
+    const decision = evaluateSpend({ amount: a, available, maxLoan: Math.max(0, MAX_TOTAL_LOAN - loanTaken) });
     if (decision.kind === "spend") { addSpend(cat, a, place); flash(s.logged(available - a)); setAmt(""); setWhy(""); }
     else if (decision.kind === "loanOffer") { setLoanOffer({ ...decision, pending: { amount: a, place, cat } }); setAmt(""); setWhy(""); }
     else flash(s.noBal);
@@ -2626,13 +2699,14 @@ function Analytics() {
   return (
     <div>
       <ScreenHead title={s.analytics} />
-      <Seg options={s.seg} value={period} onChange={setPeriod} />
+      <Seg options={s.seg} value={s.seg[period]} onChange={(o) => setPeriod(s.seg.indexOf(o))} />
       <div style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 14 }}>
       <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 24, padding: 18 }}>
         <div style={{ fontSize: 12.5, color: c.muted }}>{s.totalSavings}</div>
-        <div style={{ fontSize: 30, fontWeight: 700 }}><AnimatedNumber value={savings} formatter={(n) => `${fmt(n)}.00`} /> <RS size="0.6em" color={c.muted} /></div>
-        <div style={{ color: c.accentText, fontSize: 13, fontWeight: 600 }}>▲ <AnimatedNumber value={1560} formatter={(n) => `+${fmt(n)}.00`} /> {s.thisTerm}</div>
+        <div style={{ fontSize: 30, fontWeight: 700 }}><AnimatedNumber value={savings} formatter={fmt2} /> <RS size="0.6em" color={c.muted} /></div>
+        <div style={{ color: c.accentText, fontSize: 13, fontWeight: 600 }}>▲ <AnimatedNumber value={1560} formatter={(n) => `+${fmt2(n)}`} /> {s.thisTerm}</div>
         <Spark data={trend} />
+        <div style={{ fontSize: 9.5, color: c.muted, marginTop: 4 }}>{s.illustrative}</div>
       </div>
       <div style={{ display: "flex", gap: 12 }}>
         <MetricCard label={s.income} value="1,000" tone={c.accentText} sign={s.monthlyStipend} />
@@ -2677,7 +2751,7 @@ function AIChat() {
   const [messages, setMessages] = useState([{ role: "assistant", key: "hello", text: s.hello }]);
   const [input, setInput] = useState(""); const [busy, setBusy] = useState(false);
   const end = useRef(null);
-  useEffect(() => { end.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, busy]);
+  useEffect(() => { end.current?.scrollIntoView({ behavior: prefersReducedMotion() ? "auto" : "smooth" }); }, [messages, busy]);
   useEffect(() => { setMessages((m) => translateSystemMessages(m, lang, { ar: { hello: L.ar.hello }, en: { hello: L.en.hello } })); }, [lang]);
 
   async function callModel(system, apiMsgs) {
@@ -2767,7 +2841,9 @@ USER SNAPSHOT (amounts in SAR): ${JSON.stringify(snapshot)}`;
         : intent === "cheapest" ? cheapestLocal(st, lang)
         : intent === "loan" ? loanLocal(st, content, lang)
         : generalLocal(st, content, lang)).text;
-      setMessages((m) => [...m, { role: "assistant", text: localText, widget }]);
+      // `local` marks the reply as the scripted offline fallback so the bubble
+      // can say so — a canned answer must not impersonate the live model.
+      setMessages((m) => [...m, { role: "assistant", text: localText, widget, local: true }]);
     }
     setBusy(false);
   }
@@ -2786,17 +2862,22 @@ USER SNAPSHOT (amounts in SAR): ${JSON.stringify(snapshot)}`;
           </button>
         ))}
       </div>
-      <div className="wscroll" style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: 11, paddingBottom: 8 }}>
+      <div className="wscroll" role="log" aria-live="polite" aria-label={s.coach.title} style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: 11, paddingBottom: 8 }}>
         {messages.map((m, i) => <Bubble key={i} {...m} />)}
-        {busy && <div style={{ alignSelf: "flex-start", display: "flex", gap: 5, padding: "10px 14px" }}>{[0, 1, 2].map((d) => <span key={d} style={{ width: 7, height: 7, borderRadius: 9, background: c.accent, animation: `wDot 1.2s ${d * .15}s infinite` }} />)}</div>}
+        {busy && (
+          <div style={{ alignSelf: "flex-start", display: "flex", gap: 5, padding: "10px 14px" }}>
+            <span style={SR_ONLY}>{lang === "ar" ? "وعي يكتب…" : "Waey is typing…"}</span>
+            {[0, 1, 2].map((d) => <span key={d} aria-hidden="true" style={{ width: 7, height: 7, borderRadius: 9, background: c.accent, animation: `wDot 1.2s ${d * .15}s infinite` }} />)}
+          </div>
+        )}
         <div ref={end} />
       </div>
       <div style={{ display: "flex", gap: 7, padding: "8px 0", flexWrap: "wrap" }}>
         {s.chips.map((q) => <button key={q} onClick={() => send(q)} style={chip(c)}>{q}</button>)}
       </div>
       <div style={{ display: "flex", gap: 9, paddingTop: 2 }}>
-        <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send()} placeholder={s.msgPlaceholder} style={{ ...inp(c), flex: 1 }} />
-        <button onClick={() => send()} disabled={busy} style={{ width: 46, height: 46, borderRadius: 13, border: "none", background: c.accent, display: "grid", placeItems: "center", cursor: "pointer", opacity: busy ? .5 : 1 }}><Send size={18} color={c.onAccent} /></button>
+        <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && !e.nativeEvent.isComposing) send(); }} placeholder={s.msgPlaceholder} aria-label={s.msgPlaceholder} style={{ ...inp(c), flex: 1 }} />
+        <button onClick={() => send()} disabled={busy} aria-label={lang === "ar" ? "إرسال" : "Send"} style={{ width: 46, height: 46, borderRadius: 13, border: "none", background: c.accent, display: "grid", placeItems: "center", cursor: "pointer", opacity: busy ? .5 : 1 }}><Send size={18} color={c.onAccent} aria-hidden="true" /></button>
       </div>
       {coachSheet && <CoachSheet which={coachSheet} onClose={() => setCoachSheet(null)} />}
     </div>
@@ -2831,33 +2912,45 @@ function CoachSheet({ which, onClose }) {
 
 /* ===================== الاستثمار ===================== */
 function Invest() {
-  const { c, s, lang, savings, invested, setSavings, setInvested, flash } = useCtx();
-  function put(a) { if (a > savings) return flash(s.tooMuch); setSavings((x) => x - a); setInvested((v) => v + a); flash(s.invested(a)); }
+  const { c, s, lang, dir, savings, invested, setSavings, setInvested, flash } = useCtx();
+  const [armed, setArmed] = useState(null);
+  function put(a) {
+    if (a > savings) return flash(s.tooMuch);
+    if (armed !== a) return setArmed(a);
+    setArmed(null);
+    setSavings((x) => +(x - a).toFixed(2)); setInvested((v) => +(v + a).toFixed(2)); flash(s.invested(a));
+  }
+  const GOAL = 75000;
+  const journeyPct = Math.min(100, Math.round((savings / GOAL) * 100));
   return (
     <div>
       <ScreenHead title={s.nav.invest} />
       <div style={{ borderRadius: 24, padding: 20, marginTop: 6, background: `linear-gradient(135deg, ${c.accent} 0%, ${c.accentText} 100%)`, color: c.onAccent }}>
         <div style={{ fontSize: 12.5, fontWeight: 600, opacity: .85 }}>{s.portfolio}</div>
-        <div style={{ fontSize: 30, fontWeight: 700 }}><AnimatedNumber value={invested} formatter={(n) => `${fmt(n)}.00`} /> <RS size="0.6em" /></div>
+        <div style={{ fontSize: 30, fontWeight: 700 }}><AnimatedNumber value={invested} formatter={fmt2} /> <RS size="0.6em" /></div>
         <div style={{ fontSize: 13, fontWeight: 700 }}>{riyalText(s.expRet(fmt(invested * 1.25)))}</div>
       </div>
       <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 24, padding: 18, marginTop: 14 }}>
         <div style={{ fontWeight: 700 }}>{s.journey}</div>
         <div style={{ fontSize: 12, color: c.muted, lineHeight: 1.7, marginTop: 4 }}>
           {lang === "ar"
-            ? <>باستمرار الادّخار + الاستثمار، تحوّل 60,000 خلال دراستك إلى <b style={{ color: c.accentText }}>75,000+ <RS /></b> عند التخرّج.</>
+            ? <>باستمرار الادّخار + الاستثمار، تحوّل 60,000 خلال دراستك إلى <b style={{ color: c.accentText }}><Metric value="75,000+" /> <RS /></b> عند التخرّج.</>
             : <>By saving + investing, turn 60,000 during your studies into <b style={{ color: c.accentText }}><Metric value="75,000+" /> <RS /></b> by graduation.</>}
         </div>
-        <div style={{ height: 8, background: c.inputBg, borderRadius: 9, marginTop: 12 }}><div style={{ width: "42%", height: "100%", background: `linear-gradient(90deg, ${c.accent}, ${c.terra})`, borderRadius: 9 }} /></div>
+        <div style={{ height: 8, background: c.inputBg, borderRadius: 9, marginTop: 12 }}><div style={{ width: `${journeyPct}%`, height: "100%", background: `linear-gradient(${dir === "rtl" ? 270 : 90}deg, ${c.accent}, ${c.terra})`, borderRadius: 9, transition: "width .5s" }} /></div>
         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: c.muted, marginTop: 6 }}><span><Metric value={savings} /> <RS /> {s.now2}</span><span>{s.goal} <Metric value="75,000" /></span></div>
       </div>
       <div style={{ fontWeight: 700, margin: "16px 2px 8px" }}>{s.suggested}</div>
-      {[300, 500, 1000].map((a) => (
-        <div key={a} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: c.card, border: `1px solid ${c.line}`, borderRadius: 18, padding: "14px 16px", marginBottom: 10 }}>
-          <div><div style={{ fontWeight: 700 }}><Metric value={a} /> <RS /></div><div style={{ fontSize: 11.5, color: c.muted }}>{riyalText(s.inYear(fmt(a * 1.25)))}</div></div>
-          <button onClick={() => put(a)} style={{ ...btn(c.accent, c.onAccent), width: "auto", padding: "0 20px", height: 40, marginTop: 0 }}>{s.investBtn}</button>
-        </div>
-      ))}
+      {[300, 500, 1000].map((a) => {
+        const short = a > savings;
+        return (
+          <div key={a} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: c.card, border: `1px solid ${c.line}`, borderRadius: 18, padding: "14px 16px", marginBottom: 10, opacity: short ? 0.55 : 1 }}>
+            <div><div style={{ fontWeight: 700 }}><Metric value={a} /> <RS /></div><div style={{ fontSize: 11.5, color: c.muted }}>{riyalText(s.inYear(fmt(a * 1.25)))}</div></div>
+            <button onClick={() => put(a)} disabled={short} style={{ ...btn(armed === a ? c.terra : c.accent, armed === a ? c.onTerra : c.onAccent), width: "auto", padding: "0 20px", height: 44, marginTop: 0, cursor: short ? "default" : "pointer" }}>{armed === a ? s.confirm : s.investBtn}</button>
+          </div>
+        );
+      })}
+      <div style={{ fontSize: 10.5, color: c.muted, marginTop: 4 }}>{s.disclaimer}</div>
     </div>
   );
 }
@@ -2865,6 +2958,19 @@ function Invest() {
 /* ===================== المزيد ===================== */
 function MoreScreen() {
   const { c, s, lang, setLang, points, setPoints, theme, setTheme, setDemoPay, flash, setTab, logout, setOverlay } = useCtx();
+  const [plusArm, setPlusArm] = useState(false);
+  useEffect(() => {
+    if (!plusArm) return undefined;
+    const t = setTimeout(() => setPlusArm(false), 4000);
+    return () => clearTimeout(t);
+  }, [plusArm]);
+  // A paid upgrade never succeeds on a single accidental tap: first tap arms
+  // the button with the price, the second confirms (auto-disarms after 4s).
+  function upgradePlus() {
+    if (!plusArm) return setPlusArm(true);
+    setPlusArm(false);
+    flash(s.plusDone);
+  }
   function redeem(it) { if (points < it.cost) return flash(s.noPoints); setPoints((p) => p - it.cost); flash(s.redeemed(it[lang])); }
   const rows = [
     { i: <Store size={18} color={c.accentText} />, t: s.plat.title, go: () => setOverlay("platform") },
@@ -2892,7 +2998,7 @@ function MoreScreen() {
           <div style={{ fontWeight: 700 }}>{s.plus} · <span style={{ color: c.accentText }}>{riyalText(s.plusPrice)}</span></div>
           <div style={{ fontSize: 11.5, color: c.muted, lineHeight: 1.5 }}>{s.plusSub}</div>
         </div>
-        <button onClick={() => flash(s.plusDone)} style={{ ...btn(c.accent, c.onAccent), width: "auto", padding: "0 16px", height: 38, marginTop: 0, fontSize: 12.5, flexShrink: 0 }}>{s.upgrade}</button>
+        <button onClick={upgradePlus} style={{ ...btn(plusArm ? c.terra : c.accent, plusArm ? c.onTerra : c.onAccent), width: "auto", padding: "0 16px", height: 44, marginTop: 0, fontSize: 12.5, flexShrink: 0 }}>{riyalText(plusArm ? s.confirmPlus : s.upgrade)}</button>
       </div>
 
       <SectionTitle icon={Sparkles}>{s.about}</SectionTitle>
@@ -2972,7 +3078,7 @@ function DemoSheet() {
       ) : (
         <div>
           <input autoFocus value={demoPay.other} onChange={(e) => setDemoPay({ ...demoPay, other: e.target.value })} placeholder={s.typeCat} style={inp(c)} />
-          <button onClick={() => { const v = demoPay.other.trim() || L.en.cats.other; pick("other", { ar: v, en: v }); }} style={btn(c.accent, c.onAccent)}>{s.confirm}</button>
+          <button onClick={() => { const v = demoPay.other.trim(); pick("other", v ? { ar: v, en: v } : { ar: L.ar.cats.other, en: L.en.cats.other }); }} style={btn(c.accent, c.onAccent)}>{s.confirm}</button>
         </div>
       )}
     </Sheet>
@@ -2982,28 +3088,33 @@ function DemoSheet() {
 /* ===================== تحويل / إيداع ===================== */
 function TransferSheet() {
   const { c, s, balance, setBalance, pushTx, setSheet, flash } = useCtx();
-  const [to, setTo] = useState(s.people[0]);
+  // Recipient is stored as an index so a mid-sheet language switch can't
+  // orphan the selection (the localized names change, the index doesn't).
+  const [toIdx, setToIdx] = useState(0);
   const [amt, setAmt] = useState("");
+  const [arm, setArm] = useState(false);
+  const to = s.people[toIdx];
   function confirm() {
     const a = parseFloat(amt);
     if (!a || a <= 0) return flash(s.badAmount);
     if (a > balance) return flash(s.noBal);
-    setBalance((b) => b - a); pushTx({ amt: a, place: { ar: `${L.ar.transfer} · ${to}`, en: `${L.en.transfer} · ${to}` }, cat: "transfer" });
+    if (!arm) return setArm(true); // money moves on the second, explicit tap
+    setBalance((b) => +(b - a).toFixed(2)); pushTx({ amt: a, place: { ar: `${L.ar.transfer} · ${L.ar.people[toIdx]}`, en: `${L.en.transfer} · ${L.en.people[toIdx]}` }, cat: "transfer" });
     setSheet(null); flash(s.sent(a, to));
   }
   return (
     <Sheet title={s.transferT} icon={ArrowLeftRight} subtitle={s.yourBal(fmt(balance))}>
       <div className="whz" style={{ display: "flex", gap: 10, overflowX: "auto", padding: "4px 0 8px" }}>
-        {s.people.map((p) => (
-          <button key={p} onClick={() => setTo(p)} style={{ flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "center", gap: 6, background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
-            <span style={{ width: 50, height: 50, borderRadius: 999, display: "grid", placeItems: "center", fontSize: 18, fontWeight: 700, color: to === p ? c.onAccent : c.accentText, background: to === p ? c.accent : c.card, border: `2px solid ${to === p ? c.accent : c.line}` }}>{p[0]}</span>
-            <span style={{ fontSize: 11, color: to === p ? c.text : c.muted }}>{p}</span>
+        {s.people.map((p, i) => (
+          <button key={p} aria-pressed={toIdx === i} onClick={() => { setToIdx(i); setArm(false); }} style={{ flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "center", gap: 6, background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
+            <span style={{ width: 50, height: 50, borderRadius: 999, display: "grid", placeItems: "center", fontSize: 18, fontWeight: 700, color: toIdx === i ? c.onAccent : c.accentText, background: toIdx === i ? c.accent : c.card, border: `2px solid ${toIdx === i ? c.accent : c.line}` }}>{p[0]}</span>
+            <span style={{ fontSize: 11, color: toIdx === i ? c.text : c.muted }}>{p}</span>
           </button>
         ))}
       </div>
-      <input value={amt} onChange={(e) => setAmt(e.target.value.replace(/[^\d.]/g, ""))} placeholder={s.amount} inputMode="decimal" style={{ ...inp(c), textAlign: "center", fontSize: 22, fontWeight: 700, padding: "14px" }} />
-      <div style={{ display: "flex", gap: 8, marginTop: 10 }}>{[50, 100, 200, 500].map((q) => <button key={q} onClick={() => setAmt(String(q))} style={chip(c)}>{q}</button>)}</div>
-      <button onClick={confirm} style={btn(c.accent, c.onAccent)}>{s.sendNow}</button>
+      <input value={amt} onChange={(e) => { setAmt(e.target.value.replace(/[^\d.]/g, "")); setArm(false); }} placeholder={s.amount} inputMode="decimal" aria-label={s.amount} style={{ ...inp(c), textAlign: "center", fontSize: 22, fontWeight: 700, padding: "14px" }} />
+      <div style={{ display: "flex", gap: 8, marginTop: 10 }}>{[50, 100, 200, 500].map((q) => <button key={q} onClick={() => { setAmt(String(q)); setArm(false); }} style={chip(c)}>{q}</button>)}</div>
+      <button onClick={confirm} style={btn(arm ? c.terra : c.accent, arm ? c.onTerra : c.onAccent)}>{arm ? s.confirmSend(parseFloat(amt) || 0, to) : s.sendNow}</button>
     </Sheet>
   );
 }
@@ -3013,7 +3124,7 @@ function TopupSheet() {
   function confirm() {
     const a = parseFloat(amt);
     if (!a || a <= 0) return flash(s.badAmount);
-    setBalance((b) => b + a); pushTx({ amt: a, place: { ar: L.ar.deposit, en: L.en.deposit }, cat: "topup" });
+    setBalance((b) => +(b + a).toFixed(2)); pushTx({ amt: a, place: { ar: L.ar.deposit, en: L.en.deposit }, cat: "topup" });
     setSheet(null); flash(s.deposited(a));
   }
   return (
@@ -3030,6 +3141,7 @@ function LoanModal() {
   const { c, s, lang, loanOffer, setLoanOffer, entries, setEntries, curWeek, tx, setTx, balance, setBalance, setLoanTaken, loanTaken, flash } = useCtx();
   const { need, offer, pending } = loanOffer;
   function accept() {
+    if (loanTaken + offer > MAX_TOTAL_LOAN) { setLoanOffer(null); return flash(s.loanCap); }
     const before = { entries, tx, balance, loanTaken };
     const after = applyAcceptedSpend(before, {
       decision: { kind: "loanOffer", need, offer },
@@ -3045,17 +3157,24 @@ function LoanModal() {
     flash(s.loanDone(offer));
   }
   const drop = STIPEND - (loanTaken + offer);
+  const panelRef = useRef(null);
+  useEffect(() => {
+    panelRef.current?.focus();
+    const onKey = (e) => { if (e.key === "Escape") setLoanOffer(null); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [setLoanOffer]);
   return (
-    <div onClick={() => setLoanOffer(null)} style={{ position: "absolute", inset: 0, background: "rgba(15,34,48,0.36)", backdropFilter: "blur(6px)", display: "grid", placeItems: "center", padding: 22, zIndex: 50 }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ background: c.card2, border: `1px solid ${c.line}`, borderRadius: 26, padding: 24, width: "100%", maxWidth: 330, animation: "wPop .25s ease both", textAlign: "center" }}>
-        <div style={{ width: 52, height: 52, borderRadius: 16, margin: "0 auto", background: `linear-gradient(135deg, ${c.terra}, ${c.terraText})`, display: "grid", placeItems: "center" }}><Wallet size={24} color="#fff" /></div>
+    <div onClick={() => setLoanOffer(null)} style={{ position: "absolute", inset: 0, background: "rgba(15,34,48,0.36)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)", display: "grid", placeItems: "center", padding: 22, zIndex: 50 }}>
+      <div ref={panelRef} role="dialog" aria-modal="true" aria-label={s.loanTitle} tabIndex={-1} onClick={(e) => e.stopPropagation()} style={{ background: c.card2, border: `1px solid ${c.line}`, borderRadius: 26, padding: 24, width: "100%", maxWidth: 330, animation: "wPop .25s ease both", textAlign: "center", outline: "none" }}>
+        <div style={{ width: 52, height: 52, borderRadius: 16, margin: "0 auto", background: `linear-gradient(135deg, ${c.terra}, ${c.terraText})`, display: "grid", placeItems: "center" }}><Wallet size={24} color={c.onTerra} aria-hidden="true" /></div>
         <h3 style={{ margin: "14px 0 8px", fontSize: 18 }}>{s.loanTitle}</h3>
         <p style={{ color: c.muted, fontSize: 13.5, lineHeight: 1.8 }}>
           {lang === "ar"
             ? <>ينقصك <b style={{ color: c.terraText }}>{fmt(need)} <RS /></b>. أقدر أعطيك قرض <b style={{ color: c.text }}>{fmt(offer)} <RS /></b> من مكافأة الشهر الجاي — بتنزل <b style={{ color: c.text }}>{fmt(drop)} <RS /></b> بدل {fmt(STIPEND)}.</>
             : <>You're short <b style={{ color: c.terraText }}>{fmt(need)} <RS /></b>. I can lend <b style={{ color: c.text }}>{fmt(offer)} <RS /></b> from next month's stipend — it drops to <b style={{ color: c.text }}>{fmt(drop)} <RS /></b> instead of {fmt(STIPEND)}.</>}
         </p>
-        <button onClick={accept} style={btn(c.terra, "#fff")}>{s.approve}</button>
+        <button onClick={accept} style={btn(c.terra, c.onTerra)}>{s.approve}</button>
         <button onClick={() => setLoanOffer(null)} style={{ ...btn("transparent", c.text), border: `1px solid ${c.line}`, marginTop: 8 }}>{s.noAdjust}</button>
       </div>
     </div>
@@ -3080,9 +3199,9 @@ function Sidebar() {
         {items.map((x) => {
           const on = tab === x.id, Icon = x.icon;
           return (
-            <motion.button key={x.id} onClick={() => setTab(x.id)} whileTap={{ scale: 0.98 }} style={{ position: "relative", display: "flex", alignItems: "center", gap: 13, padding: "12px 14px", borderRadius: 14, border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 14.5, fontWeight: on ? 700 : 500, background: "transparent", color: on ? c.onAccent : c.textSoft, textAlign: "start" }}>
+            <motion.button key={x.id} onClick={() => setTab(x.id)} aria-current={on ? "page" : undefined} whileTap={{ scale: 0.98 }} style={{ position: "relative", display: "flex", alignItems: "center", gap: 13, padding: "12px 14px", borderRadius: 14, border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 14.5, fontWeight: on ? 700 : 500, background: "transparent", color: on ? c.onAccent : c.textSoft, textAlign: "start" }}>
               {on && <motion.span layoutId="waey-sidebar-pill" transition={{ type: "spring", duration: 0.42, bounce: 0.16 }} style={{ position: "absolute", inset: 0, borderRadius: 14, background: c.accent, zIndex: 0 }} />}
-              <span style={{ position: "relative", zIndex: 1, display: "inline-flex", alignItems: "center", gap: 13 }}><Icon size={20} />{x.label}</span>
+              <span style={{ position: "relative", zIndex: 1, display: "inline-flex", alignItems: "center", gap: 13 }}><Icon size={20} aria-hidden="true" />{x.label}</span>
             </motion.button>
           );
         })}
@@ -3095,8 +3214,8 @@ function Sidebar() {
           <Coins size={17} color={c.accentText} /><span style={{ fontSize: 13, fontWeight: 700 }}><Metric value={points} /></span><span style={{ fontSize: 11, color: c.muted }}>{lang === "ar" ? "نقطة" : "pts"}</span>
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          <button onClick={() => setLang(lang === "ar" ? "en" : "ar")} style={{ flex: 1, height: 38, borderRadius: 12, background: c.card2, border: `1px solid ${c.line}`, color: c.text, cursor: "pointer", fontFamily: "inherit", fontSize: 12.5, fontWeight: 700 }}>{lang === "ar" ? "EN" : "ع"}</button>
-          <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")} style={{ flex: 1, height: 38, borderRadius: 12, background: c.card2, border: `1px solid ${c.line}`, color: c.text, cursor: "pointer", display: "grid", placeItems: "center" }}>{theme === "dark" ? <Sun size={17} /> : <Moon size={17} />}</button>
+          <button onClick={() => setLang(lang === "ar" ? "en" : "ar")} aria-label={lang === "ar" ? "تغيير اللغة" : "Change language"} style={{ flex: 1, height: 44, borderRadius: 12, background: c.card2, border: `1px solid ${c.line}`, color: c.text, cursor: "pointer", fontFamily: "inherit", fontSize: 12.5, fontWeight: 700 }}>{lang === "ar" ? "EN" : "ع"}</button>
+          <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")} aria-label={lang === "ar" ? "تغيير المظهر" : "Change theme"} style={{ flex: 1, height: 44, borderRadius: 12, background: c.card2, border: `1px solid ${c.line}`, color: c.text, cursor: "pointer", display: "grid", placeItems: "center" }}>{theme === "dark" ? <Sun size={17} aria-hidden="true" /> : <Moon size={17} aria-hidden="true" />}</button>
         </div>
       </div>
     </div>
@@ -3114,8 +3233,8 @@ function BottomNav() {
       <div style={{ width: "100%", maxWidth: 600, minHeight: 84, display: "flex", alignItems: "center", justifyContent: "space-around", padding: "0 14px 14px" }}>
       {items.map((x) => {
         const on = tab === x.id, Icon = x.icon;
-        if (x.center) return <motion.button key={x.id} onClick={() => setTab(x.id)} whileTap={{ scale: 0.92 }} style={{ width: 58, height: 58, borderRadius: 20, border: "none", cursor: "pointer", background: `linear-gradient(135deg, ${c.accent}, ${c.accentText})`, display: "grid", placeItems: "center", y: -12, boxShadow: `0 12px 26px -6px ${c.accent}` }}><Icon size={26} color={c.onAccent} /></motion.button>;
-        return <motion.button key={x.id} onClick={() => setTab(x.id)} whileTap={{ scale: 0.9 }} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 4, color: on ? c.accentText : c.muted, flex: 1, position: "relative" }}><Icon size={22} /><span style={{ fontSize: 10.5, fontWeight: on ? 700 : 500 }}>{x.label}</span>{on && <motion.span layoutId="waey-bottomnav-dot" transition={{ type: "spring", duration: 0.42, bounce: 0.16 }} style={{ position: "absolute", top: -6, width: 5, height: 5, borderRadius: 999, background: c.accentText }} />}</motion.button>;
+        if (x.center) return <motion.button key={x.id} onClick={() => setTab(x.id)} aria-label={x.label} aria-current={on ? "page" : undefined} whileTap={{ scale: 0.92 }} style={{ width: 58, height: 58, borderRadius: 20, border: "none", cursor: "pointer", background: `linear-gradient(135deg, ${c.accent}, ${c.accentText})`, display: "grid", placeItems: "center", y: -12, boxShadow: `0 12px 26px -6px ${c.accent}` }}><Icon size={26} color={c.onAccent} aria-hidden="true" /></motion.button>;
+        return <motion.button key={x.id} onClick={() => setTab(x.id)} aria-current={on ? "page" : undefined} whileTap={{ scale: 0.9 }} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 4, color: on ? c.accentText : c.muted, flex: 1, position: "relative", minHeight: 48 }}><Icon size={22} aria-hidden="true" /><span style={{ fontSize: 10.5, fontWeight: on ? 700 : 500 }}>{x.label}</span>{on && <motion.span layoutId="waey-bottomnav-dot" transition={{ type: "spring", duration: 0.42, bounce: 0.16 }} style={{ position: "absolute", top: -6, width: 5, height: 5, borderRadius: 999, background: c.accentText }} />}</motion.button>;
       })}
       </div>
     </div>
@@ -3126,12 +3245,36 @@ function BottomNav() {
 function Sheet({ title, subtitle, icon: Icon, children, onClose }) {
   const { c, setSheet } = useCtx();
   const close = onClose || (() => setSheet(null));
+  const panelRef = useRef(null);
+  useEffect(() => {
+    panelRef.current?.focus();
+    const onKey = (e) => { if (e.key === "Escape") close(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   return (
-    <motion.div onClick={close} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.18, ease: easeOut }} style={{ position: "absolute", inset: 0, background: "rgba(15,34,48,0.32)", backdropFilter: "blur(6px)", display: "flex", alignItems: "flex-end", zIndex: 50 }}>
-      <motion.div onClick={(e) => e.stopPropagation()} variants={sheetVariants} initial="hidden" animate="visible" transition={{ duration: 0.3, ease: easeOut }} style={{ width: "100%", background: c.card2, borderRadius: "26px 26px 0 0", padding: "20px 20px calc(24px + env(safe-area-inset-bottom,0px))", border: `1px solid ${c.line}` }}>
-        <div style={{ width: 40, height: 4, borderRadius: 9, background: c.line, margin: "0 auto 16px" }} />
+    <motion.div onClick={close} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.18, ease: easeOut }} style={{ position: "absolute", inset: 0, background: "rgba(15,34,48,0.32)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)", display: "flex", alignItems: "flex-end", zIndex: 50 }}>
+      <motion.div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={typeof title === "string" ? title : undefined}
+        tabIndex={-1}
+        onClick={(e) => e.stopPropagation()}
+        variants={sheetVariants}
+        initial="hidden"
+        animate="visible"
+        transition={{ duration: 0.3, ease: easeOut }}
+        drag="y"
+        dragConstraints={{ top: 0, bottom: 0 }}
+        dragElastic={{ top: 0, bottom: 0.6 }}
+        onDragEnd={(e, info) => { if (info.offset.y > 90 || info.velocity.y > 500) close(); }}
+        style={{ width: "100%", background: c.card2, borderRadius: "26px 26px 0 0", padding: "20px 20px calc(24px + env(safe-area-inset-bottom,0px))", border: `1px solid ${c.line}`, outline: "none" }}
+      >
+        <div aria-hidden="true" style={{ width: 40, height: 4, borderRadius: 9, background: c.line, margin: "0 auto 16px" }} />
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
-          {Icon && <div style={{ width: 44, height: 44, borderRadius: 13, background: c.accent, display: "grid", placeItems: "center" }}><Icon size={22} color={c.onAccent} /></div>}
+          {Icon && <div style={{ width: 44, height: 44, borderRadius: 13, background: c.accent, display: "grid", placeItems: "center" }}><Icon size={22} color={c.onAccent} aria-hidden="true" /></div>}
           <div><div style={{ fontWeight: 700, fontSize: 16 }}>{riyalText(title)}</div>{subtitle && <div style={{ fontSize: 12, color: c.muted }}>{riyalText(subtitle)}</div>}</div>
         </div>
         {children}
@@ -3139,8 +3282,8 @@ function Sheet({ title, subtitle, icon: Icon, children, onClose }) {
     </motion.div>
   );
 }
-function Bubble({ role, text, widget }) {
-  const { c, dir } = useCtx(); const me = role === "user";
+function Bubble({ role, text, widget, local }) {
+  const { c, dir, lang } = useCtx(); const me = role === "user";
   return (
     <motion.div
       initial={{ opacity: 0, y: 10, x: me ? (dir === "rtl" ? -10 : 10) : (dir === "rtl" ? 10 : -10), scale: 0.98 }}
@@ -3149,6 +3292,7 @@ function Bubble({ role, text, widget }) {
       style={{ alignSelf: me ? "flex-end" : "flex-start", maxWidth: "86%", background: me ? c.accent : c.card, color: me ? c.onAccent : c.textSoft, padding: "11px 14px", borderRadius: 18, borderEndStartRadius: me ? 18 : 5, borderEndEndRadius: me ? 5 : 18, fontSize: 14, lineHeight: 1.75, whiteSpace: "pre-wrap", border: me ? "none" : `1px solid ${c.line}` }}
     >
       {riyalText(text)}{widget && <ChatWidget w={widget} />}
+      {local && <div style={{ fontSize: 10, color: c.muted, marginTop: 8 }}>{lang === "ar" ? "إجابة سريعة — المساعد الذكي غير متصل حالياً" : "Quick answer — the AI assistant is offline right now"}</div>}
     </motion.div>
   );
 }
@@ -3178,10 +3322,21 @@ function ChatWidget({ w }) {
   return null;
 }
 function LoanWidget({ w }) {
-  const { c, s, lang, setLoanTaken, loanTaken, flash } = useCtx();
+  const { c, s, lang, setLoanTaken, loanTaken, setBalance, pushTx, flash } = useCtx();
   const [done, setDone] = useState(false);
+  const capped = !done && loanTaken + w.offer > MAX_TOTAL_LOAN;
   const drop = STIPEND - (loanTaken + w.offer);
-  function approve() { if (done) return; setLoanTaken((l) => l + w.offer); setDone(true); flash(s.loanDone(w.offer)); }
+  function approve() {
+    // Same ledger rules as LoanModal: the approved amount must actually land
+    // in the balance and appear in the transaction feed, and total debt stays
+    // within MAX_TOTAL_LOAN of next month's stipend.
+    if (done || capped) return;
+    setLoanTaken((l) => l + w.offer);
+    setBalance((b) => b + w.offer);
+    pushTx({ amt: w.offer, place: { ar: "سلفة وعي", en: "Waey loan" }, cat: "topup" });
+    setDone(true);
+    flash(s.loanDone(w.offer));
+  }
   return (
     <div style={{ marginTop: 12, background: c.card2, border: `1px solid ${c.line}`, borderRadius: 16, padding: 14 }}>
       <div style={{ fontSize: 13, lineHeight: 1.8 }}>
@@ -3189,7 +3344,9 @@ function LoanWidget({ w }) {
           ? <>ينقصك <b style={{ color: c.terraText }}><Metric value={w.gap} /> <RS /></b>. أقدر أعطيك قرض <b><Metric value={w.offer} /> <RS /></b> من راتب الشهر الجاي — بينزل راتبك القادم إلى <b><Metric value={drop} /> <RS /></b> بدل {fmt(STIPEND)}.</>
           : <>You're short <b style={{ color: c.terraText }}><Metric value={w.gap} /> <RS /></b>. I can lend you <b><Metric value={w.offer} /> <RS /></b> from next month's salary — your next stipend becomes <b><Metric value={drop} /> <RS /></b> instead of {fmt(STIPEND)}.</>}
       </div>
-      <button onClick={approve} disabled={done} style={{ ...btn(done ? c.green : c.terra, "#fff"), height: 42, marginTop: 10, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7 }}>{done && <Check size={16} aria-hidden="true" />}{done ? (lang === "ar" ? "تم اعتماد القرض" : "Loan approved") : s.approve}</button>
+      {capped
+        ? <div style={{ marginTop: 10, fontSize: 12.5, color: c.terraText, lineHeight: 1.6 }}>{s.loanCap}</div>
+        : <button onClick={approve} disabled={done} style={{ ...btn(done ? c.green : c.terra, done ? c.onGreen : c.onTerra), height: 42, marginTop: 10, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7 }}>{done && <Check size={16} aria-hidden="true" />}{done ? (lang === "ar" ? "تم اعتماد القرض" : "Loan approved") : s.approve}</button>}
     </div>
   );
 }
@@ -3235,19 +3392,21 @@ function ProjectionWidget({ init }) {
 }
 function StatusBar() { const { c } = useCtx(); return <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 26px 4px", fontSize: 14, fontWeight: 600, flexShrink: 0, color: c.statusText, direction: "ltr" }}><span>9:41</span><div style={{ display: "flex", gap: 6, alignItems: "center" }}><Signal col={c.statusText} /><Wifi col={c.statusText} /><Battery col={c.statusText} /></div></div>; }
 function ScreenHead({ title }) { return <div style={{ fontSize: 24, fontWeight: 700, padding: "8px 2px 2px" }}>{title}</div>; }
-function SectionTitle({ icon: Icon, children }) { const { c } = useCtx(); return <div style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 700, fontSize: 15, margin: "18px 2px 10px" }}><Icon size={17} color={c.accentText} />{children}</div>; }
+function SectionTitle({ icon: Icon, children }) { const { c } = useCtx(); return <h2 style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 700, fontSize: 15, margin: "18px 2px 10px" }}><Icon size={17} color={c.accentText} aria-hidden="true" />{children}</h2>; }
 function Stat({ icon, value, label }) { const { c } = useCtx(); return <div style={{ textAlign: "center" }}><div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>{icon}<span style={{ fontSize: 18, fontWeight: 700 }}><Metric value={value} /></span></div><div style={{ fontSize: 10.5, color: c.muted, marginTop: 2 }}>{label}</div></div>; }
 function MiniBox({ label, value, tone }) { const { c } = useCtx(); return <div style={{ flex: 1, background: c.card2, border: `1px solid ${c.line}`, borderRadius: 14, padding: "10px 12px" }}><div style={{ fontSize: 11, color: c.muted }}>{label}</div><div style={{ fontSize: 16, fontWeight: 700, color: tone }}>{riyalText(value)}</div></div>; }
 function Divider() { const { c } = useCtx(); return <div style={{ width: 1, height: 32, background: c.line }} />; }
-function Toggle({ on, onClick, label }) { const { c } = useCtx(); return <button type="button" role="switch" aria-checked={on} aria-label={label} onClick={onClick} style={{ width: 52, height: 30, borderRadius: 999, background: on ? c.accent : c.line, position: "relative", cursor: "pointer", transition: "background .25s", border: "none", padding: 0, flexShrink: 0 }}><span aria-hidden="true" style={{ position: "absolute", top: 3, insetInlineEnd: on ? 3 : 25, width: 24, height: 24, borderRadius: 999, background: "#fff", transition: "inset-inline-end .25s" }} /></button>; }
-function IconBtn({ children, dot, onClick }) { const { c } = useCtx(); return <button onClick={onClick} style={{ position: "relative", width: 38, height: 38, borderRadius: 12, background: c.card, border: `1px solid ${c.line}`, color: c.text, display: "grid", placeItems: "center", cursor: "pointer" }}>{children}{dot && <span style={{ position: "absolute", top: 9, insetInlineEnd: 10, width: 7, height: 7, borderRadius: 9, background: c.terra, border: `1.5px solid ${c.card}` }} />}</button>; }
+function Toggle({ on, onClick, label }) { const { c } = useCtx(); return <button type="button" role="switch" aria-checked={on} aria-label={label} onClick={onClick} style={{ width: 52, height: 30, borderRadius: 999, background: on ? c.accent : c.muted, position: "relative", cursor: "pointer", transition: "background .25s", border: "none", padding: 0, flexShrink: 0 }}><span aria-hidden="true" style={{ position: "absolute", top: 3, insetInlineEnd: on ? 3 : 25, width: 24, height: 24, borderRadius: 999, background: "#fff", transition: "inset-inline-end .25s" }} /></button>; }
+function IconBtn({ children, dot, onClick, label }) { const { c } = useCtx(); return <button onClick={onClick} aria-label={label} style={{ position: "relative", width: 44, height: 44, borderRadius: 13, background: c.card, border: `1px solid ${c.line}`, color: c.text, display: "grid", placeItems: "center", cursor: "pointer" }}>{children}{dot && <span aria-hidden="true" style={{ position: "absolute", top: 10, insetInlineEnd: 11, width: 7, height: 7, borderRadius: 9, background: c.terra, border: `1.5px solid ${c.card}` }} />}</button>; }
 function MetricCard({ label, value, tone, sign }) { const { c } = useCtx(); return <div style={{ flex: 1, background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 15 }}><div style={{ fontSize: 12, color: c.muted }}>{label}</div><div style={{ fontSize: 21, fontWeight: 700, marginTop: 2 }}><Metric value={value} /> <RS color={c.muted} /></div><div style={{ fontSize: 11.5, color: tone, fontWeight: 600, marginTop: 1 }}>{sign}</div></div>; }
 function Seg({ options, value, onChange }) { const { c } = useCtx(); return <div style={{ display: "flex", background: c.card, border: `1px solid ${c.line}`, borderRadius: 14, padding: 4, marginTop: 12 }}>{options.map((o) => <button key={o} onClick={() => onChange(o)} style={{ flex: 1, padding: "9px 0", borderRadius: 10, border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 13, fontWeight: 600, background: value === o ? c.accent : "transparent", color: value === o ? c.onAccent : c.muted }}>{o}</button>)}</div>; }
 function Spark({ data }) {
   const { c } = useCtx(); const w = 300, h = 70, max = Math.max(...data), min = Math.min(...data);
   const pts = data.map((v, i) => [(i / (data.length - 1)) * w, h - ((v - min) / (max - min || 1)) * (h - 10) - 5]);
   const d = pts.map((p, i) => (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1)).join(" ");
-  const id = "wg" + Math.round(min) + Math.round(max);
+  // useId keeps gradient ids unique when several sparks share one document.
+  const rid = useId();
+  const id = "wg" + rid.replace(/[^a-zA-Z0-9_-]/g, "");
   return <svg viewBox={`0 0 ${w} ${h}`} style={{ width: "100%", height: 70, marginTop: 8 }} preserveAspectRatio="none"><defs><linearGradient id={id} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={c.accent} stopOpacity="0.35" /><stop offset="100%" stopColor={c.accent} stopOpacity="0" /></linearGradient></defs><path d={`${d} L ${w} ${h} L 0 ${h} Z`} fill={`url(#${id})`} /><motion.path d={d} fill="none" stroke={c.accentText} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" initial={{ pathLength: 0, opacity: 0 }} whileInView={{ pathLength: 1, opacity: 1 }} viewport={{ once: true, amount: 0.5 }} transition={{ duration: 0.9, ease: easeOut }} /></svg>;
 }
 function Signal({ col }) { return <svg width="18" height="12" viewBox="0 0 18 12"><g fill={col}>{[0, 1, 2, 3].map((i) => <rect key={i} x={i * 4.5} y={9 - i * 2.7} width="3" height={3 + i * 2.7} rx="1" />)}</g></svg>; }
@@ -3257,4 +3416,4 @@ function Battery({ col }) { return <svg width="26" height="13" viewBox="0 0 26 1
 // the keyboard focus treatment for every input.
 function inp(c) { return { flex: 1, background: c.inputBg, border: `1px solid ${c.line}`, borderRadius: 13, padding: "11px 14px", fontSize: 14, fontFamily: "inherit", color: c.text, minWidth: 0, width: "100%" }; }
 function btn(bg, color) { return { marginTop: 12, width: "100%", height: 46, background: bg, color, border: "none", borderRadius: 13, fontSize: 14.5, fontWeight: 700, fontFamily: "inherit", cursor: "pointer" }; }
-function chip(c) { return { background: c.card, border: `1px solid ${c.line}`, borderRadius: 999, padding: "8px 14px", fontSize: 13, fontWeight: 600, fontFamily: "inherit", color: c.textSoft, cursor: "pointer", flex: 1 }; }
+function chip(c) { return { background: c.card, border: `1px solid ${c.line}`, borderRadius: 999, padding: "8px 14px", minHeight: 44, fontSize: 13, fontWeight: 600, fontFamily: "inherit", color: c.textSoft, cursor: "pointer", flex: 1 }; }

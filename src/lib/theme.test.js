@@ -38,6 +38,7 @@ describe("WCAG 2.2 AA contrast (>= 4.5:1 for the pairs Waey renders as normal-si
     ["onAccent", "accentText"], // accent -> accentText gradients carry onAccent text
     ["onTerra", "terra"],
     ["onTerra", "terraText"], // terra -> terraText gradients carry onTerra text
+    ["onGreen", "green"],
   ];
 
   for (const name of THEME_NAMES) {
@@ -45,6 +46,25 @@ describe("WCAG 2.2 AA contrast (>= 4.5:1 for the pairs Waey renders as normal-si
       it(`${name}: ${fg} on ${bg}`, () => {
         const ratio = contrastRatio(themes[name][fg], themes[name][bg]);
         expect(ratio, `${name} ${fg}(${themes[name][fg]}) on ${bg}(${themes[name][bg]}) = ${ratio?.toFixed(2)}`).toBeGreaterThanOrEqual(4.5);
+      });
+    }
+  }
+
+  // Waey renders accent/green text on 10%-alpha tints of the same hue
+  // (e.g. background: c.green + "1A" chips). Verify against the blended color.
+  function blendHex(fgHex, bgHex, alpha) {
+    const f = hexToRgb(fgHex);
+    const b = hexToRgb(bgHex);
+    const mix = f.map((ch, i) => Math.round(alpha * ch + (1 - alpha) * b[i]));
+    return `#${mix.map((ch) => ch.toString(16).padStart(2, "0")).join("")}`;
+  }
+  const TINT_PAIRS = [["green", "green"], ["accentText", "accent"], ["terraText", "terra"]];
+  for (const name of THEME_NAMES) {
+    for (const [fg, tintOf] of TINT_PAIRS) {
+      it(`${name}: ${fg} on 10% ${tintOf} tint over card`, () => {
+        const bg = blendHex(themes[name][tintOf], themes[name].card, 0.102);
+        const ratio = contrastRatio(themes[name][fg], bg);
+        expect(ratio, `${name} ${fg} on tint(${bg}) = ${ratio?.toFixed(2)}`).toBeGreaterThanOrEqual(4.5);
       });
     }
   }
