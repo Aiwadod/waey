@@ -1,3 +1,5 @@
+/* Static fallbacks for first paint (light theme); applyThemeVars() in
+   src/lib/theme.js re-points every --waey-* token when the theme changes. */
 :root {
   color-scheme: light;
   --waey-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
@@ -7,6 +9,13 @@
   --waey-page: #f1efe9;
   --waey-ink: #0f2230;
   --waey-line: rgba(0, 33, 52, 0.1);
+  --waey-card: #ffffff;
+  --waey-card2: #f5f3ee;
+  --waey-muted: #5d6b77;
+  --waey-accent: #6663cb;
+  --waey-focus: #5f5dbe;
+  --waey-soft-inset: rgba(255, 255, 255, 0.72);
+  --waey-lift-shadow: 0 24px 60px -34px rgba(15, 34, 48, 0.45);
 }
 
 html,
@@ -19,10 +28,19 @@ body {
   margin: 0;
   background: var(--waey-page);
   color: var(--waey-ink);
+  /* Financial digits keep a stable width while AnimatedNumber tweens them. */
+  font-variant-numeric: lining-nums tabular-nums;
 }
 
 * {
   box-sizing: border-box;
+}
+
+/* One focus ring for every surface — keyboard users must always see where
+   they are, on cards, gradients, and photos alike. */
+:focus-visible {
+  outline: 2px solid var(--waey-focus);
+  outline-offset: 2px;
 }
 
 .waey-pressable {
@@ -41,7 +59,7 @@ body {
 @media (hover: hover) and (pointer: fine) {
   .waey-hover-lift:hover {
     transform: translateY(calc(-3px * var(--waey-motion-scale)));
-    box-shadow: 0 24px 60px -34px rgba(15, 34, 48, 0.45);
+    box-shadow: var(--waey-lift-shadow);
   }
 
   .waey-glow:hover {
@@ -52,7 +70,7 @@ body {
 .waey-soft-card {
   box-shadow:
     0 18px 48px -36px rgba(15, 34, 48, 0.55),
-    inset 0 1px 0 rgba(255, 255, 255, 0.72);
+    inset 0 1px 0 var(--waey-soft-inset);
 }
 
 .waey-flow-field {

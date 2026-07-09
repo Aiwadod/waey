@@ -4,6 +4,7 @@ import { applyAcceptedSpend, evaluateSpend } from "./lib/finance.js";
 import { applyLanguageMetadata, translateSystemMessages } from "./lib/i18n.js";
 import { resolveInitialScreen, sanitizeScreen, screenForHash, SCREEN_HASHES } from "./lib/routing.js";
 import { clearSession, createGuestSession, createLoginSession, loadSession, saveScreen, saveSession } from "./lib/session.js";
+import { applyThemeVars, FONT_STACK, themes } from "./lib/theme.js";
 import {
   Home, BarChart3, Sparkles, TrendingUp, Bell, Plus, ChevronLeft, ChevronRight, Wallet, Trophy,
   Users, Target, BookOpen, HelpCircle, Coins, Send, Sun, Moon, Bus, Gamepad2, Coffee,
@@ -30,26 +31,8 @@ const LANDING_IMG = `${import.meta.env.BASE_URL}images/landing/`;
 const STIPEND = 1000, SPENDABLE = 800, WEEK_LIMIT = 200;
 const fmt = (n) => new Intl.NumberFormat("en-US").format(Math.round(n));
 
-const themes = {
-  dark: {
-    page: "radial-gradient(120% 80% at 50% 0%, #0A2233 0%, #00121C 60%)",
-    bg0: "#00121C", bg1: "#002134", card: "#072A3D", card2: "#0B3346",
-    line: "rgba(255,255,255,0.08)", text: "#FFFFFF", textSoft: "#E8F0F4", muted: "#7E97A6",
-    accent: "#8685D8", accentText: "#A8A6F2", onAccent: "#0A1822",
-    terra: "#CA6C46", terraText: "#E08A63", onTerra: "#FFFFFF", green: "#5FCB8E",
-    inputBg: "rgba(255,255,255,0.05)", statusText: "#FFFFFF", bezel1: "#04161F", bezel2: "#0A2A3D",
-    shadow: "0 24px 70px -48px rgba(0,0,0,0.9)",
-  },
-  light: {
-    page: "radial-gradient(120% 80% at 50% 0%, #FFFFFF 0%, #ECEAE3 70%)",
-    bg0: "#F1EFE9", bg1: "#FFFFFF", card: "#FFFFFF", card2: "#F5F3EE",
-    line: "rgba(0,33,52,0.10)", text: "#0F2230", textSoft: "#243744", muted: "#6A7884",
-    accent: "#6F6DD0", accentText: "#5F5DBE", onAccent: "#FFFFFF",
-    terra: "#C2603A", terraText: "#A84E2C", onTerra: "#FFFFFF", green: "#2E9E68",
-    inputBg: "#F1EFE9", statusText: "#0F2230", bezel1: "#DAD7CF", bezel2: "#C7C3BA",
-    shadow: "0 24px 70px -48px rgba(15,34,48,0.45)",
-  },
-};
+// Design tokens live in src/lib/theme.js (single source of truth, AA-audited
+// by theme.test.js). `themes` and FONT_STACK are re-consumed here unchanged.
 
 function IconBubble({ icon: Icon, color, bg, size = 22, box = 46, radius = 14 }) {
   return (
@@ -527,11 +510,9 @@ function riyalText(str) {
 }
 
 function injectAssets() {
+  // The IBM Plex Sans Arabic stylesheet is linked from index.html (preconnected)
+  // so the primary face starts loading before any JS runs.
   if (document.getElementById("waey-assets")) return;
-  const l = document.createElement("link");
-  l.rel = "stylesheet";
-  l.href = "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap";
-  document.head.appendChild(l);
   const s = document.createElement("style");
   s.id = "waey-assets";
   // Reduced-motion is handled by src/styles/waey-theme.css + Framer/GSAP guards.
@@ -721,8 +702,7 @@ export default function App() {
   useEffect(() => applyLanguageMetadata(lang), [lang]);
   useEffect(() => {
     if (typeof document === "undefined") return;
-    document.documentElement.style.colorScheme = theme;
-    document.body.style.background = themes[theme].bg0;
+    applyThemeVars(theme);
   }, [theme]);
   useEffect(() => {
     if (typeof window === "undefined") return undefined;
@@ -798,7 +778,7 @@ export default function App() {
     <Ctx.Provider value={value}>
       <ScreenTransition screenKey={screen}>
       {screen === "splash" ? <Splash /> : screen === "role" ? <RoleSelect /> : screen === "uniDash" ? <UniDashScreen /> : screen === "bankDash" ? <BankDashScreen /> : screen === "assess" ? <Assessment /> : screen !== "app" ? <Marketing /> : (
-      <div data-waey-theme={theme} data-waey-shell style={{ fontFamily: "'IBM Plex Sans Arabic',system-ui,sans-serif", background: appBg, minHeight: "100dvh", display: "flex", justifyContent: "center", color: c.text, transition: "background .3s" }}>
+      <div data-waey-theme={theme} data-waey-shell style={{ fontFamily: FONT_STACK, background: appBg, minHeight: "100dvh", display: "flex", justifyContent: "center", color: c.text, transition: "background .3s" }}>
         <div dir={dir} style={{ width: "100%", height: "100dvh", position: "relative", overflow: "hidden", color: c.text, display: "flex", flexDirection: "row", background: appBg, transition: "background .3s" }}>
           {sidebar && <Sidebar />}
           <div style={{ flex: 1, minWidth: 0, position: "relative", display: "flex", flexDirection: "column", overflow: "hidden" }}>
@@ -892,7 +872,7 @@ function Splash() {
       data-waey-shell
       aria-label={s.splash.start}
       onClick={() => setScreen("landing")}
-      style={{ fontFamily: "'IBM Plex Sans Arabic',system-ui,sans-serif", background: c.page, color: c.text, height: "100dvh", width: "100%", border: "none", padding: 0, display: "grid", placeItems: "center", cursor: "pointer", position: "relative", overflow: "hidden" }}
+      style={{ fontFamily: FONT_STACK, background: c.page, color: c.text, height: "100dvh", width: "100%", border: "none", padding: 0, display: "grid", placeItems: "center", cursor: "pointer", position: "relative", overflow: "hidden" }}
     >
       <WaeyFlowField tone={theme} />
       <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 18 }}>
@@ -927,7 +907,7 @@ function RoleShell({ title, sub, onBack, children }) {
     gsap.from(Array.from(scope.current.children), { y: 16, opacity: 0, stagger: 0.06, duration: 0.5, ease: "power3.out", clearProps: "transform,opacity" });
   }, []);
   return (
-    <div dir={dir} data-waey-theme={theme} data-waey-shell style={{ fontFamily: "'IBM Plex Sans Arabic',system-ui,sans-serif", background: c.page, color: c.text, height: "100dvh", display: "flex", flexDirection: "column", overflow: "hidden", position: "relative", zIndex: 0 }}>
+    <div dir={dir} data-waey-theme={theme} data-waey-shell style={{ fontFamily: FONT_STACK, background: c.page, color: c.text, height: "100dvh", display: "flex", flexDirection: "column", overflow: "hidden", position: "relative", zIndex: 0 }}>
       <div style={{ position: "absolute", inset: 0, zIndex: -1, pointerEvents: "none" }}><WaeyFlowField tone={theme} /></div>
       <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "calc(env(safe-area-inset-top,0px) + 16px) 18px 12px", flexShrink: 0 }}>
         {onBack && <button onClick={onBack} style={{ width: 38, height: 38, borderRadius: 12, background: c.card, border: `1px solid ${c.line}`, color: c.text, display: "grid", placeItems: "center", cursor: "pointer" }}><Back size={20} /></button>}
@@ -947,7 +927,7 @@ function RoleSelect() {
   ];
   const Fwd = lang === "ar" ? ArrowLeft : ArrowRight;
   return (
-    <div dir={dir} style={{ fontFamily: "'IBM Plex Sans Arabic',system-ui,sans-serif", background: c.bg0, color: c.text, height: "100dvh", display: "flex", flexDirection: "column", overflow: "hidden", position: "relative", zIndex: 0 }}>
+    <div dir={dir} style={{ fontFamily: FONT_STACK, background: c.bg0, color: c.text, height: "100dvh", display: "flex", flexDirection: "column", overflow: "hidden", position: "relative", zIndex: 0 }}>
       <div style={{ position: "absolute", inset: 0, zIndex: -1, pointerEvents: "none" }}><WaeyFlowField tone={theme} /></div>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "calc(env(safe-area-inset-top,0px) + 16px) 18px 8px" }}>
         <button type="button" onClick={() => setScreen("landing")} aria-label={lang === "ar" ? "الصفحة الرئيسية" : "Home"} style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", background: "none", border: "none", color: c.text, fontFamily: "inherit", padding: 0 }}>
@@ -1340,7 +1320,7 @@ function Assessment() {
   function finish() { const map = { social: 0, emotional: 1, impulsive: 2, planning: 0 }; setPersona(map[result.dominant] ?? 0); if (result) setAssess(result); enterGuest(); }
   function skip() { enterGuest(); }
   const Fwd = lang === "ar" ? ArrowLeft : ArrowRight;
-  const wrap = { fontFamily: "'IBM Plex Sans Arabic',system-ui,sans-serif", background: c.bg0, color: c.text, height: "100dvh", display: "flex", flexDirection: "column", overflow: "hidden", position: "relative", zIndex: 0 };
+  const wrap = { fontFamily: FONT_STACK, background: c.bg0, color: c.text, height: "100dvh", display: "flex", flexDirection: "column", overflow: "hidden", position: "relative", zIndex: 0 };
   const body = { flex: 1, overflowY: "auto", padding: "8px 20px 28px", display: "flex", flexDirection: "column" };
   const inner = { width: "100%", maxWidth: 480, margin: "0 auto", flex: 1, display: "flex", flexDirection: "column" };
   // Hero flow-field background, layered behind the content (z-index -1) on every step.
@@ -1466,7 +1446,7 @@ function Marketing() {
   const { c, dir, screen, theme } = useCtx();
   const bg = `linear-gradient(180deg, ${c.bg1} 0%, ${c.bg0} 100%)`;
   return (
-    <div dir={dir} data-waey-theme={theme} data-waey-shell className="wscroll" style={{ fontFamily: "'IBM Plex Sans Arabic',system-ui,sans-serif", background: bg, color: c.text, height: "100dvh", overflowY: "auto" }}>
+    <div dir={dir} data-waey-theme={theme} data-waey-shell className="wscroll" style={{ fontFamily: FONT_STACK, background: bg, color: c.text, height: "100dvh", overflowY: "auto" }}>
       <MkNav />
       {screen === "landing" && <Landing />}
       {screen === "about" && <AboutPage />}

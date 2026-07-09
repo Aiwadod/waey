@@ -14,7 +14,9 @@ test("splash to University of Jeddah dashboard does not crash", async ({ page })
   page.on("pageerror", (error) => pageErrors.push(error.message));
 
   await page.goto("/");
-  await page.getByRole("button", { name: /ابدأ|Start/ }).click();
+  // The splash is a single "ابدأ" button that auto-advances to the landing
+  // after ~2.4s; click it when we win the race, continue either way.
+  await page.getByRole("button", { name: /^(ابدأ|Start)$/ }).click({ timeout: 2000 }).catch(() => {});
   await page.getByRole("button", { name: /ابدأ الآن|Get started/ }).first().click();
   await page.getByRole("button", { name: /جامعة جدة|University of Jeddah/ }).click();
 
@@ -109,6 +111,10 @@ test("mobile viewport renders the student app", async ({ page }) => {
 
 test("landing opens in Waey light mode by default", async ({ page }) => {
   await page.goto("/#/landing");
+
+  // Deep links play the splash intro first; wait for the landing hero so the
+  // palette check reads the marketing shell, not the splash (pre-existing race).
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible({ timeout: 15000 });
 
   await expect(page.locator("[data-waey-theme='light']")).toBeVisible();
   await expect(page.locator("[data-waey-shell]")).toBeVisible();
