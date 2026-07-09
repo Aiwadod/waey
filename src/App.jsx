@@ -147,7 +147,7 @@ const L = {
       continue: "متابعة", qOf: (a, b) => `سؤال ${a} من ${b}`,
       analyzing: "وَعي يحلّل سلوكك المالي…",
       yourPersona: "شخصيتك المالية", dna: "الحمض السلوكي", dnaPlanning: "التخطيط", dnaSocial: "الاجتماعي", dnaEmotional: "العاطفي", dnaImpulsive: "الاندفاع",
-      awareness: "درجة وعيك المالي", confidence: "ثقة الذكاء", seeDecision: "شوف قرارك المالي",
+      awareness: "درجة وعيك المالي", confidence: "أسئلة مُجابة", seeDecision: "شوف قرارك المالي",
       decisionTitle: "قرارك المالي", decisionText: (x) => `تقدر تحوّل ${fmt(x)} ر.س هذا الشهر للادخار بدون ما تغيّر نمط حياتك`,
       decisionHow: "كيف؟ بتعديل بسيط في عاداتك الأكثر صرفاً", challengeTitle: "تحدّيك الأسبوعي", points: "نقطة وعي", acceptCh: "قبلت التحدي، ابدأ",
       retake: "أعد التقييم", skip: "تجاوز",
@@ -172,7 +172,7 @@ const L = {
       suggestR: "تحدّي هذا الأسبوع: لا مطاعم بعد 8 مساءً لمدة 3 أيام ← +5 نقاط. بسيط ويصنع فرق.",
       askMore: "أو اكتب سؤالك بالأسفل",
     },
-    awarenessTitle: "درجة وعيك المالي", dnaTitle: "الحمض السلوكي", aiConf: "ثقة الذكاء",
+    awarenessTitle: "درجة وعيك المالي", dnaTitle: "الحمض السلوكي", aiConf: "سِمتك الأبرز",
     insightTitle: "رؤية اليوم من وعي", insightText: "صرفت على القهوة 3 مرات هالأسبوع — لو نزّلتها مرتين توفّر ~35 ر.س. جرّب تحدّي اليوم",
     progTitle: "تقدّمك", progWeeks: "الأسابيع", progChDone: "تحديات مكتملة", progScoreUp: "نمو الدرجة", progWeekLabel: (n) => `أسبوع ${n}`,
     rewardsTitle: "مكافآتك", rewLevel: "المستوى", rewBadges: "الشارات", rewFuture: "قريباً: مكافآت إنماء (Future Alinma Rewards)",
@@ -346,7 +346,7 @@ const L = {
       continue: "Continue", qOf: (a, b) => `Question ${a} of ${b}`,
       analyzing: "Waey is analyzing your financial behavior…",
       yourPersona: "Your financial personality", dna: "Behavior DNA", dnaPlanning: "Planning", dnaSocial: "Social", dnaEmotional: "Emotional", dnaImpulsive: "Impulsive",
-      awareness: "Financial awareness score", confidence: "AI confidence", seeDecision: "See your decision",
+      awareness: "Financial awareness score", confidence: "Questions answered", seeDecision: "See your decision",
       decisionTitle: "Your money decision", decisionText: (x) => `You can move ${fmt(x)} ر.س to savings this month without changing your lifestyle`,
       decisionHow: "How? A small tweak to your top spending habit", challengeTitle: "Your weekly challenge", points: "awareness pts", acceptCh: "Accept challenge, start",
       retake: "Retake assessment", skip: "Skip",
@@ -371,7 +371,7 @@ const L = {
       suggestR: "This week's challenge: no restaurants after 8 PM for 3 days → +5 pts. Simple but effective.",
       askMore: "Or type your question below",
     },
-    awarenessTitle: "Financial awareness score", dnaTitle: "Behavior DNA", aiConf: "AI confidence",
+    awarenessTitle: "Financial awareness score", dnaTitle: "Behavior DNA", aiConf: "Strongest trait",
     insightTitle: "Today's insight from Waey", insightText: "You spent on coffee 3× this week — drop it to twice and save ~35 ر.س. Try today's challenge",
     progTitle: "Your progress", progWeeks: "Weeks", progChDone: "Challenges done", progScoreUp: "Score growth", progWeekLabel: (n) => `Week ${n}`,
     rewardsTitle: "Your rewards", rewLevel: "Level", rewBadges: "Badges", rewFuture: "Coming soon: Future Alinma Rewards",
@@ -1394,18 +1394,18 @@ function AsTopBar() {
         <span style={{ fontWeight: 800, fontSize: 16 }}>{s.brand}</span>
       </button>
       <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-        <button onClick={() => setLang(lang === "ar" ? "en" : "ar")} style={{ width: 34, height: 34, borderRadius: 10, background: c.card, border: `1px solid ${c.line}`, color: c.text, cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 700 }}>{lang === "ar" ? "EN" : "ع"}</button>
-        <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")} style={{ width: 34, height: 34, borderRadius: 10, background: c.card, border: `1px solid ${c.line}`, color: c.text, cursor: "pointer", display: "grid", placeItems: "center" }}>{theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}</button>
+        <button onClick={() => setLang(lang === "ar" ? "en" : "ar")} aria-label={lang === "ar" ? "تغيير اللغة" : "Change language"} style={{ width: 44, height: 44, borderRadius: 12, background: c.card, border: `1px solid ${c.line}`, color: c.text, cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 700 }}>{lang === "ar" ? "EN" : "ع"}</button>
+        <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")} aria-label={lang === "ar" ? "تغيير المظهر" : "Change theme"} style={{ width: 44, height: 44, borderRadius: 12, background: c.card, border: `1px solid ${c.line}`, color: c.text, cursor: "pointer", display: "grid", placeItems: "center" }}>{theme === "dark" ? <Sun size={16} aria-hidden="true" /> : <Moon size={16} aria-hidden="true" />}</button>
       </div>
     </div>
   );
 }
-function Chips({ options, value, onChange, c }) {
+function Chips({ options, value, onChange, c, label }) {
   return (
-    <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+    <div role="radiogroup" aria-label={label} style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
       {options.map((o, i) => {
         const on = value === i;
-        return <button key={i} onClick={() => onChange(i)} style={{ padding: "9px 15px", borderRadius: 12, border: on ? "none" : `1px solid ${c.line}`, background: on ? c.accent : c.card, color: on ? c.onAccent : c.text, fontWeight: on ? 700 : 500, fontFamily: "inherit", fontSize: 13.5, cursor: "pointer" }}>{o}</button>;
+        return <button key={i} role="radio" aria-checked={on} onClick={() => onChange(i)} style={{ padding: "12px 16px", borderRadius: 12, border: on ? "none" : `1px solid ${c.line}`, background: on ? c.accent : c.card, color: on ? c.onAccent : c.text, fontWeight: on ? 700 : 500, fontFamily: "inherit", fontSize: 13.5, cursor: "pointer" }}>{o}</button>;
       })}
     </div>
   );
@@ -1430,10 +1430,21 @@ function Assessment() {
     return () => clearTimeout(t);
   }, [step]);
 
-  function answer(k) { setAnswers((a) => ({ ...a, [qi]: k })); if (qi < ASSESS_Q.length - 1) setTimeout(() => setQi((v) => v + 1), 160); else setTimeout(() => setStep("loading"), 160); }
+  // A guard blocks double-taps: two rapid answers used to schedule two
+  // advance timeouts, silently skipping a question and corrupting the result.
+  const advancing = useRef(false);
+  function answer(k) {
+    if (advancing.current) return;
+    advancing.current = true;
+    setAnswers((a) => ({ ...a, [qi]: k }));
+    setTimeout(() => {
+      advancing.current = false;
+      if (qi < ASSESS_Q.length - 1) setQi((v) => v + 1);
+      else setStep("loading");
+    }, 160);
+  }
   function finish() { const map = { social: 0, emotional: 1, impulsive: 2, planning: 0 }; setPersona(map[result.dominant] ?? 0); if (result) setAssess(result); enterGuest(); }
   function skip() { enterGuest(); }
-  const Fwd = lang === "ar" ? ArrowLeft : ArrowRight;
   const wrap = { fontFamily: FONT_STACK, background: c.bg0, color: c.text, height: "100dvh", display: "flex", flexDirection: "column", overflow: "hidden", position: "relative", zIndex: 0 };
   const body = { flex: 1, overflowY: "auto", padding: "8px 20px 28px", display: "flex", flexDirection: "column" };
   const inner = { width: "100%", maxWidth: 480, margin: "0 auto", flex: 1, display: "flex", flexDirection: "column" };
@@ -1474,12 +1485,16 @@ function Assessment() {
     );
   }
   if (step === "quiz") {
-    const q = ASSESS_Q[qi]; const pct = ((qi) / ASSESS_Q.length) * 100;
+    const q = ASSESS_Q[qi]; const pct = ((qi + 0.5) / ASSESS_Q.length) * 100;
+    const BackChev = lang === "ar" ? ChevronRight : ChevronLeft;
     return (
       <div dir={dir} style={wrap}>{bgField}<AsTopBar />
         <div style={body}><div style={inner}>
-          <div style={{ height: 6, borderRadius: 9, background: c.card2, overflow: "hidden", marginBottom: 8 }}><div style={{ height: "100%", width: `${pct}%`, background: c.accent, borderRadius: 9, transition: "width .3s" }} /></div>
-          <div style={{ fontSize: 12, color: c.muted, marginBottom: 26 }}>{A.qOf(qi + 1, ASSESS_Q.length)}</div>
+          <div role="progressbar" aria-valuemin={1} aria-valuemax={ASSESS_Q.length} aria-valuenow={qi + 1} aria-label={A.qOf(qi + 1, ASSESS_Q.length)} style={{ height: 6, borderRadius: 9, background: c.card2, overflow: "hidden", marginBottom: 8 }}><div style={{ height: "100%", width: `${pct}%`, background: c.accent, borderRadius: 9, transition: "width .3s" }} /></div>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 26 }}>
+            {qi > 0 && <button onClick={() => setQi((v) => v - 1)} aria-label={s.dash.back} style={{ width: 32, height: 32, borderRadius: 9, background: c.card, border: `1px solid ${c.line}`, color: c.textSoft, display: "grid", placeItems: "center", cursor: "pointer" }}><BackChev size={16} aria-hidden="true" /></button>}
+            <div aria-live="polite" style={{ fontSize: 12, color: c.muted }}>{A.qOf(qi + 1, ASSESS_Q.length)}</div>
+          </div>
           <motion.div key={qi} initial={{ opacity: 0, x: dir === "rtl" ? -16 : 16 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.28, ease: easeOut }} style={{ fontSize: 22, fontWeight: 800, lineHeight: 1.5, marginBottom: 26 }}>{q.q[lang]}</motion.div>
           <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
             {q.o.map((o) => {
@@ -1493,12 +1508,14 @@ function Assessment() {
     );
   }
   if (step === "loading") {
+    const reduce = prefersReducedMotion();
     return (
-      <div dir={dir} style={wrap}>{bgField}
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 24, padding: 20 }}>
-          <div style={{ width: 84, height: 84, borderRadius: 999, border: `4px solid ${c.card2}`, borderTopColor: c.accent, animation: "wSpin 1s linear infinite" }} />
+      <div dir={dir} style={wrap}>{bgField}<AsTopBar />
+        <div role="status" aria-live="polite" style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 24, padding: 20 }}>
+          {/* Reduced motion drops the spinner/bar (they'd freeze mid-state); the text carries the message. */}
+          {!reduce && <div aria-hidden="true" style={{ width: 84, height: 84, borderRadius: 999, border: `4px solid ${c.card2}`, borderTopColor: c.accent, animation: "wSpin 1s linear infinite" }} />}
           <div style={{ fontSize: 17, fontWeight: 700, textAlign: "center" }}>{A.analyzing}</div>
-          <div style={{ width: 180, height: 6, borderRadius: 9, background: c.card2, overflow: "hidden" }}><div style={{ height: "100%", background: c.accent, animation: "wLoad 2.6s ease forwards" }} /></div>
+          {!reduce && <div aria-hidden="true" style={{ width: 180, height: 6, borderRadius: 9, background: c.card2, overflow: "hidden" }}><div style={{ height: "100%", background: c.accent, animation: "wLoad 2.6s ease forwards" }} /></div>}
         </div>
       </div>
     );
@@ -1508,19 +1525,22 @@ function Assessment() {
   const name = lang === "ar" ? meta.ar : meta.en, altName = lang === "ar" ? meta.en : meta.ar;
   const desc = lang === "ar" ? meta.descAr : meta.descEn, ch = lang === "ar" ? meta.chAr : meta.chEn;
   const bars = [["dnaPlanning", "planning", c.green], ["dnaSocial", "social", c.accentText], ["dnaEmotional", "emotional", c.terra], ["dnaImpulsive", "impulsive", c.terraText]];
+  const traitLabel = { planning: A.dnaPlanning, social: A.dnaSocial, emotional: A.dnaEmotional, impulsive: A.dnaImpulsive }[result.dominant];
   return (
     <div dir={dir} style={wrap}>{bgField}<AsTopBar />
       <div style={body}><div style={{ ...inner, gap: 14 }}>
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4, ease: easeOut }} style={{ textAlign: "center" }}>
-          <div style={{ width: 76, height: 76, borderRadius: 24, background: `linear-gradient(135deg, ${c.accent}, ${c.terra})`, display: "grid", placeItems: "center", margin: "0 auto 12px" }}><Brain size={36} color="#fff" /></div>
+          <div style={{ width: 76, height: 76, borderRadius: 24, background: `linear-gradient(135deg, ${c.accent}, ${c.terra})`, display: "grid", placeItems: "center", margin: "0 auto 12px" }}><Brain size={36} color={c.onAccent} aria-hidden="true" /></div>
           <div style={{ fontSize: 12.5, color: c.muted }}>{A.identity}</div>
-          <div style={{ fontSize: 26, fontWeight: 800 }}>{name}</div>
+          <h1 style={{ fontSize: 30, fontWeight: 800, margin: 0 }}>{name}</h1>
           <div style={{ fontSize: 12.5, color: c.muted }}>{altName}</div>
           <div style={{ fontSize: 13.5, color: c.textSoft, marginTop: 8, lineHeight: 1.7 }}>{desc}</div>
         </motion.div>
+        {/* The dominant trait, straight from the user's own answers — no
+            fabricated "better than X% of students" percentile. */}
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5, delay: 0.1, ease: easeOut }} style={{ background: `linear-gradient(135deg, ${c.accent}, ${c.terra})`, color: c.onAccent, borderRadius: 20, padding: "16px 18px", textAlign: "center" }}>
-          <div style={{ fontSize: 34, fontWeight: 800 }}><AnimatedNumber value={Math.min(94, 55 + Math.round(result.dna.planning * 0.35))} formatter={(n) => `${fmt(n)}%`} /></div>
-          <div style={{ fontSize: 13, fontWeight: 600, opacity: 0.95 }}>{A.betterThan(Math.min(94, 55 + Math.round(result.dna.planning * 0.35)))}</div>
+          <div style={{ fontSize: 34, fontWeight: 800 }}><AnimatedNumber value={result.dna[result.dominant]} formatter={(n) => `${fmt(n)}%`} /></div>
+          <div style={{ fontSize: 13, fontWeight: 600, opacity: 0.95 }}>{traitLabel} · {A.dna}</div>
         </motion.div>
         <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18 }}>
           <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 14 }}>{A.dna}</div>
@@ -1533,7 +1553,8 @@ function Assessment() {
         </div>
         <div style={{ display: "flex", gap: 12 }}>
           <div style={{ flex: 1, background: c.card, border: `1px solid ${c.line}`, borderRadius: 18, padding: 16, textAlign: "center" }}><div style={{ fontSize: 11.5, color: c.muted }}>{A.awareness}</div><div style={{ fontSize: 30, fontWeight: 800, color: c.accent }}><AnimatedNumber value={result.score} formatter={(n) => fmt(n)} /><span style={{ fontSize: 15, color: c.muted }}>/100</span></div></div>
-          <div style={{ flex: 1, background: c.card, border: `1px solid ${c.line}`, borderRadius: 18, padding: 16, textAlign: "center" }}><div style={{ fontSize: 11.5, color: c.muted }}>{A.confidence}</div><div style={{ fontSize: 30, fontWeight: 800, color: c.terra }}><AnimatedNumber value={result.confidence} formatter={(n) => `${fmt(n)}%`} /></div></div>
+          {/* Answered-question count — an honest measure, not a synthetic "AI confidence". */}
+          <div style={{ flex: 1, background: c.card, border: `1px solid ${c.line}`, borderRadius: 18, padding: 16, textAlign: "center" }}><div style={{ fontSize: 11.5, color: c.muted }}>{A.confidence}</div><div style={{ fontSize: 30, fontWeight: 800, color: c.terra }}><AnimatedNumber value={Object.keys(answers).length} formatter={(n) => fmt(n)} /><span style={{ fontSize: 15, color: c.muted }}>/{ASSESS_Q.length}</span></div></div>
         </div>
         <div style={{ background: `linear-gradient(135deg, ${c.accent}, ${c.accentText})`, color: c.onAccent, borderRadius: 20, padding: 18 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 800, fontSize: 14, marginBottom: 6 }}><Sparkles size={17} />{A.decisionTitle}</div>
@@ -1546,7 +1567,8 @@ function Assessment() {
           <div style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 10, background: c.green + "22", color: c.green, borderRadius: 999, padding: "5px 12px", fontSize: 12, fontWeight: 700 }}><Trophy size={14} aria-hidden="true" />+<Metric value={result.points} /> {A.points}</div>
         </div>
         <button onClick={finish} style={btn(c.accent, c.onAccent)}>{A.acceptCh}</button>
-        <button onClick={() => { setAnswers({}); setQi(0); setResult(null); setSlide(0); setStep("intro"); }} style={{ background: "none", border: "none", color: c.muted, fontSize: 12.5, cursor: "pointer", fontFamily: "inherit", padding: 6 }}>{A.retake}</button>
+        <button onClick={finish} style={{ ...btn("transparent", c.textSoft), border: `1px solid ${c.line}`, marginTop: 4 }}>{A.meetJourney}</button>
+        <button onClick={() => { setAnswers({}); setQi(0); setResult(null); setSlide(0); setStep("intro"); }} style={{ background: "none", border: "none", color: c.muted, fontSize: 12.5, cursor: "pointer", fontFamily: "inherit", padding: 10 }}>{A.retake}</button>
       </div></div>
     </div>
   );
@@ -2244,7 +2266,8 @@ function AwarenessCard() {
         </div>
         <div style={{ flex: 1, textAlign: "center", background: c.card2, borderRadius: 16, padding: "12px 8px" }}>
           <div style={{ fontSize: 11, color: c.muted }}>{s.aiConf}</div>
-          <div style={{ fontSize: 28, fontWeight: 800, color: c.terra }}><Metric value={`${assess.confidence}%`} /></div>
+          <div style={{ fontSize: 28, fontWeight: 800, color: c.terra }}><Metric value={`${assess.dna[assess.dominant]}%`} /></div>
+          <div style={{ fontSize: 10, color: c.muted }}>{{ planning: s.as.dnaPlanning, social: s.as.dnaSocial, emotional: s.as.dnaEmotional, impulsive: s.as.dnaImpulsive }[assess.dominant]}</div>
         </div>
       </div>
       <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 12, color: c.accentText }}>{s.dnaTitle}</div>
