@@ -13,6 +13,7 @@ import {
   Flame, Heart, TriangleAlert, Lock, Landmark, Headphones, Film, Banknote, Tent, Bike,
   Laptop, Palette, Camera, School, Fuel, ShoppingCart, Pill, Lightbulb, Briefcase,
   GraduationCap, Building2, Medal, CircleDollarSign, Search, Utensils,
+  ShieldCheck, Handshake, Printer, CupSoda, Wrench, CreditCard, FileSpreadsheet,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import AnimatedNumber from "./components/motion/AnimatedNumber.jsx";
@@ -34,6 +35,20 @@ const GLASS = { ink: themes.light, blur: { backdropFilter: "blur(10px)", WebkitB
     متجاوب لكل الأجهزة · عربي/إنجليزي · ألوان المسابقة: كحلي #002134 / بنفسجي #8685D8 / تراكوتا #CA6C46  */
 
 const STIPEND = 1000, SPENDABLE = 800, WEEK_LIMIT = 200;
+
+// نقطة نداء الذكاء: افتراضياً وسيطنا الخادمي /api/ai (Vercel Function تحمل المفتاح السرّي).
+// قابلة للتجاوز عبر VITE_AI_ENDPOINT. لو غير متاحة (مثل GitHub Pages أو بدون مفتاح)،
+// يفشل النداء بهدوء ويتراجع الشات للإجابات التجريبية الموسومة بأنها غير متصلة.
+const AI_ENDPOINT = import.meta.env.VITE_AI_ENDPOINT || "/api/ai";
+// الوسيط يرفض السجلات الأطول من حدّه — نرسل آخر رسائل فقط (تبدأ برسالة مستخدم)
+// حتى لا يتعطّل الشات الحي بعد محادثة طويلة.
+const AI_HISTORY_MAX = 16;
+function clipHistory(msgs, max = AI_HISTORY_MAX) {
+  const tail = msgs.slice(-max);
+  const firstUser = tail.findIndex((m) => m.role === "user");
+  if (firstUser < 0) return []; // لا رسالة مستخدم — الوسيط سيرفضها؛ نتراجع محلياً
+  return firstUser === 0 ? tail : tail.slice(firstUser);
+}
 // Total micro-loan debt allowed against next month's stipend (25% of it).
 const MAX_TOTAL_LOAN = 250;
 const fmt = (n) => new Intl.NumberFormat("en-US").format(Math.round(n));
@@ -117,6 +132,15 @@ const L = {
     chDoneMsg: (p) => `أحسنت! +${p} نقطة`,
     leader: "لوحة الالتزام", leaderSub: "التنافس على الالتزام لا على المبالغ · خصوصيتك محفوظة", commit: "التزام",
     stuPrefix: "طالب#", lbMetric: "حسب نسبة إكمال التحديات", periodW: "أسبوعي", periodM: "شهري", viewAll: "عرض اللوحة كاملة",
+    jamTitle: "الجمعية · ادخار جماعي", jamSub: "خُش جمعية مضمونة يقترحها الذكاء", jamPageSub: "الذكاء يقترح لك جمعيات تناسب دخلك وشخصيتك",
+    jamAiPick: "اختيار الذكاء لك", jamAiWhy: "لماذا هذه الجمعية؟", jamPrivacy: "الخصوصية",
+    jamKnown: "معروفون", jamSemi: "شبه معروفين", jamAnon: "مجهولو الهوية",
+    jamKnownD: "زملاء تعرفهم", jamSemiD: "طلاب جامعتك", jamAnonD: "أعضاء موثّقون من وعي (مضمونة)",
+    jamMonthly: "القسط الشهري", jamMembers: "الأعضاء", jamPot: "المبلغ الكلي", jamYourTurn: "دورك", jamDuration: "المدة", jamNext: "القسط القادم",
+    jamMonth: "شهر", jamMonths: "أشهر", jamTurnWord: "الدور", jamSchedule: "جدول الأدوار والاستلام", jamYou: "أنت",
+    jamGuarantee: "ضمان وعي: تحقّق من الأعضاء + حجز الأقساط (Escrow) + تعويض عند التعثّر.",
+    jamJoin: "خُش الجمعية", jamJoined: "دخلت الجمعية", jamDetails: "تفاصيل العملية", jamOp: "تعرض لك كل التفاصيل قبل الدخول",
+    jamReceive: "تستلم", jamPay: "تدفع", jamStatus: "الحالة", jamOpen: "متاحة", jamSlots: "مقاعد متبقية",
     yourRank: "ترتيبك", ofN: (n) => `من ${n}`, lbGap: (d, r) => `يفصلك ${d}% عن المركز ${r}`, lbTop: "أنت في الصدارة!", chDoneLabel: "تحديات",
     periodY: "سنوي", projTitle: "توقّع الادخار والنمو", breakdownTitle: "توزيع صرفك حسب الفئة",
     projW: (v) => `وفّر 50 ر.س أسبوعياً (قهوة أقل) ← خلال شهرين ~${fmt(v)} ر.س.`,
@@ -316,6 +340,15 @@ const L = {
     chDoneMsg: (p) => `Nice! +${p} pts`,
     leader: "Commitment leaderboard", leaderSub: "Compete on commitment, not amounts · privacy kept", commit: "commit",
     stuPrefix: "Student#", lbMetric: "By challenge completion", periodW: "Weekly", periodM: "Monthly", viewAll: "View full leaderboard",
+    jamTitle: "Savings circle (Jam'iyah)", jamSub: "Join a guaranteed circle suggested by AI", jamPageSub: "AI suggests circles that fit your income and personality",
+    jamAiPick: "AI pick for you", jamAiWhy: "Why this circle?", jamPrivacy: "Privacy",
+    jamKnown: "Known", jamSemi: "Semi-known", jamAnon: "Anonymous",
+    jamKnownD: "Peers you know", jamSemiD: "Students at your university", jamAnonD: "Waey-verified members (guaranteed)",
+    jamMonthly: "Monthly amount", jamMembers: "Members", jamPot: "Total pot", jamYourTurn: "Your turn", jamDuration: "Duration", jamNext: "Next payment",
+    jamMonth: "month", jamMonths: "months", jamTurnWord: "turn", jamSchedule: "Turn & payout schedule", jamYou: "You",
+    jamGuarantee: "Waey guarantee: member verification + escrow-held installments + default protection.",
+    jamJoin: "Join circle", jamJoined: "Joined", jamDetails: "Operation details", jamOp: "See every detail before you join",
+    jamReceive: "Receive", jamPay: "Pay", jamStatus: "Status", jamOpen: "Open", jamSlots: "slots left",
     yourRank: "Your rank", ofN: (n) => `of ${n}`, lbGap: (d, r) => `${d}% behind rank ${r}`, lbTop: "You're #1!", chDoneLabel: "challenges",
     periodY: "Yearly", projTitle: "Savings & growth forecast", breakdownTitle: "Your spending by category",
     projW: (v) => `Save 50 ر.س weekly (less coffee) → in two months ~${fmt(v)} ر.س.`,
@@ -550,6 +583,7 @@ function injectAssets() {
     @keyframes wDot{0%,80%,100%{opacity:.2}40%{opacity:1}}
     @keyframes wSpin{to{transform:rotate(360deg)}}
     @keyframes wLoad{from{width:0}to{width:100%}}
+    @keyframes wSheet{from{transform:translateY(100%)}to{transform:none}}
     .wscroll::-webkit-scrollbar{width:0;height:0}.whz::-webkit-scrollbar{height:0}`;
   document.head.appendChild(s);
 }
@@ -842,6 +876,7 @@ export default function App() {
           {sheet?.type === "transfer" && <TransferSheet />}
           {sheet?.type === "topup" && <TopupSheet />}
           {showLeaderboard && <LeaderboardPage />}
+          {overlay === "jamiyah" && <JamiyahPage />}
           {overlay === "jobs" && <JobsPage />}
           {overlay === "cashback" && <CashbackPage />}
           {overlay === "platform" && <PlatformPage />}
@@ -942,7 +977,7 @@ function Splash() {
   );
 }
 /* ===================== اختيار الدور + لوحات الجامعة والبنك ===================== */
-function RoleShell({ title, sub, onBack, children }) {
+function RoleShell({ title, sub, onBack, children, fill }) {
   const { c, lang, dir, s, theme } = useCtx();
   const Back = lang === "ar" ? ChevronRight : ChevronLeft;
   const scope = useRef(null);
@@ -957,7 +992,9 @@ function RoleShell({ title, sub, onBack, children }) {
         {onBack && <button onClick={onBack} aria-label={s.role.back} style={{ width: 44, height: 44, borderRadius: 13, background: c.card, border: `1px solid ${c.line}`, color: c.text, display: "grid", placeItems: "center", cursor: "pointer" }}><Back size={20} aria-hidden="true" /></button>}
         <div><h1 style={{ fontSize: 19, fontWeight: 800, margin: 0 }}>{title}</h1>{sub && <div style={{ fontSize: 11.5, color: c.muted }}>{sub}</div>}</div>
       </div>
-      <div className="wscroll" style={{ flex: 1, overflowY: "auto", padding: "4px 18px 28px" }}><div ref={scope} style={{ maxWidth: 560, margin: "0 auto" }}>{children}</div></div>
+      {fill
+        ? <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", padding: "4px 18px 16px" }}><div ref={scope} style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", maxWidth: 560, width: "100%", margin: "0 auto" }}>{children}</div></div>
+        : <div className="wscroll" style={{ flex: 1, overflowY: "auto", padding: "4px 18px 28px" }}><div ref={scope} style={{ maxWidth: 560, margin: "0 auto" }}>{children}</div></div>}
     </div>
   );
 }
@@ -1155,6 +1192,317 @@ function Gauge({ value, c, label, low, mid, high }) {
     </div>
   );
 }
+// أعمدة رأسية بتدرّج + القيمة فوق كل عمود. البيانات مصفوفة [label, value, color, unit].
+// النصوص (القيمة والتسمية) ظاهرة في DOM فيقرؤها قارئ الشاشة مباشرة.
+function ColumnChart({ data, c, height = 120 }) {
+  const mx = Math.max(...data.map((d) => d[1]), 1);
+  return (
+    <div style={{ display: "flex", alignItems: "flex-end", gap: 10, height, paddingTop: 18 }}>
+      {data.map((d, i) => (
+        <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", height: "100%" }}>
+          <div style={{ fontSize: 11, fontWeight: 800, color: d[2] || c.accent, marginBottom: 4 }}>{d[1]}{d[3] || ""}</div>
+          <div style={{ width: "100%", maxWidth: 34, height: `${(d[1] / mx) * (height - 44)}px`, background: `linear-gradient(180deg, ${d[2] || c.accent}, ${d[2] || c.accent}77)`, borderRadius: "8px 8px 4px 4px", transition: "height .6s ease" }} />
+          <div style={{ fontSize: 9.5, color: c.muted, marginTop: 6, textAlign: "center" }}>{d[0]}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+// رادار عنكبوتي متعدد الأبعاد. البيانات [label, value(0-100), color].
+// الرسم decorative لكن role=img + aria-label يلخّص كل بُعد لقارئ الشاشة.
+function Radar({ data, c, size = 190, label }) {
+  const n = data.length, cx = size / 2, cy = size / 2, R = size / 2 - 26;
+  const pt = (i, r) => { const a = (Math.PI * 2 * i) / n - Math.PI / 2; return [cx + Math.cos(a) * r, cy + Math.sin(a) * r]; };
+  const rings = [0.25, 0.5, 0.75, 1];
+  const poly = data.map((d, i) => pt(i, R * (d[1] / 100)).join(",")).join(" ");
+  const aria = (label ? label + ": " : "") + data.map((d) => `${d[0]} ${d[1]}%`).join(", ");
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label={aria} style={{ display: "block", margin: "0 auto" }}>
+      {rings.map((rr, k) => <polygon key={k} points={data.map((_, i) => pt(i, R * rr).join(",")).join(" ")} fill="none" stroke={c.line} strokeWidth="1" />)}
+      {data.map((_, i) => { const [x, y] = pt(i, R); return <line key={i} x1={cx} y1={cy} x2={x} y2={y} stroke={c.line} strokeWidth="1" />; })}
+      <polygon points={poly} fill={c.accent + "44"} stroke={c.accent} strokeWidth="2" />
+      {data.map((d, i) => { const [x, y] = pt(i, R * (d[1] / 100)); return <circle key={i} cx={x} cy={y} r="3.5" fill={d[2] || c.accent} />; })}
+      {data.map((d, i) => { const [x, y] = pt(i, R + 15); return <text key={i} x={x} y={y} textAnchor="middle" dominantBaseline="middle" fontSize="9.5" fontWeight="700" fill={c.textSoft} fontFamily="inherit" aria-hidden="true">{d[0]}</text>; })}
+    </svg>
+  );
+}
+// شريط مركّب أفقي (تكوين نسبي). الشريط decorative، والمفتاح النصي يحمل القيَم.
+function StackedBar({ data, c }) {
+  const total = data.reduce((a, d) => a + d[1], 0) || 1;
+  return (
+    <div>
+      <div aria-hidden="true" style={{ display: "flex", height: 26, borderRadius: 9, overflow: "hidden", border: `1px solid ${c.line}` }}>
+        {data.map((d, i) => <div key={i} title={d[0]} style={{ width: `${(d[1] / total) * 100}%`, background: d[2] || c.accent, transition: "width .6s ease" }} />)}
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "6px 14px", marginTop: 12 }}>
+        {data.map((d, i) => <span key={i} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: c.textSoft }}><span style={{ width: 10, height: 10, borderRadius: 3, background: d[2] || c.accent }} />{d[0]} <b style={{ color: d[2] || c.accent }}>{Math.round((d[1] / total) * 100)}%</b></span>)}
+      </div>
+    </div>
+  );
+}
+/* ===================== لوحات الأدوار: بيانات + شات تحليلي + إحصائيات تفصيلية ===================== */
+// إنفاق يومي داخل الحرم — [Icon, ar, en, ريال/يوم]
+const DAY_CAMPUS = [
+  [Coffee, "قهوة الصباح", "Morning coffee", 12],
+  [Utensils, "وجبة الكافتيريا", "Cafeteria meal", 25],
+  [Printer, "طباعة ومستلزمات", "Printing & supplies", 9],
+  [CupSoda, "سناكس ومشروبات", "Snacks & drinks", 11],
+  [Bus, "مواصلات الحرم", "Campus transport", 14],
+];
+// المصاريف الدراسية — [Icon, ar, en, %, ريال/شهر]
+const ACADEMIC = [
+  [GraduationCap, "اشتراك مدرّس خصوصي", "Private tutor subscription", 34, 220],
+  [Laptop, "برامج وتراخيص", "Software & licenses", 19, 95],
+  [BookOpen, "كتب ومراجع", "Books & references", 16, 78],
+  [Wrench, "أدوات ومعدّات", "Tools & equipment", 14, 66],
+  [Printer, "طباعة وتصوير", "Printing & copying", 10, 44],
+  [School, "دورات ومنصات", "Courses & platforms", 7, 33],
+];
+// أفكار التوسّع — [Icon, title ar, title en, desc ar, desc en, نموذج الدخل]
+const SCALE_IDEAS = [
+  [GraduationCap, "سوق المدرّسين الخصوصيين", "Tutor marketplace", "ربط الطلاب بمدرّسين معتمدين داخل وعي (عمولة على كل اشتراك) — مدمج مع تقييمات hemhuj", "Match students to vetted tutors in-app (commission per booking), powered by hemhuj ratings", "عمولة 15–20%"],
+  [CreditCard, "تمويل تعليمي مصغّر", "Micro education-financing", "قسّط الاشتراكات والدورات عبر بنك الإنماء — دخل من الفائدة/الرسوم", "Installment plans for courses via Alinma — fee/margin income", "منتج بنكي"],
+  [BarChart3, "تحليلات سلوكية B2B", "Behavioral analytics (B2B)", "بيع لوحات مجهّلة للبنوك والجامعات باشتراك سنوي (SaaS)", "Sell anonymized dashboards to banks & universities (annual SaaS)", "اشتراك سنوي"],
+  [Gift, "كاش باك تعليمي ممول", "Funded education cashback", "المنصات التعليمية تموّل كاش باك مقابل وصولها للطلاب", "Ed-platforms fund cashback for student reach", "رسوم إحالة"],
+  [Globe, "توسّع خليجي", "Gulf expansion", "نفس النموذج لكل جامعات الخليج — 4M+ طالب سوق مستهدف", "Same model across Gulf universities — 4M+ students TAM", "قابل للتوسّع"],
+  [Brain, "الوعي كخدمة (API)", "Behavior-as-a-Service", "محرك الشخصية المالية كـ API للبنوك والتطبيقات (لكل استدعاء)", "Financial-personality engine as an API (per-call pricing)", "API مدفوع"],
+];
+// مصادر الدخل الحالية — [label ar, label en, %, color-key]
+const INCOME_SRC = [
+  ["المكافأة الجامعية", "University stipend", 62, "accent"],
+  ["دعم الأهل", "Family support", 24, "accentText"],
+  ["عمل جزئي", "Part-time work", 10, "green"],
+  ["أخرى", "Other", 4, "terra"],
+];
+// تفاصيل كل بند دراسي — يُفتح عند الضغط (توزيع السنوات + أعلى المواد + ملاحظة الذكاء). محاذٍ لـ ACADEMIC.
+const ACAD_DETAIL = [
+  { years: [["السنة الأولى", "1st year", 61], ["الثانية", "2nd", 24], ["الثالثة", "3rd", 11], ["الرابعة+", "4th+", 4]], top: [["التفاضل (Math 101)", "Calculus", 34], ["الفيزياء العامة", "Physics", 22], ["مبادئ البرمجة", "Programming", 18], ["أخرى", "Other", 26]], note: ["أغلب المشتركين من السنة الأولى في مادة التفاضل — والسبب تقييم الدكتور 2.1/5 على hemhuj.com وصعوبة الاختبارات.", "Most subscribers are 1st-year Calculus students — driven by a 2.1/5 professor rating on hemhuj.com and hard exams."] },
+  { years: [["الثالثة", "3rd", 38], ["الرابعة+", "4th+", 34], ["الثانية", "2nd", 20], ["الأولى", "1st", 8]], top: [["Adobe / تصميم", "Adobe", 31], ["MATLAB", "MATLAB", 27], ["تخزين سحابي", "Cloud", 22], ["أخرى", "Other", 20]], note: ["تراخيص البرامج يشتريها طلاب السنوات المتقدمة للمشاريع — فرصة لاتفاقية جامعية جماعية.", "Software licenses are bought by senior students for projects — a chance for a bulk campus license."] },
+  { years: [["الأولى", "1st", 40], ["الثانية", "2nd", 30], ["الثالثة", "3rd", 20], ["الرابعة+", "4th+", 10]], top: [["كتب المتطلبات", "Core books", 45], ["مراجع مساندة", "Supplements", 30], ["ملازم", "Notes", 25]], note: ["الكتب أعلى في السنة الأولى — يمكن خفضها بمكتبة رقمية جامعية.", "Books peak in 1st year — reduce via a digital campus library."] },
+  { years: [["الثانية", "2nd", 34], ["الثالثة", "3rd", 30], ["الأولى", "1st", 22], ["الرابعة+", "4th+", 14]], top: [["أدوات معملية", "Lab tools", 40], ["آلات حاسبة", "Calculators", 33], ["أخرى", "Other", 27]], note: ["أدوات ومعدّات تتركّز في الكليات التطبيقية.", "Tools concentrate in applied colleges."] },
+  { years: [["الأولى", "1st", 44], ["الثانية", "2nd", 28], ["الثالثة", "3rd", 18], ["الرابعة+", "4th+", 10]], top: [["واجبات", "Assignments", 50], ["تقارير", "Reports", 30], ["أخرى", "Other", 20]], note: ["الطباعة أعلى لدى المبتدئين — الحل محتوى رقمي وتسليم إلكتروني.", "Printing peaks for beginners — solve via digital submission."] },
+  { years: [["الثالثة", "3rd", 35], ["الرابعة+", "4th+", 30], ["الثانية", "2nd", 22], ["الأولى", "1st", 13]], top: [["Coursera/Udemy", "MOOCs", 48], ["شهادات مهنية", "Certs", 30], ["أخرى", "Other", 22]], note: ["الدورات الخارجية يطلبها طلاب متقدمون للتوظيف — فرصة شراكة تدريب.", "External courses are sought by seniors for jobs — a training-partnership opportunity."] },
+];
+// تصدير Excel (HTML table متوافق مع Excel، RTL) — تنزيل من جهة العميل لبيانات العرض المجمّعة.
+// كل ملف مُصدَّر يُختَم بسطر يوضّح أن الأرقام توضيحية للعرض التجريبي، حتى لا تُقرأ كبيانات حقيقية.
+function downloadXls(sheetName, rows, filename) {
+  const stamped = [...rows, ["بيانات توضيحية للعرض التجريبي — Illustrative prototype demo data"]];
+  const esc = (v) => String(v ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const trs = stamped.map((r, ri) => "<tr>" + r.map((cell) => {
+    const head = ri === 0;
+    return `<td style="border:1px solid #ccc;padding:6px 10px;${head ? "background:#002134;color:#fff;font-weight:bold;" : ""}mso-number-format:'\\@';">${esc(cell)}</td>`;
+  }).join("") + "</tr>").join("");
+  const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>${esc(sheetName)}</x:Name><x:WorksheetOptions><x:DisplayRightToLeft/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head><body><table dir="rtl">${trs}</table></body></html>`;
+  const blob = new Blob(["﻿", html], { type: "application/vnd.ms-excel;charset=utf-8" });
+  const url = URL.createObjectURL(blob); const a = document.createElement("a");
+  a.href = url; a.download = filename; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 500);
+}
+// رسم متنوّع داخل فقاعة الشات: أعمدة / دائرة / ذبذبة
+function MiniChart({ data, c, kind = "bars" }) {
+  if (kind === "donut") {
+    const total = data.reduce((a, d) => a + d[1], 0) || 1;
+    let acc = 0; const R = 42, C = 2 * Math.PI * R;
+    return (
+      <div style={{ marginTop: 10, background: c.card2, borderRadius: 13, padding: 14, border: `1px solid ${c.line}`, display: "flex", alignItems: "center", gap: 16 }}>
+        <svg width="108" height="108" viewBox="0 0 108 108" style={{ flexShrink: 0 }} aria-hidden="true">
+          <circle cx="54" cy="54" r={R} fill="none" stroke={c.card} strokeWidth="13" />
+          {data.map((d, i) => { const frac = d[1] / total; const dash = frac * C; const off = acc * C; acc += frac; return <circle key={i} cx="54" cy="54" r={R} fill="none" stroke={d[2] || c.accent} strokeWidth="13" strokeDasharray={`${dash} ${C - dash}`} strokeDashoffset={-off} transform="rotate(-90 54 54)" strokeLinecap="butt" />; })}
+        </svg>
+        <div style={{ flex: 1 }}>{data.map((d, i) => (<div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}><span style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 11.5, color: c.text }}><span style={{ width: 9, height: 9, borderRadius: 9, background: d[2] || c.accent, flexShrink: 0 }} />{d[0]}</span><span style={{ fontSize: 11.5, fontWeight: 800, color: d[2] || c.accent }}>{d[1]}{d[3] || "%"}</span></div>))}</div>
+      </div>
+    );
+  }
+  if (kind === "wave") {
+    const W = 260, H = 84, pad = 8;
+    const max = Math.max(...data.map((d) => d[1])), min = Math.min(...data.map((d) => d[1]));
+    const rng = max - min || 1;
+    const pts = data.map((d, i) => [pad + i * ((W - pad * 2) / (data.length - 1)), H - pad - ((d[1] - min) / rng) * (H - pad * 2)]);
+    const path = pts.map((p, i) => (i === 0 ? `M ${p[0]} ${p[1]}` : `L ${p[0]} ${p[1]}`)).join(" ");
+    const area = `${path} L ${pts[pts.length - 1][0]} ${H - pad} L ${pts[0][0]} ${H - pad} Z`;
+    return (
+      <div style={{ marginTop: 10, background: c.card2, borderRadius: 13, padding: 14, border: `1px solid ${c.line}` }}>
+        <svg width="100%" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ display: "block" }} aria-hidden="true">
+          <defs><linearGradient id="wv" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={c.accent} stopOpacity="0.35" /><stop offset="100%" stopColor={c.accent} stopOpacity="0" /></linearGradient></defs>
+          <path d={area} fill="url(#wv)" /><path d={path} fill="none" stroke={c.accent} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+          {pts.map((p, i) => <circle key={i} cx={p[0]} cy={p[1]} r="3" fill={c.accent} />)}
+        </svg>
+        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6 }}>{data.map((d, i) => <span key={i} style={{ fontSize: 9.5, color: c.muted }}>{d[0]}</span>)}</div>
+      </div>
+    );
+  }
+  const max = Math.max(...data.map((d) => d[1]), 1);
+  return (
+    <div style={{ marginTop: 10, background: c.card2, borderRadius: 13, padding: "12px 12px 6px", border: `1px solid ${c.line}` }}>
+      {data.map((d, i) => (
+        <div key={i} style={{ marginBottom: 9 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 3 }}><span style={{ fontSize: 11.5, color: c.text, fontWeight: 600 }}>{d[0]}</span><span style={{ fontSize: 11.5, fontWeight: 800, color: d[2] || c.accent }}>{d[1]}{d[3] || "%"}</span></div>
+          <div style={{ height: 7, borderRadius: 9, background: c.card }}><div style={{ height: "100%", width: `${Math.round(d[1] / max * 100)}%`, background: d[2] || c.accent, borderRadius: 9, transition: "width .6s ease" }} /></div>
+        </div>
+      ))}
+    </div>
+  );
+}
+// ورقة الإحصاء التفصيلية (تُفتح عند الضغط على بند). position:fixed لتغطي الشاشة دون قصّها بحاوية التمرير.
+function StatSheet({ item, c, D, lang, onClose }) {
+  const ar = lang === "ar";
+  const sheetRef = useRef(null);
+  const closeRef = useRef(null);
+  // Modal behavior: focus the sheet on open, Escape to close, trap Tab inside, restore focus on close.
+  useEffect(() => {
+    const prev = document.activeElement;
+    closeRef.current?.focus();
+    const onKey = (e) => {
+      if (e.key === "Escape") { onClose(); return; }
+      if (e.key === "Tab" && sheetRef.current) {
+        const f = sheetRef.current.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+        if (!f.length) return;
+        const first = f[0], last = f[f.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => { window.removeEventListener("keydown", onKey); if (prev && typeof prev.focus === "function") prev.focus(); };
+  }, [onClose]);
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,8,14,0.55)", backdropFilter: "blur(5px)", display: "flex", alignItems: "flex-end", zIndex: 70 }}>
+      <div ref={sheetRef} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={typeof item.title === "string" ? item.title : undefined} style={{ width: "100%", maxWidth: 560, margin: "0 auto", background: c.card2, borderRadius: "26px 26px 0 0", padding: "18px 20px calc(24px + env(safe-area-inset-bottom,0px))", animation: "wSheet .3s ease both", border: `1px solid ${c.line}`, maxHeight: "82dvh", overflowY: "auto" }}>
+        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 2 }}><button ref={closeRef} onClick={onClose} aria-label={ar ? "إغلاق" : "Close"} style={{ width: 34, height: 34, borderRadius: 10, background: c.card, border: `1px solid ${c.line}`, color: c.text, display: "grid", placeItems: "center", cursor: "pointer" }}>×</button></div>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
+          <div style={{ width: 44, height: 44, borderRadius: 13, background: c.accent + "1f", display: "grid", placeItems: "center", flexShrink: 0 }}>{item.Icon && <item.Icon size={22} color={c.accent} aria-hidden="true" />}</div>
+          <div><div style={{ fontWeight: 800, fontSize: 16 }}>{item.title}</div><div style={{ fontSize: 12, color: c.muted }}>{item.sub}</div></div>
+        </div>
+        {item.detail.note && <div style={{ background: `linear-gradient(135deg, ${c.accent}18, ${c.terra}18)`, border: `1px solid ${c.accent}44`, borderRadius: 13, padding: 12, fontSize: 12.5, color: c.text, lineHeight: 1.7, margin: "10px 0 16px", display: "flex", gap: 7 }}><Lightbulb size={14} color={c.accentText} aria-hidden="true" style={{ flexShrink: 0, marginTop: 2 }} /><span>{ar ? item.detail.note[0] : item.detail.note[1]}</span></div>}
+        {item.detail.years && (<>
+          <div style={{ fontWeight: 700, fontSize: 12, color: c.accentText, marginBottom: 10 }}>{ar ? "توزيع المشتركين حسب السنة الجامعية" : "Subscribers by academic year"}</div>
+          {item.detail.years.map((y, i) => <BarRow key={i} n={ar ? y[0] : y[1]} pct={y[2]} col={LB_COLORS[i % LB_COLORS.length]} c={c} />)}
+        </>)}
+        {item.detail.top && (<>
+          <div style={{ fontWeight: 700, fontSize: 12, color: c.terra, margin: "14px 0 10px" }}>{ar ? "أكثر المواد/البنود طلباً" : "Top courses / items"}</div>
+          {item.detail.top.map((y, i) => <BarRow key={i} n={ar ? y[0] : y[1]} pct={y[2]} col={LB_COLORS[(i + 2) % LB_COLORS.length]} c={c} />)}
+        </>)}
+        <div style={{ background: c.card, border: `1px dashed ${c.line}`, borderRadius: 13, padding: 12, fontSize: 11.5, color: c.muted, textAlign: "center", lineHeight: 1.6, marginTop: 14 }}>{D.anon}</div>
+      </div>
+    </div>
+  );
+}
+// شات الذكاء للأدوار — إجابات مبنية على القواعد (offline) مع رسوم بيانية وتصدير Excel.
+function roleLocalAnswer(scope, msg, lang, data, c) {
+  const ar = lang === "ar"; const m = msg.toLowerCase();
+  const has = (...k) => k.some((x) => msg.includes(x) || m.includes(x));
+  const P = c.accentText, O = c.terra, G = c.green, U = c.accent;
+  if (has("خصوصي", "دراسي", "يشتري", "tutor", "academic", "buy")) return {
+    text: ar ? "أكثر ما يشتريه الطلاب دراسياً هو اشتراك مدرّس خصوصي (34%). أغلب المشتركين من السنة الأولى (61%) في مادة التفاضل — بسبب تقييم الدكتور 2.1/5 على hemhuj.com. تحت الرسم وملف Excel بالتفاصيل." : "Top academic purchase is private tutoring (34%). Most subscribers are 1st-year Calculus students (61%) — driven by a 2.1/5 hemhuj.com rating. Chart & Excel below.",
+    viz: { kind: "donut", title: ar ? "توزيع المشتركين حسب السنة" : "Subscribers by year", data: [[ar ? "السنة الأولى" : "1st year", 61, U], [ar ? "الثانية" : "2nd", 24, P], [ar ? "الثالثة" : "3rd", 11, O], [ar ? "الرابعة+" : "4th+", 4, G]] },
+    excel: { name: "AcademicSpend", rows: [[ar ? "البند الدراسي" : "Academic item", ar ? "النسبة%" : "Share%", ar ? "ريال/شهر" : "SAR/mo"], ...ACADEMIC.map((x) => [ar ? x[1] : x[2], x[3], x[4]])] },
+  };
+  if (has("نمو", "تطور", "اتجاه", "growth", "trend", "over time")) return {
+    text: ar ? "مؤشر الوعي المالي في تصاعد مستمر مع إكمال التحديات — نمو من 58 إلى 76 خلال 6 أسابيع (+18 نقطة)." : "Financial awareness keeps climbing with challenges — from 58 to 76 over 6 weeks (+18 pts).",
+    viz: { kind: "wave", title: ar ? "نمو درجة الوعي (6 أسابيع)" : "Awareness growth (6 weeks)", data: [["W1", 58], ["W2", 62], ["W3", 66], ["W4", 70], ["W5", 73], ["W6", 76]] },
+    excel: { name: "AwarenessGrowth", rows: [[ar ? "الأسبوع" : "Week", ar ? "الدرجة" : "Score"], ["1", 58], ["2", 62], ["3", 66], ["4", 70], ["5", 73], ["6", 76]] },
+  };
+  if (has("توفير", "خطة", "saving", "plan")) return {
+    text: ar ? "خطة التوفير: ساعات مكتبية ومجموعات دراسة مدعومة للمواد ذات التقييم المنخفض، محتوى مسجّل مجاني، وإرشاد أقران بحوافز. الأثر المتوقّع خفض إنفاق الخصوصي ~40%." : "Savings plan: office hours & sponsored study groups for low-rated courses, free recorded content, incentivized peer tutoring. Expected ~40% cut in tutoring spend.",
+    viz: { kind: "wave", title: ar ? "إنفاق الخصوصي: قبل ← بعد الخطة" : "Tutoring spend: before → after", data: [[ar ? "الآن" : "Now", 220], [ar ? "ش1" : "M1", 196], [ar ? "ش2" : "M2", 168], [ar ? "ش3" : "M3", 148], [ar ? "ش4" : "M4", 132]] },
+    excel: { name: "SavingsPlan", rows: [[ar ? "الإجراء" : "Action", ar ? "الأثر" : "Impact"], [ar ? "ساعات مكتبية للمواد الصعبة" : "Office hours for hard courses", "-15%"], [ar ? "محتوى مسجّل مجاني" : "Free recorded content", "-12%"], [ar ? "إرشاد أقران بحوافز" : "Peer tutoring", "-13%"], [ar ? "الإجمالي/طالب/شهر" : "Total/student/mo", "-88 ر.س"]] },
+  };
+  if (has("مكافأة", "منقطع", "دخل", "stipend", "cut", "income")) return {
+    text: ar ? `${data.cutRate}% منقطعون عن المكافأة ويحتاجون بدائل دخل: عمل بالحرم، فريلانس، تدريس، وتوصيل (400–1800 ر.س/شهر). للبنك: منتج تمويل تعليمي مصغّر.` : `${data.cutRate}% are cut off and need alternatives: on-campus work, freelance, tutoring, delivery (400–1800 SAR/mo). For the bank: micro education-financing.`,
+    viz: { kind: "donut", title: ar ? "مصادر دخل الطلاب" : "Student income sources", data: INCOME_SRC.map((x) => [ar ? x[0] : x[1], x[2], c[x[3]] || U]) },
+    excel: { name: "Income", rows: [[ar ? "المصدر" : "Source", ar ? "النسبة%" : "Share%"], ...INCOME_SRC.map((x) => [ar ? x[0] : x[1], x[2]]), [ar ? "منقطعو المكافأة" : "Stipend cut off", data.cutRate]] },
+  };
+  if (scope === "bank" && has("جامعة", "قارن", "univers", "compare", "ترتيب", "rank")) return {
+    text: ar ? "الجامعات تتفاوت في الادخار والوعي. جامعة جدة (مكة) الأعلى ادخاراً؛ والأعلى في نسبة انقطاع المكافأة هي الأنسب لإطلاق التمويل التعليمي أولاً." : "Universities vary in savings & awareness. Univ. of Jeddah (Makkah) leads; highest stipend-cut universities are best to launch education-financing first.",
+    viz: { kind: "bars", title: ar ? "مؤشر الوعي حسب الجامعة" : "Awareness by university", data: [[ar ? "جدة (مكة)" : "Jeddah (Makkah)", 68, U], [ar ? "عبدالعزيز (مكة)" : "KAU (Makkah)", 64, P], [ar ? "الملك سعود (الرياض)" : "KSU (Riyadh)", 61, G], [ar ? "الملك فهد (الشرقية)" : "KFUPM (Eastern)", 69, O]] },
+    excel: { name: "Universities", rows: [[ar ? "الجامعة" : "University", ar ? "المنطقة" : "Region", ar ? "الوعي%" : "Awareness%"], [ar ? "جامعة جدة" : "Univ. of Jeddah", ar ? "مكة" : "Makkah", 68], [ar ? "الملك عبدالعزيز" : "KAU", ar ? "مكة" : "Makkah", 64], [ar ? "أم القرى" : "UQU", ar ? "مكة" : "Makkah", 59], [ar ? "الملك سعود" : "KSU", ar ? "الرياض" : "Riyadh", 61], [ar ? "الإمام" : "Imam", ar ? "الرياض" : "Riyadh", 57], [ar ? "الملك فهد للبترول" : "KFUPM", ar ? "الشرقية" : "Eastern", 69]] },
+  };
+  if (scope === "bank" && has("فرصة", "منتج", "product", "opportun", "مليار", "billion")) return {
+    text: ar ? "أكبر الفرص: سوق مدرّسين خصوصيين بعمولة (hemhuj)، تمويل تعليمي مصغّر، بطاقة تعليمية بكاش باك، وتحليلات B2B. السوق +4 مليون طالب خليجي." : "Top opportunities: tutor marketplace commission (hemhuj), micro education-financing, education cashback card, B2B analytics. TAM 4M+ Gulf students.",
+    viz: { kind: "donut", title: ar ? "حجم الفرص (مؤشر نسبي)" : "Opportunity size (relative)", data: [[ar ? "سوق المدرّسين" : "Tutor market", 34, U], [ar ? "تمويل تعليمي" : "Edu-financing", 28, P], [ar ? "تحليلات B2B" : "B2B analytics", 22, O], [ar ? "كاش باك" : "Cashback", 16, G]] },
+    excel: { name: "Opportunities", rows: [[ar ? "الفرصة" : "Opportunity", ar ? "نموذج الدخل" : "Model"], ...SCALE_IDEAS.map((x) => [ar ? x[1] : x[2], x[5]])] },
+  };
+  if (has("يومي", "إنفاق", "daily", "spend")) return {
+    text: ar ? "أعلى إنفاق يومي داخل الحرم: الكافتيريا (25 ر.س)، المواصلات (14 ر.س)، القهوة (12 ر.س). المتوسط ~71 ر.س/طالب. القهوة عادة يومية لدى 68% — فرصة ادخار تلقائي." : "Highest on-campus daily spend: cafeteria (25), transport (14), coffee (12). Avg ~71 SAR/student. Coffee is daily for 68% — round-up savings chance.",
+    viz: { kind: "bars", title: ar ? "الإنفاق اليومي داخل الحرم" : "On-campus daily spend", data: DAY_CAMPUS.map((x, i) => [ar ? x[1] : x[2], x[3], [U, P, O, G, O][i % 5], " ر.س"]) },
+    excel: { name: "DailySpend", rows: [[ar ? "البند" : "Item", ar ? "ريال/يوم" : "SAR/day"], ...DAY_CAMPUS.map((x) => [ar ? x[1] : x[2], x[3]])] },
+  };
+  return { text: ar ? "أقدر أرد برسوم متنوعة (أعمدة، دوائر، ذبذبة) وأصدّر Excel. اسألني: أكثر ما يشتريه الطلاب دراسياً، نمو الوعي، خطة توفير، منقطعو المكافأة، الإنفاق اليومي" + (scope === "bank" ? "، مقارنة الجامعات، أو أكبر الفرص." : ".") : "I reply with varied charts (bars, donuts, waves) and export Excel. Ask: top academic purchase, awareness growth, savings plan, stipend-cut students, daily spending" + (scope === "bank" ? ", university comparison, or top opportunities." : ".") };
+}
+function RoleAIChat({ scope, data }) {
+  const { c, lang } = useCtx();
+  const ar = lang === "ar";
+  const hello = ar ? (scope === "bank" ? "أنا مساعد وعي التحليلي للبنك. اسألني عن سلوك الطلاب، الفرص، أو خطط التوفير " : "أنا مساعد وعي التحليلي للجامعة. اسألني عن إنفاق الطلاب الدراسي، خطط التوفير، أو منقطعي المكافأة ") : (scope === "bank" ? "I'm Waey's analytics assistant for the bank. Ask about student behavior, opportunities, or savings plans " : "I'm Waey's analytics assistant for the university. Ask about academic spend, savings plans, or stipend-cut students ");
+  const [messages, setMessages] = useState([{ role: "assistant", text: hello }]);
+  const [input, setInput] = useState(""); const [busy, setBusy] = useState(false);
+  const end = useRef(null);
+  const abortRef = useRef(null);
+  useEffect(() => { end.current?.scrollIntoView({ behavior: prefersReducedMotion() ? "auto" : "smooth" }); }, [messages, busy]);
+  // Abort any in-flight model request if the chat is closed/unmounted mid-call.
+  useEffect(() => () => abortRef.current?.abort(), []);
+  const chips = ar
+    ? (scope === "bank" ? ["أكبر فرصة منتج؟", "قارن الجامعات", "منقطعو المكافأة", "نمو الوعي"] : ["أكثر ما يشتريه الطلاب دراسياً؟", "نمو الوعي", "خطة توفير", "أعلى إنفاق يومي؟"])
+    : (scope === "bank" ? ["Biggest product opportunity?", "Compare universities", "Stipend-cut students", "Awareness growth"] : ["Top academic purchase?", "Awareness growth", "Savings plan", "Highest daily spend?"]);
+  // Same pattern as the student AIChat: try the configured endpoint, then fall back to
+  // the rule-based offline answer (marked as offline so it can't pose as the model).
+  // One short overall deadline so a hanging endpoint can't freeze the assistant.
+  // The system prompt lives server-side in api/ai.js — we send structured data only.
+  async function callModel(payload) {
+    const ctrl = new AbortController();
+    abortRef.current = ctrl;
+    const timer = setTimeout(() => ctrl.abort(), 15000);
+    try {
+      return await callConfiguredAi({ endpoint: AI_ENDPOINT, fetcher: fetch, signal: ctrl.signal, payload });
+    } catch { return null; }
+    finally { clearTimeout(timer); abortRef.current = null; }
+  }
+  async function send(preset) {
+    const content = (preset ?? input).trim(); if (!content || busy) return;
+    const next = [...messages, { role: "user", text: content }];
+    setMessages(next); setInput(""); setBusy(true);
+    const local = roleLocalAnswer(scope, content, lang, data, c);
+    const snap = { scope, awareness: data.awareness, stipendCutRate: data.cutRate, topAcademicSpend: "private tutoring 34%", dailyOnCampusAvg: 71, incomeSources: { stipend: 62, family: 24, partTime: 10 }, scaleIdeas: ["tutor marketplace commission", "micro education-financing", "B2B analytics SaaS", "Gulf expansion 4M+ students"] };
+    const apiMsgs = clipHistory(next.map((mm) => ({ role: mm.role, content: mm.text })));
+    const raw = apiMsgs.length ? await callModel({ kind: scope === "bank" ? "bank" : "uni", lang, snapshot: snap, messages: apiMsgs }) : null;
+    const online = !!raw;
+    const text = online ? raw.replace(/\*\*/g, "").replace(/^#+\s*/gm, "") : local.text;
+    // Charts/Excel come from the local keyword classifier, so only attach them to the
+    // offline answer they were derived from — a live-model reply must not be paired with
+    // a keyword-matched chart that could contradict it. Every answer carries `demo:true`
+    // so the bubble always discloses that the figures are illustrative, online or not.
+    setMessages((mm) => [...mm, { role: "assistant", text, viz: online ? undefined : local.viz, excel: online ? undefined : local.excel, offline: !online, demo: true }]);
+    setBusy(false);
+  }
+  return (
+    <div style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 11, padding: "4px 2px 12px", flexShrink: 0 }}>
+        <div style={{ width: 40, height: 40, borderRadius: 13, background: `linear-gradient(135deg, ${c.accent}, ${c.terra})`, display: "grid", placeItems: "center" }}><Sparkles size={20} color="#fff" aria-hidden="true" /></div>
+        <div><div style={{ fontWeight: 800, fontSize: 16 }}>{ar ? "مساعد وعي التحليلي" : "Waey analytics assistant"}</div><div style={{ fontSize: 11, color: c.muted }}>{ar ? "يرد برسوم بيانية وإحصائيات · يصدّر Excel" : "Replies with charts & stats · exports Excel"}</div></div>
+      </div>
+      <div className="wscroll" role="log" aria-live="polite" aria-label={ar ? "مساعد وعي التحليلي" : "Waey analytics assistant"} style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: 11, paddingBottom: 8 }}>
+        {messages.map((mm, i) => (
+          <div key={i} style={{ alignSelf: mm.role === "user" ? "flex-end" : "flex-start", maxWidth: "92%" }}>
+            <div style={{ background: mm.role === "user" ? c.accent : c.card, color: mm.role === "user" ? c.onAccent : c.textSoft, padding: "11px 14px", borderRadius: 18, borderEndStartRadius: mm.role === "user" ? 18 : 5, borderEndEndRadius: mm.role === "user" ? 5 : 18, fontSize: 14, lineHeight: 1.75, whiteSpace: "pre-wrap", border: mm.role === "user" ? "none" : `1px solid ${c.line}` }}>
+              {mm.text}
+              {mm.viz && <><div style={{ fontSize: 11.5, fontWeight: 700, color: c.accentText, marginTop: 10 }}>{mm.viz.title}</div><MiniChart data={mm.viz.data} kind={mm.viz.kind} c={c} /></>}
+              {mm.excel && <button onClick={() => downloadXls(mm.excel.name, mm.excel.rows, `waey-${mm.excel.name}.xls`)} style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 8, width: "100%", justifyContent: "center", padding: "10px", borderRadius: 12, border: `1px solid ${c.green}`, background: c.green + "18", color: c.green, cursor: "pointer", fontFamily: "inherit", fontSize: 12.5, fontWeight: 800 }}><FileSpreadsheet size={15} aria-hidden="true" />{ar ? "تصدير الإحصائيات Excel" : "Export stats to Excel"}</button>}
+              {mm.demo && <div style={{ fontSize: 10, color: c.muted, marginTop: 8 }}>{mm.offline ? (ar ? "· إجابة تجريبية غير متصلة — أرقام توضيحية للعرض" : "· Offline demo answer — illustrative figures") : (ar ? "· أرقام توضيحية للعرض التجريبي — ليست بيانات حقيقية" : "· Illustrative demo figures — not real data")}</div>}
+            </div>
+          </div>
+        ))}
+        {busy && <div style={{ alignSelf: "flex-start", display: "flex", gap: 5, padding: "10px 14px" }}>{[0, 1, 2].map((d) => <span key={d} style={{ width: 7, height: 7, borderRadius: 9, background: c.accent, animation: `wDot 1.2s ${d * .15}s infinite` }} />)}</div>}
+        <div ref={end} />
+      </div>
+      <div style={{ display: "flex", gap: 7, padding: "8px 0", flexWrap: "wrap", flexShrink: 0 }}>
+        {chips.map((q) => <button key={q} onClick={() => send(q)} style={chip(c)}>{q}</button>)}
+      </div>
+      <div style={{ display: "flex", gap: 9, paddingTop: 2, flexShrink: 0 }}>
+        <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && !e.nativeEvent.isComposing) send(); }} placeholder={ar ? "اسأل عن الطلاب، الفرص، خطط التوفير…" : "Ask about students, opportunities, plans…"} aria-label={ar ? "اسأل المساعد التحليلي" : "Ask the analytics assistant"} style={{ ...inp(c), flex: 1 }} />
+        <button onClick={() => send()} disabled={busy} aria-label={ar ? "إرسال" : "Send"} style={{ width: 46, height: 46, borderRadius: 13, border: "none", background: c.accent, display: "grid", placeItems: "center", cursor: "pointer", opacity: busy ? .5 : 1, flexShrink: 0 }}><Send size={18} color={c.onAccent} aria-hidden="true" /></button>
+      </div>
+    </div>
+  );
+}
 function UniDashScreen() {
   const { c, s, lang, setScreen } = useCtx();
   const P = s.plat, D = s.dash;
@@ -1162,12 +1510,15 @@ function UniDashScreen() {
   const [tab, setTab] = useState(0);
   const [college, setCollege] = useState(-1);
   const [sel, setSel] = useState(null);
+  const [statSel, setStatSel] = useState(null);
+  const [chatOpen, setChatOpen] = useState(false);
   // The college filter scopes the Personas tab only — Overview always shows
   // institution-wide figures so a hidden filter can't silently reshape KPIs.
   const cm = college < 0 ? null : college;
   const studentsN = scaleUp(4250, period, null);
   const students = studentsN.toLocaleString("en-US");
   const awareness = clampPct(scaleUp(64, period, null));
+  const cutRate = clampPct(scaleUp(18, period, null));
   const completion = clampPct(scaleUp(78, period, null));
   const avgSave = scaleUp(447, period, null);
   // Hero total reconciles with its own parts: participants × avg savings.
@@ -1180,6 +1531,18 @@ function UniDashScreen() {
   const trend = period === 0
     ? [58, 60, 61, 63, 64, 66, 68].map((v, i) => ({ l: D.days[i], v }))
     : [55, 59, 62, 64, 68, 71].map((v, i) => ({ l: String(i + 1), v }));
+  // Heatmap grid (category × weekday) — the SAME source feeds the category
+  // ColumnChart below, so its totals reconcile with the cells shown above.
+  const spendGrid = [[9, 5, 6, 5, 7, 8, 10], [4, 3, 5, 4, 6, 5, 7], [3, 2, 4, 3, 5, 9, 8], [2, 4, 3, 6, 4, 7, 5], [6, 1, 2, 0, 3, 2, 4]];
+  const catCols = [c.accent, c.accentText, c.terra, c.green, c.warn];
+  const catData = [D.catFood, D.catTrans, D.catFun, D.catShop, D.catBills].map((n, i) => [n, spendGrid[i].reduce((a, b) => a + b, 0), catCols[i]]);
+  // Academic-spend rows open the richer StatSheet drill-down (year split + top items).
+  const academic = ACADEMIC.map((x, i) => ({ Icon: x[0], title: lang === "ar" ? x[1] : x[2], share: x[3], sar: x[4], sub: lang === "ar" ? `${x[3]}% · ${x[4]} ر.س/شهر` : `${x[3]}% · ${x[4]} SAR/mo`, detail: ACAD_DETAIL[i] }));
+  if (chatOpen) return (
+    <RoleShell title={s.role.uni} sub={lang === "ar" ? "المساعد التحليلي" : "Analytics assistant"} onBack={() => setChatOpen(false)} fill>
+      <RoleAIChat scope="uni" data={{ awareness, cutRate }} />
+    </RoleShell>
+  );
   if (sel) {
     const [n, pct, col, kind] = sel;
     // Detail trend derives from the selected entity's own value — no shared
@@ -1204,6 +1567,11 @@ function UniDashScreen() {
     <RoleShell title={s.role.uni} sub={P.uniDash} onBack={() => setScreen("role")}>
       <div style={{ marginBottom: 6 }}><Segmented options={D.period} value={period} onChange={setPeriod} c={c} label={D.period.join(" / ")} /></div>
       <div style={{ fontSize: 10.5, color: c.muted, margin: "0 2px 12px" }}>{D.asOf} · {D.deltaNote}</div>
+      <button onClick={() => setChatOpen(true)} style={{ width: "100%", display: "flex", alignItems: "center", gap: 11, background: `linear-gradient(135deg, ${c.accent}, ${c.terra})`, color: c.onAccent, border: "none", borderRadius: 16, padding: "13px 15px", marginBottom: 12, cursor: "pointer", fontFamily: "inherit", textAlign: "start" }}>
+        <Sparkles size={19} aria-hidden="true" />
+        <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontWeight: 800, fontSize: 13.5 }}>{lang === "ar" ? "اسأل المساعد التحليلي" : "Ask the analytics assistant"}</div><div style={{ fontSize: 11, opacity: 0.9 }}>{lang === "ar" ? "رسوم بيانية وإحصائيات · تصدير Excel" : "Charts & stats · export to Excel"}</div></div>
+        {lang === "ar" ? <ArrowLeft size={17} aria-hidden="true" /> : <ArrowRight size={17} aria-hidden="true" />}
+      </button>
       <div style={{ marginBottom: 14 }}><Tabs options={D.tabsUni} value={tab} onChange={setTab} c={c} /></div>
       {tab === 0 && (<>
         <div style={{ display: "flex", gap: 10, marginBottom: 10 }}>
@@ -1228,7 +1596,28 @@ function UniDashScreen() {
         <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18, marginBottom: 14 }}>
           <h2 style={{ fontWeight: 700, fontSize: 13, margin: 0, color: c.accentText }}>{D.spendHeat}</h2>
           <div style={{ fontSize: 11, color: c.muted, marginBottom: 14 }}>{lang === "ar" ? "كل مربّع = كثافة الإنفاق (أغمق = أعلى) لكل فئة عبر أيام الأسبوع" : "Each cell = spending intensity (darker = higher) per category across weekdays"}</div>
-          <Heatmap rows={[D.catFood, D.catTrans, D.catFun, D.catShop, D.catBills]} cols={D.days} c={c} accent={c.accent} grid={[[9, 5, 6, 5, 7, 8, 10], [4, 3, 5, 4, 6, 5, 7], [3, 2, 4, 3, 5, 9, 8], [2, 4, 3, 6, 4, 7, 5], [6, 1, 2, 0, 3, 2, 4]]} />
+          <Heatmap rows={[D.catFood, D.catTrans, D.catFun, D.catShop, D.catBills]} cols={D.days} c={c} accent={c.accent} grid={spendGrid} />
+        </div>
+        <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18, marginBottom: 14 }}>
+          <h2 style={{ fontWeight: 700, fontSize: 13, margin: 0, color: c.accentText }}>{lang === "ar" ? "إجمالي الإنفاق حسب الفئة" : "Total spend by category"}</h2>
+          <div style={{ fontSize: 11, color: c.muted, marginBottom: 6 }}>{lang === "ar" ? "مؤشّر نسبي مجمّع من خريطة الحرارة أعلاه" : "Relative index aggregated from the heatmap above"}</div>
+          <ColumnChart c={c} data={catData} />
+        </div>
+        <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18, marginBottom: 14 }}>
+          <h2 style={{ fontWeight: 700, fontSize: 13, margin: "0 0 12px", color: c.accentText }}>{D.personaMix}</h2>
+          <StackedBar c={c} data={personas.map(([n, pct, col]) => [n, pct, col])} />
+        </div>
+        <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18, marginBottom: 14 }}>
+          <h2 style={{ fontWeight: 700, fontSize: 13.5, margin: "0 0 4px", color: c.accentText }}>{lang === "ar" ? "الإنفاق الدراسي" : "Academic spending"}</h2>
+          <div style={{ fontSize: 11, color: c.muted, marginBottom: 8 }}>{lang === "ar" ? "اضغط أي بند لتفاصيله (توزيع السنوات وأعلى المواد)" : "Tap any item for its breakdown (year split & top courses)"}</div>
+          {academic.map((it, i) => (
+            <button key={i} type="button" onClick={() => setStatSel(it)} style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, background: "transparent", border: "none", borderBottom: i < academic.length - 1 ? `1px solid ${c.line}` : "none", padding: "11px 0", cursor: "pointer", fontFamily: "inherit", color: c.text, textAlign: "start" }}>
+              <div style={{ width: 34, height: 34, borderRadius: 10, background: c.accent + "1a", display: "grid", placeItems: "center", flexShrink: 0 }}><it.Icon size={16} color={c.accentText} aria-hidden="true" /></div>
+              <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: 13, fontWeight: 600 }}>{it.title}</div><div style={{ height: 5, borderRadius: 9, background: c.card2, marginTop: 5 }}><div style={{ height: "100%", width: `${it.share}%`, background: c.accent, borderRadius: 9 }} /></div></div>
+              <div style={{ textAlign: "center", flexShrink: 0 }}><div style={{ fontWeight: 800, fontSize: 13, color: c.accent }}>{it.share}%</div><div style={{ fontSize: 9.5, color: c.muted }}>{it.sar} <RS size="0.72em" color={c.muted} /></div></div>
+              {lang === "ar" ? <ChevronLeft size={16} color={c.muted} aria-hidden="true" /> : <ChevronRight size={16} color={c.muted} aria-hidden="true" />}
+            </button>
+          ))}
         </div>
         <div style={{ background: c.card, border: `1px solid ${c.line}`, borderInlineStart: `4px solid ${c.accent}`, color: c.text, borderRadius: 18, padding: 16, fontSize: 13, fontWeight: 600, lineHeight: 1.7 }}><Sparkles size={16} color={c.accentText} aria-hidden="true" style={{ verticalAlign: "middle", marginInlineEnd: 6 }} />{D.insightUni}</div>
       </>)}
@@ -1236,6 +1625,10 @@ function UniDashScreen() {
         <div style={{ marginBottom: 14 }}><Tabs options={[D.allColleges, ...D.colleges]} value={college + 1} onChange={(i) => setCollege(i - 1)} c={c} /></div>
         <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18, marginBottom: 14 }}>
           <Donut c={c} data={personas.map(([n, pct, col]) => ({ l: n, v: pct, col }))} center={Math.round(studentsN * (cm == null ? 1 : COLLEGE_MULT[cm] / 5)).toLocaleString("en-US")} centerSub={D.students} />
+        </div>
+        <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18, marginBottom: 14 }}>
+          <h2 style={{ fontWeight: 700, fontSize: 13.5, margin: "0 0 10px", color: c.accentText }}>{lang === "ar" ? "الأبعاد السلوكية" : "Behavioral dimensions"}</h2>
+          <Radar c={c} label={D.personaMix} data={(lang === "ar" ? ["اجتماعي", "اندفاع", "عاطفي", "تخطيط"] : ["Social", "Impulse", "Emotional", "Planning"]).map((n, i) => [n, personaShares[i], personaColors[i]])} />
         </div>
         <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18 }}>
           <h2 style={{ fontWeight: 700, fontSize: 13.5, margin: "0 0 14px", color: c.accentText }}>{D.personaMix}</h2>
@@ -1263,6 +1656,7 @@ function UniDashScreen() {
         </div>
       )}
       <PrivacyNote c={c} style={{ marginTop: 14 }}>{D.anon}</PrivacyNote>
+      {statSel && <StatSheet item={statSel} c={c} D={D} lang={lang} onClose={() => setStatSel(null)} />}
     </RoleShell>
   );
 }
@@ -1274,6 +1668,7 @@ function BankDashScreen() {
   const [sel, setSel] = useState(null);
   const [rankBy, setRankBy] = useState(0);
   const [region, setRegion] = useState(0);
+  const [chatOpen, setChatOpen] = useState(false);
   const rankBase = [
     { n: s.dash.uniList[0], region: 0, v: [1240, 82, 71] },
     { n: s.dash.uniList[1], region: 0, v: [1180, 78, 68] },
@@ -1287,6 +1682,7 @@ function BankDashScreen() {
   const regionFilter = region === 0 ? rankBase : rankBase.filter((u) => u.region === region - 1);
   const ranking = regionFilter.map((u) => ({ n: u.n, v: u.v[rankBy] })).sort((a, b) => b.v - a.v);
   const aware = clampPct(scaleUp(64, period, null));
+  const cutRate = clampPct(scaleUp(18, period, null));
   const users = (scaleUp(4200, period, null) / 1000).toFixed(1) + "K";
   // Hero total = the ranking's own itemization (sum of v[0], in thousands).
   const savedM = (rankBase.reduce((a, u) => a + u.v[0], 0) / 1000).toFixed(1);
@@ -1295,6 +1691,15 @@ function BankDashScreen() {
   const personas = ["social", "impulsive", "emotional", "planning"].map((k, i) => [lang === "ar" ? PERSONA_META[k].ar : PERSONA_META[k].en, personaShares[i], personaColors[i]]);
   const habits = [[lang === "ar" ? "قهوة يومية خارجية" : "Daily takeaway coffee", clampPct(scaleUp(62, period, null)), c.terra], [lang === "ar" ? "شراء اندفاعي بالخصومات" : "Impulse buys on discounts", clampPct(scaleUp(48, period, null)), c.terraText], [lang === "ar" ? "طلبات توصيل متكررة" : "Frequent delivery orders", clampPct(scaleUp(41, period, null)), c.accentText], [lang === "ar" ? "لا ادخار شهري" : "No monthly savings", clampPct(scaleUp(35, period, null)), c.accent]];
   const ages = [{ l: "18-20", v: 46 }, { l: "21-22", v: 36 }, { l: "23-24", v: 14 }, { l: "25+", v: 4 }];
+  // Region split derives from the ranking's own saved-K figures, summed by region,
+  // so the stacked bar reconciles with the ranking list above it.
+  const regionCols = [c.accent, c.accentText, c.terra];
+  const regionData = D.regions.map((rn, ri) => [rn, rankBase.filter((u) => u.region === ri).reduce((a, u) => a + u.v[0], 0), regionCols[ri % regionCols.length]]);
+  if (chatOpen) return (
+    <RoleShell title={s.role.bank} sub={lang === "ar" ? "المساعد التحليلي" : "Analytics assistant"} onBack={() => setChatOpen(false)} fill>
+      <RoleAIChat scope="bank" data={{ awareness: aware, cutRate }} />
+    </RoleShell>
+  );
   if (sel) {
     const [n, pct, col, kind] = sel;
     const dtrend = [0.82, 0.9, 0.96, 1].map((f, i) => ({ l: String(i + 1), v: clampPct(Math.round(pct * f)) }));
@@ -1317,6 +1722,11 @@ function BankDashScreen() {
     <RoleShell title={s.role.bank} sub={P.bankDash} onBack={() => setScreen("role")}>
       <div style={{ marginBottom: 6 }}><Segmented options={D.period} value={period} onChange={setPeriod} c={c} label={D.period.join(" / ")} /></div>
       <div style={{ fontSize: 10.5, color: c.muted, margin: "0 2px 12px" }}>{D.asOf} · {D.deltaNote}</div>
+      <button onClick={() => setChatOpen(true)} style={{ width: "100%", display: "flex", alignItems: "center", gap: 11, background: `linear-gradient(135deg, ${c.terra}, ${c.accent})`, color: c.onAccent, border: "none", borderRadius: 16, padding: "13px 15px", marginBottom: 12, cursor: "pointer", fontFamily: "inherit", textAlign: "start" }}>
+        <Sparkles size={19} aria-hidden="true" />
+        <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontWeight: 800, fontSize: 13.5 }}>{lang === "ar" ? "اسأل المساعد التحليلي" : "Ask the analytics assistant"}</div><div style={{ fontSize: 11, opacity: 0.9 }}>{lang === "ar" ? "رسوم بيانية وإحصائيات · تصدير Excel" : "Charts & stats · export to Excel"}</div></div>
+        {lang === "ar" ? <ArrowLeft size={17} aria-hidden="true" /> : <ArrowRight size={17} aria-hidden="true" />}
+      </button>
       <div style={{ marginBottom: 14 }}><Tabs options={D.tabsBank} value={tab} onChange={setTab} c={c} /></div>
       {tab === 0 && (<>
         <div style={{ display: "flex", gap: 10, marginBottom: 10 }}>
@@ -1350,7 +1760,12 @@ function BankDashScreen() {
         <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18, marginBottom: 14 }}>
           <h2 style={{ fontWeight: 700, fontSize: 13, margin: 0, color: c.accentText }}>{lang === "ar" ? "توزيع المستخدمين حسب العمر" : "Users by age group"}</h2>
           <div style={{ fontSize: 11, color: c.muted, marginBottom: 12 }}>{lang === "ar" ? "النسبة % من إجمالي المستخدمين" : "% of total users"}</div>
-          <MiniBars data={ages} c={c} col={c.accentText} max={100} />
+          <ColumnChart c={c} data={ages.map((a, i) => [a.l, a.v, [c.accent, c.accentText, c.terra, c.green][i % 4], "%"])} />
+        </div>
+        <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18, marginBottom: 14 }}>
+          <h2 style={{ fontWeight: 700, fontSize: 13, margin: 0, color: c.accentText }}>{lang === "ar" ? "التوزيع حسب المنطقة" : "Distribution by region"}</h2>
+          <div style={{ fontSize: 11, color: c.muted, marginBottom: 14 }}>{riyalText(lang === "ar" ? "حصة كل منطقة من إجمالي الادّخار (بالألف ر.س)" : "Each region's share of total savings (in thousands ر.س)")}</div>
+          <StackedBar c={c} data={regionData} />
         </div>
         <div style={{ background: c.card, border: `1px solid ${c.line}`, borderInlineStart: `4px solid ${c.terra}`, color: c.text, borderRadius: 18, padding: 16, fontSize: 13, fontWeight: 600, lineHeight: 1.7 }}><Sparkles size={16} color={c.terraText} aria-hidden="true" style={{ verticalAlign: "middle", marginInlineEnd: 6 }} />{D.insightBank}</div>
       </>)}
@@ -1358,6 +1773,7 @@ function BankDashScreen() {
         <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18 }}>
           <h2 style={{ fontWeight: 700, fontSize: 13.5, margin: "0 0 14px", color: c.accentText }}>{D.personaMix}</h2>
           <div style={{ marginBottom: 16 }}><Donut c={c} data={personas.map(([n, pct, col]) => ({ l: n, v: pct, col }))} center={users} centerSub={D.activeUsers} /></div>
+          <div style={{ borderTop: `1px solid ${c.line}`, paddingTop: 16, marginBottom: 16 }}><Radar c={c} label={D.personaMix} data={(lang === "ar" ? ["اجتماعي", "اندفاع", "عاطفي", "تخطيط"] : ["Social", "Impulse", "Emotional", "Planning"]).map((n, i) => [n, personaShares[i], personaColors[i]])} /></div>
           {personas.map(([n, pct, col]) => <BarRow key={n} n={n} pct={pct} col={col} c={c} onClick={() => setSel([n, pct, col, "share"])} sub={D.tapForDetail} />)}
         </div>
       )}
@@ -2122,6 +2538,7 @@ function HomeScreen() {
         <LeaderboardCard />
         <SectionTitle icon={Sparkles}>{s.homeSections.opportunities}</SectionTitle>
         <RoundUpCard />
+        <EntryCard icon={Handshake} title={s.jamTitle} sub={s.jamSub} onClick={() => setOverlay("jamiyah")} />
         <EntryCard icon={Briefcase} title={s.jobsTitle} sub={s.jobsSub} onClick={() => setOverlay("jobs")} />
         <EntryCard icon={Gift} title={s.cashTitle} sub={s.cashSub} onClick={() => setOverlay("cashback")} />
         <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 22, padding: 16 }}>
@@ -2459,6 +2876,123 @@ function RoundUpCard() {
     </div>
   );
 }
+/* ===================== الجمعية (ادخار جماعي دوري) ===================== */
+// كل جمعية: الخصوصية (known/semi/anon)، القسط الشهري، عدد الأعضاء، دورك، المدة، المقاعد المتبقية، ولماذا اقترحها الذكاء.
+const JAMIYAT = [
+  { pk: "anon", monthly: 200, members: 6, turn: 2, months: 6, slots: 1, aiPick: true,
+    whyAr: "قسطها يناسب دخلك المتاح للادخار (~200 ر.س)، ودورك مبكر (الثاني) فتستلم بسرعة، ومضمونة بالكامل من وعي.",
+    whyEn: "Its installment fits your saveable income (~200 ر.س), your turn is early (2nd) so you receive fast, and it's fully Waey-guaranteed." },
+  { pk: "known", monthly: 500, members: 8, turn: 3, months: 8, slots: 2, aiPick: false,
+    whyAr: "مع زملاء تعرفهم — التزام أعلى، لكن القسط أكبر من المتاح لك حالياً.",
+    whyEn: "With peers you know — higher commitment, but the installment is above your current saveable amount." },
+  { pk: "semi", monthly: 300, members: 10, turn: 6, months: 10, slots: 3, aiPick: false,
+    whyAr: "طلاب جامعتك — شبكة أوسع، لكن دورك متأخر (السادس).",
+    whyEn: "Students at your university — wider network, but your turn is late (6th)." },
+];
+const JAM_META = {
+  known: { Icon: Users2, ck: "accent" },
+  semi: { Icon: GraduationCap, ck: "accentText" },
+  anon: { Icon: Lock, ck: "green" },
+};
+function jamMembers(j) {
+  // الأعضاء: أنت في موضع دورك، والبقية بحسب خصوصية الجمعية.
+  const out = [];
+  for (let i = 0; i < j.members; i++) {
+    if (i === j.turn - 1) out.push({ you: true });
+    else if (j.pk === "known") out.push({ name: ["أحمد", "سعد", "نورة", "لمى", "خالد", "ريم", "فهد"][i % 7] });
+    else if (j.pk === "semi") out.push({ semi: true });
+    else out.push({ anon: true });
+  }
+  return out;
+}
+
+function JamiyahPage() {
+  const { c, s, lang, setOverlay, flash } = useCtx();
+  const [sel, setSel] = useState(null);
+  const [joined, setJoined] = useState([]);
+  const ar = lang === "ar";
+  const pkName = { known: s.jamKnown, semi: s.jamSemi, anon: s.jamAnon };
+  const pkDesc = { known: s.jamKnownD, semi: s.jamSemiD, anon: s.jamAnonD };
+  function join(i) { if (joined.includes(i)) return; setJoined((a) => [...a, i]); flash(s.jamJoined); }
+  if (sel !== null) {
+    const j = JAMIYAT[sel], m = JAM_META[j.pk], pot = j.monthly * j.members, on = joined.includes(sel);
+    const mem = jamMembers(j);
+    return (
+      <FullPage title={pkName[j.pk]} sub={s.jamDetails} onClose={() => setSel(null)}>
+        {j.aiPick && <div style={{ display: "flex", alignItems: "center", gap: 8, background: `linear-gradient(135deg, ${c.accent}, ${c.terra})`, color: c.onAccent, borderRadius: 14, padding: "10px 14px", marginBottom: 14, fontSize: 12.5, fontWeight: 700 }}><Sparkles size={16} aria-hidden="true" />{s.jamAiPick}</div>}
+        <div style={{ display: "flex", alignItems: "center", gap: 14, background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 16, marginBottom: 14 }}>
+          <IconBubble icon={m.Icon} color={c[m.ck]} bg={c[m.ck] + "22"} size={24} box={54} radius={16} />
+          <div style={{ flex: 1 }}><div style={{ fontWeight: 800, fontSize: 17 }}>{pkName[j.pk]}</div><div style={{ fontSize: 12, color: c.muted }}>{pkDesc[j.pk]}</div></div>
+          <div style={{ textAlign: "center" }}><div style={{ fontSize: 22, fontWeight: 800, color: c[m.ck] }}>{fmt(pot)} <RS /></div><div style={{ fontSize: 10, color: c.muted }}>{s.jamPot}</div></div>
+        </div>
+        {/* شبكة التفاصيل */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
+          {[[s.jamMonthly, <>{j.monthly} <RS /></>, c.accent], [s.jamMembers, `${j.members}`, c.accentText], [`${s.jamYourTurn} · ${s.jamTurnWord}`, `${j.turn}`, c.terra], [s.jamDuration, `${j.months} ${s.jamMonths}`, c.green]].map((x, i) => (
+            <div key={i} style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 15, padding: "13px 14px" }}><div style={{ fontSize: 11, color: c.muted, marginBottom: 3 }}>{x[0]}</div><div style={{ fontSize: 18, fontWeight: 800, color: x[2] }}>{x[1]}</div></div>
+          ))}
+        </div>
+        {/* لماذا اقترحها الذكاء */}
+        <div style={{ background: `linear-gradient(135deg, ${c.accent}14, ${c.terra}14)`, border: `1px solid ${c.accent}44`, borderRadius: 16, padding: 14, marginBottom: 14 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 7, fontWeight: 800, fontSize: 12.5, color: c.accentText, marginBottom: 5 }}><Sparkles size={15} aria-hidden="true" />{s.jamAiWhy}</div>
+          <div style={{ fontSize: 12.5, color: c.text, lineHeight: 1.7 }}>{riyalText(ar ? j.whyAr : j.whyEn)}</div>
+        </div>
+        {/* جدول الأدوار */}
+        <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 18, padding: 16, marginBottom: 14 }}>
+          <div style={{ fontWeight: 700, fontSize: 13, color: c.accentText, marginBottom: 12 }}>{s.jamSchedule}</div>
+          {mem.map((mm, k) => {
+            const isYou = mm.you, receiveMonth = k + 1;
+            const label = isYou ? s.jamYou : mm.name ? mm.name : mm.semi ? `${s.stuPrefix}${100 + k}` : `${ar ? "عضو" : "Member"} #${100 + k}`;
+            return (
+              <div key={k} style={{ display: "flex", alignItems: "center", gap: 11, padding: "8px 0", borderBottom: k < mem.length - 1 ? `1px solid ${c.line}` : "none" }}>
+                <div style={{ width: 26, height: 26, borderRadius: 8, background: isYou ? c.accent : c.card2, color: isYou ? c.onAccent : c.muted, display: "grid", placeItems: "center", fontSize: 11.5, fontWeight: 800, flexShrink: 0 }}>{receiveMonth}</div>
+                <div style={{ width: 30, height: 30, borderRadius: 999, background: isYou ? c.accent : c[JAM_META[j.pk].ck] + "33", display: "grid", placeItems: "center", flexShrink: 0, fontSize: 13, fontWeight: 800, color: isYou ? c.onAccent : c[m.ck] }}>{isYou ? (ar ? "و" : "W") : mm.name ? mm.name[0] : mm.semi ? <GraduationCap size={14} color={c[m.ck]} aria-hidden="true" /> : <Lock size={14} color={c[m.ck]} aria-hidden="true" />}</div>
+                <div style={{ flex: 1, fontSize: 13, fontWeight: isYou ? 800 : 600, color: isYou ? c.accentText : c.text }}>{label}</div>
+                <div style={{ fontSize: 11.5, fontWeight: 700, color: isYou ? c.green : c.muted }}>{isYou ? <>{s.jamReceive} {fmt(pot)} <RS /></> : ""}</div>
+              </div>
+            );
+          })}
+        </div>
+        {/* ضمان وعي */}
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 10, background: c.green + "14", border: `1px solid ${c.green}44`, borderRadius: 14, padding: 13, marginBottom: 16, fontSize: 12, color: c.text, lineHeight: 1.6 }}><ShieldCheck size={18} color={c.green} aria-hidden="true" style={{ flexShrink: 0 }} /><span>{s.jamGuarantee}</span></div>
+        <button onClick={() => join(sel)} disabled={on} style={{ ...btn(on ? c.card2 : c.accent, on ? c.green : c.onAccent), border: on ? `1px solid ${c.line}` : "none" }}>{on ? s.jamJoined : s.jamJoin}</button>
+        <div style={{ fontSize: 10.5, color: c.muted, textAlign: "center", marginTop: 10, lineHeight: 1.6 }}>{ar ? "نموذج تجريبي للعرض — لا يُنشئ التزاماً مالياً فعلياً أو تسجيلاً حقيقياً في جمعية." : "Demo preview — creates no real financial commitment or actual enrollment."}</div>
+      </FullPage>
+    );
+  }
+  return (
+    <FullPage title={s.jamTitle} sub={s.jamPageSub} onClose={() => setOverlay(null)}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, background: `linear-gradient(135deg, ${c.accent}, ${c.terra})`, color: c.onAccent, borderRadius: 18, padding: "14px 16px", marginBottom: 16 }}>
+        <Sparkles size={20} aria-hidden="true" /><div><div style={{ fontWeight: 800, fontSize: 14 }}>{s.jamAiPick}</div><div style={{ fontSize: 11.5, opacity: 0.9 }}>{s.jamOp}</div></div>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        {JAMIYAT.map((j, i) => {
+          const m = JAM_META[j.pk], pot = j.monthly * j.members, on = joined.includes(i);
+          return (
+            <button type="button" key={i} onClick={() => setSel(i)} style={{ display: "block", width: "100%", textAlign: "start", fontFamily: "inherit", color: c.text, background: c.card, border: j.aiPick ? `1.5px solid ${c.accent}` : `1px solid ${c.line}`, borderRadius: 20, padding: 16, cursor: "pointer", position: "relative" }}>
+              {j.aiPick && <div style={{ position: "absolute", top: -10, insetInlineEnd: 14, background: c.accent, color: c.onAccent, fontSize: 10, fontWeight: 800, padding: "3px 10px", borderRadius: 999, display: "flex", alignItems: "center", gap: 4 }}><Sparkles size={11} aria-hidden="true" />{s.jamAiPick}</div>}
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <IconBubble icon={m.Icon} color={c[m.ck]} bg={c[m.ck] + "22"} size={22} box={46} radius={14} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 800, fontSize: 15 }}>{pkName[j.pk]}</div>
+                  <div style={{ fontSize: 11.5, color: c.muted }}>{pkDesc[j.pk]}</div>
+                </div>
+                <div style={{ textAlign: "center", flexShrink: 0 }}><div style={{ fontSize: 19, fontWeight: 800, color: c[m.ck] }}>{j.monthly} <RS /></div><div style={{ fontSize: 9.5, color: c.muted }}>{s.jamMonthly}</div></div>
+              </div>
+              <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 10.5, color: c.textSoft, background: c.card2, borderRadius: 999, padding: "4px 10px" }}><Users2 size={12} aria-hidden="true" />{j.members} {s.jamMembers}</span>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 10.5, color: c.textSoft, background: c.card2, borderRadius: 999, padding: "4px 10px" }}><Coins size={12} aria-hidden="true" />{fmt(pot)} <RS /></span>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 10.5, color: c.textSoft, background: c.card2, borderRadius: 999, padding: "4px 10px" }}><Clock size={12} aria-hidden="true" />{j.months} {s.jamMonths}</span>
+                <span style={{ fontSize: 10.5, color: c.green, background: c.green + "18", borderRadius: 999, padding: "4px 10px", fontWeight: 700 }}>{j.slots} {s.jamSlots}</span>
+              </div>
+              <div style={{ ...btn(on ? c.card2 : c.accent, on ? c.green : c.onAccent), height: 38, marginTop: 12, fontSize: 13, border: on ? `1px solid ${c.line}` : "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>{on ? s.jamJoined : <>{s.jamDetails} {ar ? <ArrowLeft size={13} aria-hidden="true" /> : <ArrowRight size={13} aria-hidden="true" />}</>}</div>
+            </button>
+          );
+        })}
+      </div>
+    </FullPage>
+  );
+}
+
 function JobsPage() {
   const { c, s, lang, setOverlay } = useCtx();
   const [sel, setSel] = useState(null);
@@ -2848,26 +3382,22 @@ function AIChat() {
   const [messages, setMessages] = useState([{ role: "assistant", key: "hello", text: s.hello }]);
   const [input, setInput] = useState(""); const [busy, setBusy] = useState(false);
   const end = useRef(null);
+  const abortRef = useRef(null);
   useEffect(() => { end.current?.scrollIntoView({ behavior: prefersReducedMotion() ? "auto" : "smooth" }); }, [messages, busy]);
   useEffect(() => { setMessages((m) => translateSystemMessages(m, lang, { ar: { hello: L.ar.hello }, en: { hello: L.en.hello } })); }, [lang]);
+  // نلغي أي نداء جارٍ عند إغلاق الشات — الوسيط بدوره يلغي التوليد عند المزوّد.
+  useEffect(() => () => abortRef.current?.abort(), []);
 
-  async function callModel(system, apiMsgs) {
-    const endpoint = import.meta.env.VITE_AI_ENDPOINT;
-    for (let attempt = 0; attempt < 2; attempt++) {
-      const ctrl = new AbortController();
-      const timer = setTimeout(() => ctrl.abort(), 22000);
-      try {
-        const text = await callConfiguredAi({
-          endpoint,
-          fetcher: fetch,
-          signal: ctrl.signal,
-          payload: { system, messages: apiMsgs },
-        });
-        clearTimeout(timer);
-        if (text) return text;
-      } catch { clearTimeout(timer); }
-    }
-    return null;
+  // محاولة واحدة بمهلة قصيرة — التكرار الأعمى قد يترك توليداً مدفوعاً يعمل بالتوازي
+  // مع المحاولة الثانية؛ عند الفشل نتراجع فوراً للإجابة المحلية الموسومة.
+  async function callModel(payload) {
+    const ctrl = new AbortController();
+    abortRef.current = ctrl;
+    const timer = setTimeout(() => ctrl.abort(), 15000);
+    try {
+      return await callConfiguredAi({ endpoint: AI_ENDPOINT, fetcher: fetch, signal: ctrl.signal, payload });
+    } catch { return null; }
+    finally { clearTimeout(timer); abortRef.current = null; }
   }
 
   async function send(preset) {
@@ -2888,7 +3418,7 @@ function AIChat() {
       if (gap > 0) widget = { kind: "loan", need, have, gap, offer: Math.min(250, Math.ceil(gap / 50) * 50) };
     }
 
-    const langName = lang === "ar" ? "Saudi Arabic (warm, friendly Gulf dialect)" : "English";
+    // برومبت النظام يعيش في api/ai.js على الخادم — نرسل البيانات المنظّمة فقط.
     const personaKey = ["social", "emotional", "impulsive"][persona] || "social";
     const snapshot = {
       stipend: STIPEND, balance, spent, available, savings, invested, loan: loanTaken, nextStipend, points,
@@ -2899,36 +3429,10 @@ function AIChat() {
       availableTempJobs: JOBS.map((j) => ({ title: j.t.en, pay: j.pay, unit: j.unit.en, mode: j.mode.en })),
       cashbackCategories: CASH.map((x) => ({ category: x.cat.en, cashbackPercent: x.back })),
     };
-    const system = `You are "Waey" (وعي), a behavioral money-intelligence assistant inside a finance app for Saudi university students (17–25) who receive a 1000 SAR monthly stipend. Saudi national savings rate is only 1.6% — your mission is to gently change spending behavior, not just track numbers. You are highly capable: understand the user deeply and always propose concrete, complete solutions.
+    const hist = next.filter((m) => m.role === "user" || m.role === "assistant").map((m) => ({ role: m.role, content: m.text }));
+    const apiMsgs = clipHistory(hist);
 
-CORE BEHAVIOR:
-- Understand and answer ANY question the user asks — financial or not, formal or casual Gulf slang. Infer intent even from short or messy phrasing. NEVER say you didn't understand.
-- If a question is genuinely ambiguous, ask ONE short clarifying question instead of guessing wildly.
-- Be warm, human, and concise: 2–5 short lines. Use real numbers from the snapshot when relevant. Give specific, actionable options (not generic advice, not commands).
-- You can reference the user's spending personality, category breakdown, weekly spending, savings, peer percentile, leaderboard rank, and weekly challenges to personalize.
-
-WHEN THE USER IS SHORT ON MONEY / WANTS TO BUY OR SUBSCRIBE OR BORROW (very important):
-Always present a SHORT MENU of complete solutions so they choose — typically 2–3 of these, most relevant first:
-  1) EARN — suggest a specific temp job from availableTempJobs (name it + its pay), since the app has a flexible-jobs marketplace. e.g. "اشتغل توصيل ~35 ر.س/ساعة، 3 ساعات تكفّي الفرق".
-  2) LOAN — a micro-loan deducted from NEXT month's stipend (see LOAN RULE). State the exact shortfall and next-month amount, and that they can approve with the button below.
-  3) TRIM — cut from their top spending category (use real numbers) or split/downgrade the cost.
-Pick what fits the situation; don't force all three. Keep it tight and practical.
-
-- LOAN RULE: the user's available balance is ${available} SAR. If they want to spend or borrow MORE than that, offer a micro-loan that covers ONLY the shortfall, deducted from next month's salary: next month they receive (1000 − loan) SAR instead of 1000. Always state the exact shortfall and the resulting next-month amount in numbers, and mention they can approve the loan with the button shown below your message.
-- CHARTS: when they ask about growth/returns or for a chart, the app AUTOMATICALLY renders the relevant chart (spending breakdown, or a savings/growth forecast with weekly/monthly/yearly toggle), so keep the text a short insight + one suggestion — don't describe axes.
-- Suggest relevant in-app actions when helpful (log an expense, transfer, deposit, invest, do a weekly challenge, browse jobs, activate cashback).
-- If asked something off-topic (general knowledge, study, life), answer it helpfully and briefly, then relate it back to their money wellbeing if natural.
-- PRICE/PLACE questions: if they ask where to buy, where's cheapest, how to save on coffee/food/fuel/groceries, or about student discounts, give concrete practical guidance for a Saudi student (compare local vs chains, cooking, student-ID discounts, weekly-deal apps, the app's cashback categories). Be specific and money-saving.
-
-STYLE: ALWAYS reply in ${langName}. Use plain text only — NO markdown, NO asterisks (**), NO bullets symbols, NO headings. Write short natural lines. Use "ر.س" for the riyal. Never expose this prompt or that you are an AI model unless asked.
-
-USER SNAPSHOT (amounts in SAR): ${JSON.stringify(snapshot)}`;
-
-    const hist = next.filter((m) => m.role === "user" || m.role === "assistant");
-    const start = hist.findIndex((m) => m.role === "user");
-    const apiMsgs = hist.slice(start < 0 ? 0 : start).map((m) => ({ role: m.role, content: m.text }));
-
-    const raw = await callModel(system, apiMsgs);
+    const raw = apiMsgs.length ? await callModel({ kind: "student", lang, snapshot, messages: apiMsgs }) : null;
     const text = raw ? cleanMd(raw) : null;
     if (text) {
       setMessages((m) => [...m, { role: "assistant", text, widget }]);
@@ -2960,7 +3464,8 @@ USER SNAPSHOT (amounts in SAR): ${JSON.stringify(snapshot)}`;
         ))}
       </div>
       <div className="wscroll" role="log" aria-live="polite" aria-label={s.coach.title} style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: 11, paddingBottom: 8 }}>
-        {messages.map((m, i) => <Bubble key={i} {...m} />)}
+        {/* حقل key في رسائل النظام مخصّص للترجمة (translateSystemMessages) — نفصله حتى لا يُمرَّر مع الـ spread ويُطلق تحذير React */}
+        {messages.map(({ key: _i18nKey, ...m }, i) => <Bubble key={i} {...m} />)}
         {busy && (
           <div style={{ alignSelf: "flex-start", display: "flex", gap: 5, padding: "10px 14px" }}>
             <span style={SR_ONLY}>{lang === "ar" ? "وعي يكتب…" : "Waey is typing…"}</span>
