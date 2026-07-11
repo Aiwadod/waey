@@ -14,6 +14,7 @@ import {
   Laptop, Palette, Camera, School, Fuel, ShoppingCart, Pill, Lightbulb, Briefcase,
   GraduationCap, Building2, Medal, CircleDollarSign, Search, Utensils,
   ShieldCheck, Handshake, Printer, CupSoda, Wrench, CreditCard, FileSpreadsheet,
+  Star, Trash2, Hourglass, ClipboardList, Video, ShoppingBag, User,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import AnimatedNumber from "./components/motion/AnimatedNumber.jsx";
@@ -226,8 +227,10 @@ const L = {
     },
     dash: {
       period: ["أسبوع", "شهر", "فصل"],
-      tabsUni: ["نظرة عامة", "الشخصيات", "التحديات", "الكليات"],
-      tabsBank: ["نظرة عامة", "الشخصيات", "العادات", "الفرص"],
+      tabsUni: ["نظرة عامة", "ذكاء اصطناعي", "الإنفاق اليومي", "الدخل والمنح", "المزيد"],
+      tabsBank: ["نظرة عامة", "ذكاء اصطناعي", "الجامعات", "الإنفاق اليومي", "الفرص"],
+      navUni: ["الرئيسية", "الإنفاق", "ذكاء", "الدخل", "المزيد"],
+      navBank: ["الرئيسية", "الجامعات", "ذكاء", "التحليلات", "المزيد"],
       college: "الكلية", allColleges: "كل الكليات",
       colleges: ["الحاسب", "الهندسة", "إدارة الأعمال", "الطب", "العلوم"],
       participation: "المشاركة", awareness: "متوسط الوعي", completion: "إكمال التحديات", activeUsers: "مستخدمون نشطون",
@@ -250,6 +253,39 @@ const L = {
       unitK: "ألف", unitM: "مليون", uniList: ["جامعة جدة", "الملك عبدالعزيز", "أم القرى", "الملك سعود", "الإمام", "الملك فهد للبترول"],
       asOf: "آخر تحديث: يوليو 2026 · بيانات توضيحية للعرض", deltaNote: "▲▼ مقارنة بالفترة السابقة",
       noData: "لا توجد بيانات لهذه المنطقة بعد", lastPeriods: "آخر 4 فترات",
+      loginUni: "بوابة الجامعة", loginBank: "بوابة البنك",
+      loginSubUni: "منصة تحليلات وعي — جامعة جدة", loginSubBank: "منصة تحليلات وعي — بنك الإنماء",
+      email: "البريد المؤسسي", pass: "كلمة المرور", loginBtn: "تسجيل الدخول", logout: "تسجيل الخروج",
+      loginDemo: "دخول تجريبي (اضغط تسجيل الدخول مباشرة)", secure: "اتصال آمن ومشفّر · بيانات مجمّعة مجهّلة",
+      alertsTitle: "تنبيهات ذكية اليوم", alertsSub: "أهم ما يستحق انتباهك",
+      confirmLogoutT: "تسجيل الخروج؟", confirmLogoutS: "بترجع لشاشة الدخول.", yes: "نعم، خروج", no: "إلغاء",
+      onbStart: "ابدأ الآن", onbSkip: "تخطّي", onbNext: "التالي",
+      onbUni: [["أهلاً ببوابة الجامعة", "لوحة تحليلات مجهّلة لفهم سلوك طلابك المالي ورفع وعيهم — دون أي بيانات فردية."], ["إحصائيات وذكاء", "شاهد الإنفاق اليومي والدراسي ومنقطعي المكافأة، واسأل مساعد الذكاء ليقترح خطط توفير."], ["تصدير وإجراء", "صدّر أي إحصائية إلى Excel، واضغط أي عنصر لتفاصيل أعمق (سنة الطلاب، المواد، وأسبابها)."]],
+      onbBank: [["أهلاً ببوابة البنك", "تحليلات سلوكية مجمّعة لجيل الطلاب — لبناء منتجات وعلاقة مبكرة موثوقة."], ["لكل جامعة تفاصيلها", "قارن الجامعات حسب المنطقة والوعي والادخار، واكتشف أنسب شريحة لإطلاق منتجاتك."], ["فرص واستثمار", "اسأل الذكاء عن أكبر الفرص، صدّرها Excel، واطّلع على رؤية التوسّع نحو المليارات."]],
+      govTitle: "الحوكمة والخصوصية", govSub: "معايير حماية البيانات المطبّقة في وعي", govScore: "مؤشر الامتثال", govVerified: "خصوصية موثّقة",
+      govBadges: [["نظام حماية البيانات (PDPL)", "متوافق"], ["إرشادات البنك المركزي (SAMA)", "متوافق"], ["تشفير AES-256", "مُفعّل"], ["ISO 27001", "معتمد"]],
+      govPrinciples: [
+        ["إخفاء الهوية (k ≥ 50)", "لا تُعرض أي شريحة أقل من 50 طالباً — يستحيل تمييز أي فرد."],
+        ["الموافقة المسبقة", "94% وافقوا على التحليل المجمّع، مع خيار السحب في أي وقت."],
+        ["صلاحيات محدّدة (RBAC)", "كل دور يرى ما يخصّه فقط — لا وصول للبيانات الخام."],
+        ["الحق في النسيان", "يستطيع الطالب حذف بياناته نهائياً خلال 30 يوماً."],
+        ["الاحتفاظ المحدود", "تُحذف البيانات التفصيلية تلقائياً بعد 12 شهراً."],
+        ["لا بيع للبيانات", "لا تُباع البيانات لطرف ثالث إطلاقاً — تحليلات مجمّعة فقط."],
+      ],
+      govAudit: "سجل التدقيق (آخر الأنشطة)",
+      govLog: [["تصدير تقرير إحصائي", "منذ 5 د"], ["عرض تحليلات مجهّلة", "منذ 22 د"], ["تسجيل دخول آمن", "منذ ساعة"], ["تحديث صلاحيات دور", "أمس"]],
+      benSelect: "اختر شريحة الطالب",
+      benSegs: ["كل الطلاب", "طالب متنقّل", "طالب سكني", "منقطع المكافأة"],
+      aiRerun: "أعد التحليل",
+      dailyTitle: "تحليل الإنفاق اليومي", dailySeg: ["داخل الجامعة", "اليوم كامل"],
+      dailySub: "متوسط إنفاق الطالب موزّعاً على لحظات يومه",
+      dayTotal: "متوسط إنفاق اليوم", perStudent: "لكل طالب",
+      acadTitle: "المصاريف الدراسية", acadSub: "توزيع الإنفاق المرتبط بالدراسة",
+      incomeTitle: "الدخل والمكافأة", incomeSub: "مصادر دخل الطلاب ونسبة المنقطعين عن المكافأة",
+      stipendOn: "على المكافأة", stipendCut: "منقطعو المكافأة", cutNote: "طلاب أوقفت مكافأتهم (تجاوز مدة/تخصص/تعثّر) — بحاجة لبدائل دخل",
+      suggestTitle: "مصادر دخل مقترحة (بالذكاء)", suggestSub: "مبنية على مهارات الطالب ووقته وسوق العمل الطلابي",
+      uniPick: "اختر الجامعة", uniPickSub: "لكل جامعة تفاصيلها الخاصة",
+      riyalM: "شهرياً",
     },
     cashTitle: "كاش باك وعروض", cashSub: "استرجع جزء من مصاريفك اليومية", cashPageSub: "فعّل فئاتك واسترجع كاش باك مع كل عملية",
     cashEarned: "كاش باك هذا الشهر", cashActivate: "تفعيل", cashActive: "مفعّل", cashOn: "تم تفعيل الكاش باك", backWord: "كاش باك",
@@ -434,8 +470,10 @@ const L = {
     },
     dash: {
       period: ["Week", "Month", "Term"],
-      tabsUni: ["Overview", "Personas", "Challenges", "Colleges"],
-      tabsBank: ["Overview", "Personas", "Habits", "Opportunities"],
+      tabsUni: ["Overview", "AI Insights", "Daily spending", "Income & aid", "More"],
+      tabsBank: ["Overview", "AI Insights", "Universities", "Daily spending", "Opportunities"],
+      navUni: ["Home", "Spending", "AI", "Income", "More"],
+      navBank: ["Home", "Universities", "AI", "Analytics", "More"],
       college: "College", allColleges: "All colleges",
       colleges: ["Computer Science", "Engineering", "Business", "Medicine", "Science"],
       participation: "Participation", awareness: "Avg awareness", completion: "Challenge completion", activeUsers: "Active users",
@@ -458,6 +496,39 @@ const L = {
       unitK: "K", unitM: "M", uniList: ["Univ. of Jeddah", "King Abdulaziz", "Umm Al-Qura", "King Saud", "Imam", "KFUPM"],
       asOf: "Updated July 2026 · illustrative demo data", deltaNote: "▲▼ vs the previous period",
       noData: "No data for this region yet", lastPeriods: "last 4 periods",
+      loginUni: "University portal", loginBank: "Bank portal",
+      loginSubUni: "Waey analytics — Univ. of Jeddah", loginSubBank: "Waey analytics — Alinma Bank",
+      email: "Institutional email", pass: "Password", loginBtn: "Sign in", logout: "Sign out",
+      loginDemo: "Demo access (just click Sign in)", secure: "Secure encrypted connection · aggregated anonymized data",
+      alertsTitle: "Smart alerts today", alertsSub: "What deserves your attention",
+      confirmLogoutT: "Sign out?", confirmLogoutS: "You'll return to the login screen.", yes: "Yes, sign out", no: "Cancel",
+      onbStart: "Get started", onbSkip: "Skip", onbNext: "Next",
+      onbUni: [["Welcome to the University portal", "An anonymized analytics dashboard to understand students' financial behavior — no individual data."], ["Stats & AI", "See daily & academic spending and stipend-cut students, and ask the AI for savings plans."], ["Export & act", "Export any stat to Excel, and tap any item for deeper detail (student year, courses, reasons)."]],
+      onbBank: [["Welcome to the Bank portal", "Aggregated behavioral analytics for the student generation — to build products and an early trusted relationship."], ["Each university in detail", "Compare universities by region, awareness and savings, and find the best segment to launch products."], ["Opportunities & investment", "Ask the AI for top opportunities, export to Excel, and view the billion-scale expansion vision."]],
+      govTitle: "Governance & privacy", govSub: "Data protection standards applied in Waey", govScore: "Compliance score", govVerified: "Privacy verified",
+      govBadges: [["Data Protection Law (PDPL)", "Compliant"], ["Central Bank (SAMA)", "Compliant"], ["AES-256 encryption", "Enabled"], ["ISO 27001", "Certified"]],
+      govPrinciples: [
+        ["Anonymization (k ≥ 50)", "No segment under 50 students is ever shown — no individual can be identified."],
+        ["Prior consent", "94% consented to aggregated analysis, with opt-out anytime."],
+        ["Scoped access (RBAC)", "Each role sees only what's relevant — no raw data access."],
+        ["Right to be forgotten", "Students can permanently delete their data within 30 days."],
+        ["Limited retention", "Detailed data is auto-deleted after 12 months."],
+        ["No data selling", "Data is never sold to third parties — aggregated analytics only."],
+      ],
+      govAudit: "Audit log (recent activity)",
+      govLog: [["Exported statistical report", "5m ago"], ["Viewed anonymized analytics", "22m ago"], ["Secure sign-in", "1h ago"], ["Updated role permissions", "Yesterday"]],
+      benSelect: "Choose student segment",
+      benSegs: ["All students", "Commuter", "On-campus resident", "Stipend cut off"],
+      aiRerun: "Re-run",
+      dailyTitle: "Daily spending analysis", dailySeg: ["On campus", "Full day"],
+      dailySub: "Average student spend across the moments of their day",
+      dayTotal: "Avg daily spend", perStudent: "per student",
+      acadTitle: "Academic expenses", acadSub: "Breakdown of study-related spending",
+      incomeTitle: "Income & stipend", incomeSub: "Student income sources and stipend cut-off rate",
+      stipendOn: "On stipend", stipendCut: "Stipend cut off", cutNote: "Students whose stipend stopped (duration/major/GPA) — need income alternatives",
+      suggestTitle: "AI-suggested income sources", suggestSub: "Based on student skills, time and the student job market",
+      uniPick: "Choose university", uniPickSub: "Each university has its own details",
+      riyalM: "/mo",
     },
     cashTitle: "Cashback & offers", cashSub: "Get part of your daily spending back", cashPageSub: "Activate your categories and earn cashback on every purchase",
     cashEarned: "Cashback this month", cashActivate: "Activate", cashActive: "Active", cashOn: "Cashback activated", backWord: "cashback",
@@ -977,24 +1048,38 @@ function Splash() {
   );
 }
 /* ===================== اختيار الدور + لوحات الجامعة والبنك ===================== */
-function RoleShell({ title, sub, onBack, children, fill }) {
-  const { c, lang, dir, s, theme } = useCtx();
+function RoleShell({ title, sub, onBack, children, fill, navItems, tab, setTab, onLogout }) {
+  const { c, lang, dir, s, theme, vw, setLang, setTheme } = useCtx();
   const Back = lang === "ar" ? ChevronRight : ChevronLeft;
   const scope = useRef(null);
+  const wide = vw >= 900;
   useGsap(scope, (gsap, { reduce }) => {
     if (reduce || !scope.current) return;
     gsap.from(Array.from(scope.current.children), { y: 16, opacity: 0, stagger: 0.06, duration: 0.5, ease: "power3.out", clearProps: "transform,opacity" });
-  }, []);
+  }, [tab]);
+  const content = fill
+    ? <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", padding: wide ? "8px 26px 20px" : `4px 18px ${navItems && !wide ? 96 : 16}px` }}><div ref={scope} style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", maxWidth: wide ? 820 : 560, width: "100%", margin: "0 auto" }}>{children}</div></div>
+    : <div className="wscroll" style={{ flex: 1, overflowY: "auto", padding: wide ? "8px 26px 34px" : (navItems ? "4px 18px 104px" : "4px 18px 28px") }}><div ref={scope} style={{ maxWidth: wide ? 820 : 560, margin: "0 auto" }}>{children}</div></div>;
+  // شاشة عريضة + تبويبات: شريط جانبي بدل الشريط السفلي.
+  if (wide && navItems) {
+    return (
+      <div dir={dir} data-waey-theme={theme} data-waey-shell style={{ fontFamily: FONT_STACK, background: c.page, color: c.text, height: "100dvh", display: "flex", flexDirection: "row", overflow: "hidden", position: "relative", zIndex: 0 }}>
+        <div style={{ position: "absolute", inset: 0, zIndex: -1, pointerEvents: "none" }}><WaeyFlowField tone={theme} /></div>
+        <RoleSidebar items={navItems} value={tab} onChange={setTab} roleTitle={title} roleSub={sub} onBack={onBack} onLogout={onLogout} c={c} s={s} lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} />
+        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", overflow: "hidden" }}>{content}</div>
+      </div>
+    );
+  }
   return (
     <div dir={dir} data-waey-theme={theme} data-waey-shell style={{ fontFamily: FONT_STACK, background: c.page, color: c.text, height: "100dvh", display: "flex", flexDirection: "column", overflow: "hidden", position: "relative", zIndex: 0 }}>
       <div style={{ position: "absolute", inset: 0, zIndex: -1, pointerEvents: "none" }}><WaeyFlowField tone={theme} /></div>
       <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "calc(env(safe-area-inset-top,0px) + 16px) 18px 12px", flexShrink: 0 }}>
         {onBack && <button onClick={onBack} aria-label={s.role.back} style={{ width: 44, height: 44, borderRadius: 13, background: c.card, border: `1px solid ${c.line}`, color: c.text, display: "grid", placeItems: "center", cursor: "pointer" }}><Back size={20} aria-hidden="true" /></button>}
-        <div><h1 style={{ fontSize: 19, fontWeight: 800, margin: 0 }}>{title}</h1>{sub && <div style={{ fontSize: 11.5, color: c.muted }}>{sub}</div>}</div>
+        <div style={{ flex: 1, minWidth: 0 }}><h1 style={{ fontSize: 19, fontWeight: 800, margin: 0 }}>{title}</h1>{sub && <div style={{ fontSize: 11.5, color: c.muted }}>{sub}</div>}</div>
+        {onLogout && <button onClick={onLogout} style={{ height: 40, padding: "0 12px", borderRadius: 11, background: c.card, border: `1px solid ${c.line}`, color: c.terraText, display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 700, flexShrink: 0 }}><LogOut size={15} aria-hidden="true" />{s.dash.logout}</button>}
       </div>
-      {fill
-        ? <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", padding: "4px 18px 16px" }}><div ref={scope} style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", maxWidth: 560, width: "100%", margin: "0 auto" }}>{children}</div></div>
-        : <div className="wscroll" style={{ flex: 1, overflowY: "auto", padding: "4px 18px 28px" }}><div ref={scope} style={{ maxWidth: 560, margin: "0 auto" }}>{children}</div></div>}
+      {content}
+      {navItems && <RoleBottomNav items={navItems} value={tab} onChange={setTab} c={c} />}
     </div>
   );
 }
@@ -1192,6 +1277,77 @@ function Gauge({ value, c, label, low, mid, high }) {
     </div>
   );
 }
+// عدّاد تصاعدي بسيط (easing تكعيبي) للأرقام داخل اللوحات.
+function useCountUp(target, dur = 900) {
+  const [v, setV] = useState(0);
+  useEffect(() => {
+    if (prefersReducedMotion()) { setV(target); return; }
+    let raf, t0; const from = 0;
+    const tick = (t) => { if (!t0) t0 = t; const p = Math.min(1, (t - t0) / dur); const e = 1 - Math.pow(1 - p, 3); setV(from + (target - from) * e); if (p < 1) raf = requestAnimationFrame(tick); };
+    raf = requestAnimationFrame(tick); return () => cancelAnimationFrame(raf);
+  }, [target, dur]);
+  return v;
+}
+function CountNum({ value, decimals = 0, suffix = "", dur = 900 }) {
+  const v = useCountUp(value, dur);
+  return <>{v.toLocaleString("en-US", { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}{suffix}</>;
+}
+// مؤشر دائري (حلقة تقدّم) — القيمة نص داخل الـ SVG فيقرؤها قارئ الشاشة عبر aria-label.
+function RingStat({ value, max = 100, label, unit = "%", col, c, size = 92 }) {
+  const R = size / 2 - 8, C = 2 * Math.PI * R, pct = Math.min(1, value / max);
+  const v = useCountUp(value, 900);
+  return (
+    <div style={{ textAlign: "center" }}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label={`${label}: ${value}${unit}`}>
+        <circle cx={size / 2} cy={size / 2} r={R} fill="none" stroke={c.card2} strokeWidth="8" />
+        <circle cx={size / 2} cy={size / 2} r={R} fill="none" stroke={col} strokeWidth="8" strokeLinecap="round" strokeDasharray={`${C * pct} ${C}`} strokeDashoffset={C * 0.25} transform={`rotate(-90 ${size / 2} ${size / 2})`} style={{ transition: "stroke-dasharray .8s ease" }} />
+        <text x="50%" y="48%" textAnchor="middle" dominantBaseline="middle" fontSize={size * 0.22} fontWeight="800" fill={col} fontFamily="inherit" aria-hidden="true">{Math.round(v)}{unit}</text>
+      </svg>
+      {label && <div style={{ fontSize: 10.5, color: c.muted, marginTop: 2 }}>{label}</div>}
+    </div>
+  );
+}
+// خط اتجاه مصغّر (زخرفي — القيمة نفسها معروضة نصاً بجانبه في TrendStat).
+function Sparkline({ data, c, col, h = 34, w = 90 }) {
+  const mx = Math.max(...data), mn = Math.min(...data), rng = mx - mn || 1;
+  const pts = data.map((v, i) => [4 + i * ((w - 8) / (data.length - 1)), h - 4 - ((v - mn) / rng) * (h - 8)]);
+  const path = pts.map((p, i) => (i ? "L" : "M") + p[0] + " " + p[1]).join(" ");
+  return <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} aria-hidden="true"><path d={path} fill="none" stroke={col || c.accent} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /><circle cx={pts[pts.length - 1][0]} cy={pts[pts.length - 1][1]} r="2.5" fill={col || c.accent} /></svg>;
+}
+// بطاقة إحصائية مع خط اتجاه.
+function TrendStat({ label, value, trend, col, c }) {
+  return (
+    <div style={{ flex: 1, minWidth: 0, background: c.card2, borderRadius: 16, padding: "13px 13px 10px" }}>
+      <div style={{ fontSize: 10.5, color: c.muted, marginBottom: 2 }}>{label}</div>
+      <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 6 }}>
+        <div style={{ fontSize: 21, fontWeight: 800, color: col }}>{value}</div>
+        <Sparkline data={trend} c={c} col={col} />
+      </div>
+    </div>
+  );
+}
+// مضاعِفات شريحة الطالب [إنفاق يومي، ادخار، معدل الانقطاع] — كل الطلاب/متنقّل/سكني/منقطع.
+const BEN_MULT = [[1, 1, 1], [1.18, 0.92, 1.1], [0.88, 1.05, 0.8], [1.05, 0.55, 2.4]];
+// إنفاق خارج الحرم — يُضاف عند اختيار "اليوم كامل".
+const DAY_EXTRA = [
+  [Utensils, "عشاء/مطاعم", "Dinner / eating out", 38],
+  [ShoppingBag, "تسوّق شخصي", "Personal shopping", 27],
+  [Gamepad2, "ترفيه واشتراكات", "Fun & subscriptions", 19],
+];
+// محرّكات إنفاق الخصوصي (متكامل مع hemhuj.com) — [مادة ar, مادة en, تقييم/5, %اشتركوا, سبب ar, سبب en]
+const TUTOR_DRIVERS = [
+  ["التفاضل والتكامل (Math 101)", "Calculus (Math 101)", 2.1, 78, "شرح سريع وصعوبة عالية في الاختبارات", "Fast pace, very hard exams"],
+  ["الفيزياء العامة (Phys 103)", "General Physics (Phys 103)", 2.4, 64, "مادة كثيفة وقلة أمثلة تطبيقية", "Dense material, few worked examples"],
+  ["مبادئ البرمجة (CS 110)", "Intro to Programming (CS 110)", 2.8, 52, "وتيرة سريعة على المبتدئين", "Too fast for beginners"],
+];
+// مصادر دخل مقترحة (بالذكاء) — [Icon, title ar, title en, desc ar, desc en, [دخل من, إلى] ريال/شهر]
+const INCOME_SUGGEST = [
+  [Palette, "فريلانس تصميم/برمجة", "Design / dev freelance", "منصّات مستقلّ وخمسات — يناسب أصحاب المهارات الرقمية", "Mostaql & Khamsat — for digital skills", [600, 1800]],
+  [BookOpen, "تدريس خصوصي للزملاء", "Peer tutoring", "مواد السنة الأولى والرياضيات — ساعات مرنة داخل الحرم", "First-year & math courses — flexible on-campus hours", [400, 1200]],
+  [Briefcase, "عمل جزئي في الحرم", "On-campus part-time", "مساعد بحثي/إداري أو أندية — دخل ثابت وخبرة", "Research/admin assistant or clubs — steady income", [700, 1500]],
+  [Bike, "توصيل وخدمات مرنة", "Delivery & gig work", "ساعات المساء ونهاية الأسبوع فقط", "Evenings & weekends only", [500, 1400]],
+  [Video, "محتوى رقمي ومنح", "Content & scholarships", "منح تفوّق + دخل محتوى تعليمي على المدى الطويل", "Merit scholarships + long-term content income", [300, 2000]],
+];
 // أعمدة رأسية بتدرّج + القيمة فوق كل عمود. البيانات مصفوفة [label, value, color, unit].
 // النصوص (القيمة والتسمية) ظاهرة في DOM فيقرؤها قارئ الشاشة مباشرة.
 function ColumnChart({ data, c, height = 120 }) {
@@ -1382,6 +1538,11 @@ function StatSheet({ item, c, D, lang, onClose }) {
           <div style={{ fontWeight: 700, fontSize: 12, color: c.terra, margin: "14px 0 10px" }}>{ar ? "أكثر المواد/البنود طلباً" : "Top courses / items"}</div>
           {item.detail.top.map((y, i) => <BarRow key={i} n={ar ? y[0] : y[1]} pct={y[2]} col={LB_COLORS[(i + 2) % LB_COLORS.length]} c={c} />)}
         </>)}
+        {item.detail.seg && item.detail.seg.map((sg, i) => (
+          <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "9px 0", borderBottom: i < item.detail.seg.length - 1 ? `1px solid ${c.line}` : "none" }}>
+            <span style={{ fontSize: 13, color: c.textSoft }}>{ar ? sg[0] : sg[1]}</span>{sg[2] > 0 && <span style={{ fontSize: 13, fontWeight: 800, color: c.accent }}><Metric value={`${sg[2]}%`} /></span>}
+          </div>
+        ))}
         <div style={{ background: c.card, border: `1px dashed ${c.line}`, borderRadius: 13, padding: 12, fontSize: 11.5, color: c.muted, textAlign: "center", lineHeight: 1.6, marginTop: 14 }}>{D.anon}</div>
       </div>
     </div>
@@ -1503,50 +1664,387 @@ function RoleAIChat({ scope, data }) {
     </div>
   );
 }
+// شريط عنصر إنفاق يومي
+function SpendRow({ Icon, label, val, max, c }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 11 }}>
+      <div style={{ width: 34, height: 34, borderRadius: 10, background: c.card2, display: "grid", placeItems: "center", flexShrink: 0 }}>{Icon && <Icon size={17} color={c.accentText} aria-hidden="true" />}</div>
+      <div style={{ flex: 1 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}><span style={{ fontSize: 12, color: c.text, fontWeight: 600 }}>{label}</span><span style={{ fontSize: 12, fontWeight: 800, color: c.accentText }}>{val} <RS size="0.75em" /></span></div>
+        <div style={{ height: 7, borderRadius: 9, background: c.card2 }}><div style={{ height: "100%", width: `${Math.round(val / max * 100)}%`, background: `linear-gradient(90deg, ${c.accent}, ${c.terra})`, borderRadius: 9 }} /></div>
+      </div>
+    </div>
+  );
+}
+// لوحة الإنفاق اليومي (داخل الجامعة / اليوم كامل)
+function DailySpendPanel({ c, D, lang, mult = 1 }) {
+  const [seg, setSeg] = useState(0);
+  const [pop, setPop] = useState(null);
+  const items = (seg === 0 ? DAY_CAMPUS : [...DAY_CAMPUS, ...DAY_EXTRA]).map((x) => [x[0], lang === "ar" ? x[1] : x[2], Math.round(x[3] * mult)]);
+  const total = items.reduce((a, x) => a + x[2], 0);
+  const max = Math.max(...items.map((x) => x[2]));
+  const dailyPct = [68, 74, 41, 55, 62, 48, 44, 39];
+  return (
+    <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18, marginBottom: 14 }}>
+      <h2 style={{ fontWeight: 800, fontSize: 14, color: c.text, margin: 0 }}>{D.dailyTitle}</h2>
+      <div style={{ fontSize: 11, color: c.muted, marginBottom: 12 }}>{D.dailySub} · {lang === "ar" ? "اضغط أي بند" : "tap any item"}</div>
+      <div style={{ fontSize: 11.5, fontWeight: 700, color: c.accentText, marginBottom: 2 }}>{lang === "ar" ? "الإنفاق حسب ساعات اليوم" : "Spend by hour of day"}</div>
+      <MiniChart kind="wave" c={c} data={[[lang === "ar" ? "٧ص" : "7a", 8], [lang === "ar" ? "٩ص" : "9a", 24], [lang === "ar" ? "١٢م" : "12p", 31], [lang === "ar" ? "٣م" : "3p", 15], [lang === "ar" ? "٦م" : "6p", 20], [lang === "ar" ? "٩م" : "9p", 27]]} />
+      <div style={{ marginBottom: 14, marginTop: 14 }}><Segmented options={D.dailySeg} value={seg} onChange={setSeg} c={c} label={D.dailyTitle} /></div>
+      {items.map((x, i) => (
+        <button key={i} type="button" onClick={() => setPop({ Icon: x[0], title: x[1], sub: <>{x[2]} <RS size="0.8em" /> · {lang === "ar" ? "متوسط/طالب" : "avg/student"}</>, detail: { seg: [[lang === "ar" ? "يشترونه يومياً" : "buy it daily", "buy daily", dailyPct[i % dailyPct.length]], [lang === "ar" ? "أعلى لدى المتنقّلين" : "highest: commuters", "commuters", 0], [lang === "ar" ? "الذروة داخل الحرم" : "peak on campus", "peak", 0]], note: [lang === "ar" ? `${x[1]} من أكثر بنود إنفاق الطالب اليومي داخل الحرم — يمكن ربطه بادخار تلقائي على كل عملية (كنز الفكّة).` : `${x[1]} is a top daily on-campus expense — link it to round-up auto-savings.`, lang === "ar" ? "" : `${x[1]} is a top daily on-campus expense — link it to round-up auto-savings.`] } })} style={{ display: "block", width: "100%", background: "transparent", border: "none", padding: 0, cursor: "pointer", fontFamily: "inherit", textAlign: "start", color: c.text }}>
+          <SpendRow Icon={x[0]} label={x[1]} val={x[2]} max={max} c={c} />
+        </button>
+      ))}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 8, paddingTop: 12, borderTop: `1px solid ${c.line}` }}>
+        <span style={{ fontSize: 12, color: c.muted }}>{D.dayTotal} · {D.perStudent}</span>
+        <span style={{ fontSize: 20, fontWeight: 900, color: c.accent }}><CountNum value={total} /> <RS size="0.6em" color={c.muted} /></span>
+      </div>
+      {pop && <StatSheet item={pop} c={c} D={D} lang={lang} onClose={() => setPop(null)} />}
+    </div>
+  );
+}
+// لوحة المصاريف الدراسية
+function AcademicPanel({ c, D, lang }) {
+  const max = Math.max(...ACADEMIC.map((x) => x[3]));
+  const [pop, setPop] = useState(null);
+  const Chev = lang === "ar" ? ChevronLeft : ChevronRight;
+  return (
+    <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18, marginBottom: 14 }}>
+      <h2 style={{ fontWeight: 800, fontSize: 14, color: c.text, margin: 0 }}>{D.acadTitle}</h2>
+      <div style={{ fontSize: 11, color: c.muted, marginBottom: 12 }}>{D.acadSub} · {lang === "ar" ? "اضغط أي بند للإحصائيات" : "tap any item for stats"}</div>
+      <MiniChart kind="donut" c={c} data={ACADEMIC.slice(0, 4).map((x, i) => [lang === "ar" ? x[1] : x[2], x[3], LB_COLORS[i % LB_COLORS.length]])} />
+      <div style={{ height: 12 }} />
+      {ACADEMIC.map((x, i) => (
+        <button key={i} type="button" onClick={() => setPop({ Icon: x[0], title: lang === "ar" ? x[1] : x[2], sub: <>{x[3]}% · {x[4]} <RS size="0.8em" /></>, detail: ACAD_DETAIL[i] })} style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 12, cursor: "pointer", width: "100%", background: "transparent", border: "none", padding: 0, fontFamily: "inherit", textAlign: "start", color: c.text }}>
+          <div style={{ width: 34, height: 34, borderRadius: 10, background: c.card2, display: "grid", placeItems: "center", flexShrink: 0 }}>{(() => { const Ic = x[0]; return <Ic size={17} color={LB_COLORS[i % LB_COLORS.length]} aria-hidden="true" />; })()}</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+              <span style={{ fontSize: 12, color: c.text, fontWeight: 600 }}>{lang === "ar" ? x[1] : x[2]} <Chev size={11} aria-hidden="true" style={{ verticalAlign: "middle", opacity: .5 }} /></span>
+              <span style={{ fontSize: 11.5, fontWeight: 800, color: LB_COLORS[i % LB_COLORS.length] }}>{x[3]}% · {x[4]} <RS size="0.75em" /></span>
+            </div>
+            <div style={{ height: 7, borderRadius: 9, background: c.card2 }}><div style={{ height: "100%", width: `${Math.round(x[3] / max * 100)}%`, background: LB_COLORS[i % LB_COLORS.length], borderRadius: 9, transition: "width .6s ease" }} /></div>
+          </div>
+        </button>
+      ))}
+      {pop && <StatSheet item={pop} c={c} D={D} lang={lang} onClose={() => setPop(null)} />}
+    </div>
+  );
+}
+// مستشار الإنفاق الدراسي (ذكاء) — متكامل مع تقييمات hemhuj.com
+function AIAcademicPanel({ c, D, lang }) {
+  const [st, setSt] = useState("idle");
+  const run = () => { setSt("load"); setTimeout(() => setSt("done"), 1200); };
+  const ar = lang === "ar";
+  return (
+    <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18, marginBottom: 14 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
+        <div style={{ width: 34, height: 34, borderRadius: 11, background: `linear-gradient(135deg, ${c.accentText}, ${c.accent})`, display: "grid", placeItems: "center", flexShrink: 0 }}><Sparkles size={17} color={c.onAccent} aria-hidden="true" /></div>
+        <div><h2 style={{ fontWeight: 800, fontSize: 14, color: c.text, margin: 0 }}>{ar ? "مستشار الإنفاق الدراسي (ذكاء)" : "Academic spend advisor (AI)"}</h2><div style={{ fontSize: 10.5, color: c.muted }}>{ar ? "يحلّل لماذا يصرف الطلاب دراسياً ويقترح خطة توفير — أرقام توضيحية للعرض" : "Why students spend on studies + a savings plan — illustrative demo figures"}</div></div>
+      </div>
+      {st === "idle" && <button onClick={run} style={{ marginTop: 12, width: "100%", padding: "12px", borderRadius: 13, border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 13.5, fontWeight: 800, background: c.accentText, color: c.onAccent }}><Sparkles size={15} aria-hidden="true" style={{ verticalAlign: "middle", marginInlineEnd: 6 }} />{ar ? "حلّل الإنفاق الدراسي" : "Analyze academic spend"}</button>}
+      {st === "load" && <div style={{ marginTop: 14, textAlign: "center", color: c.muted, fontSize: 12.5, padding: "16px 0" }}><div style={{ width: 26, height: 26, border: `3px solid ${c.line}`, borderTopColor: c.accentText, borderRadius: "50%", margin: "0 auto 10px", animation: "wSpin 0.8s linear infinite" }} />{ar ? "يقرأ الإنفاق وتقييمات hemhuj…" : "Reading spend & hemhuj ratings…"}</div>}
+      {st === "done" && (<div>
+        <div style={{ marginTop: 12, background: c.card2, borderRadius: 13, padding: 13, marginBottom: 12 }}>
+          <div style={{ fontSize: 12.5, color: c.text, lineHeight: 1.7 }}>{ar ? <>أكثر ما يشتريه الطلاب لهدف دراسي هو <b style={{ color: c.accentText }}>اشتراك مدرّس خصوصي (34%)</b> — والسبب الأساسي مواد صعبة وتقييمات تدريس منخفضة على <b>hemhuj.com</b>.</> : <>Students' #1 academic purchase is a <b style={{ color: c.accentText }}>private tutor subscription (34%)</b> — driven by hard courses & low teaching ratings on <b>hemhuj.com</b>.</>}</div>
+        </div>
+        <div style={{ fontWeight: 700, fontSize: 11.5, color: c.terra, marginBottom: 8 }}>{ar ? "المواد الأكثر دفعاً للخصوصي (من hemhuj.com)" : "Top tutor-driving courses (via hemhuj.com)"}</div>
+        {TUTOR_DRIVERS.map((t, i) => (
+          <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 0", borderBottom: i < TUTOR_DRIVERS.length - 1 ? `1px solid ${c.line}` : "none" }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: c.text }}>{ar ? t[0] : t[1]}</div>
+              <div style={{ fontSize: 10, color: c.muted, lineHeight: 1.4 }}>{ar ? t[4] : t[5]}</div>
+            </div>
+            <div style={{ textAlign: "center", flexShrink: 0 }}><div style={{ fontSize: 11.5, fontWeight: 900, color: t[2] < 2.5 ? c.terraText : c.terra, display: "flex", alignItems: "center", justifyContent: "center", gap: 3 }}><Star size={11} fill="currentColor" aria-hidden="true" /> {t[2]}</div><div style={{ fontSize: 8.5, color: c.muted }}>hemhuj</div></div>
+            <div style={{ textAlign: "center", flexShrink: 0, minWidth: 42 }}><div style={{ fontSize: 12.5, fontWeight: 900, color: c.accentText }}>{t[3]}%</div><div style={{ fontSize: 8.5, color: c.muted }}>{ar ? "اشتركوا" : "hired"}</div></div>
+          </div>
+        ))}
+        <div style={{ marginTop: 12, background: `linear-gradient(135deg, ${c.green}18, ${c.accent}18)`, border: `1px solid ${c.green}55`, borderRadius: 14, padding: 13 }}>
+          <div style={{ fontWeight: 800, fontSize: 11.5, color: c.green, marginBottom: 6 }}><Lightbulb size={13} aria-hidden="true" style={{ verticalAlign: "middle", marginInlineEnd: 4 }} />{ar ? "خطة توفير مقترحة للجامعة" : "Suggested savings plan"}</div>
+          <div style={{ fontSize: 11.5, color: c.text, lineHeight: 1.8, whiteSpace: "pre-line" }}>{ar ? "• ساعات مكتبية إضافية ومجموعات دراسة مدعومة للمواد ذات التقييم المنخفض.\n• محتوى تعليمي مسجّل مجاني للمواد الأعلى طلباً للخصوصي.\n• إرشاد الأقران بحوافز + تدريب تدريسي للدكاترة الأقل تقييماً." : "• Extra office hours & sponsored study groups for low-rated courses.\n• Free recorded content for tutor-heavy subjects.\n• Incentivized peer-tutoring + teaching training for low-rated faculty."}</div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 10, paddingTop: 10, borderTop: `1px solid ${c.green}33` }}>
+            <span style={{ fontSize: 11, color: c.muted }}>{ar ? "توفير تقديري" : "Est. savings"}</span>
+            <span style={{ fontSize: 16, fontWeight: 900, color: c.green }}><CountNum value={88} /> <RS size="0.7em" /> {ar ? "لكل طالب شهرياً" : "per student /mo"}</span>
+          </div>
+        </div>
+        <button onClick={run} style={{ marginTop: 12, width: "100%", padding: "9px", borderRadius: 11, border: `1px solid ${c.line}`, cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 700, background: "transparent", color: c.muted }}>↻ {D.aiRerun}</button>
+      </div>)}
+    </div>
+  );
+}
+// لوحة رؤية التوسّع (نحو المليارات)
+function ScalePanel({ c, lang }) {
+  const ar = lang === "ar";
+  return (
+    <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18, marginBottom: 14 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}><Sparkles size={16} color={c.accent} aria-hidden="true" /><h2 style={{ fontWeight: 800, fontSize: 13.5, color: c.text, margin: 0 }}>{ar ? "رؤية التوسّع — من MVP إلى منصة مليارية" : "Scale vision — MVP to a billion-riyal platform"}</h2></div>
+      <div style={{ fontSize: 11, color: c.muted, marginBottom: 14 }}>{ar ? "مصادر دخل قابلة للتوسّع فوق نفس القاعدة السلوكية" : "Scalable revenue on the same behavioral core"}</div>
+      {SCALE_IDEAS.map((x, i) => (
+        <div key={i} style={{ display: "flex", gap: 12, alignItems: "center", padding: "10px 0", borderBottom: i < SCALE_IDEAS.length - 1 ? `1px solid ${c.line}` : "none" }}>
+          <div style={{ width: 38, height: 38, borderRadius: 11, background: c.accent + "1f", display: "grid", placeItems: "center", flexShrink: 0 }}>{(() => { const Ic = x[0]; return <Ic size={19} color={c.accent} aria-hidden="true" />; })()}</div>
+          <div style={{ flex: 1 }}><div style={{ fontSize: 12.5, fontWeight: 700, color: c.text }}>{ar ? x[1] : x[2]}</div><div style={{ fontSize: 10.5, color: c.muted, lineHeight: 1.5 }}>{ar ? x[3] : x[4]}</div></div>
+          <div style={{ fontSize: 9.5, fontWeight: 800, color: c.accent, background: c.accent + "18", borderRadius: 999, padding: "4px 9px", flexShrink: 0, whiteSpace: "nowrap" }}>{x[5]}</div>
+        </div>
+      ))}
+      <div style={{ marginTop: 12, background: `linear-gradient(135deg, ${c.accent}, ${c.terra})`, color: c.onAccent, borderRadius: 14, padding: 13, fontSize: 12, fontWeight: 700, lineHeight: 1.7 }}>{ar ? "السوق المستهدف: +4 مليون طالب جامعي خليجي. القاعدة السلوكية + شبكة الجامعات والبنوك = خندق تنافسي يصعب تكراره." : "TAM: 4M+ Gulf university students. Behavioral core + bank/university network = a hard-to-copy moat."}</div>
+    </div>
+  );
+}
+// لوحة الدخل والمكافأة + مصادر مقترحة
+function IncomePanel({ c, D, lang, cutRate }) {
+  const cut = cutRate, on = 100 - cut;
+  return (<>
+    <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18, marginBottom: 14 }}>
+      <h2 style={{ fontWeight: 800, fontSize: 14, color: c.text, margin: 0 }}>{D.incomeTitle}</h2>
+      <div style={{ fontSize: 11, color: c.muted, marginBottom: 14 }}>{D.incomeSub}</div>
+      <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
+        <div style={{ flex: 1, textAlign: "center", background: c.card2, borderRadius: 14, padding: "12px 8px" }}><div style={{ fontSize: 24, fontWeight: 900, color: c.green }}><Metric value={`${on}%`} /></div><div style={{ fontSize: 10.5, color: c.muted }}>{D.stipendOn}</div></div>
+        <div style={{ flex: 1, textAlign: "center", background: c.terra + "18", border: `1px solid ${c.terra}55`, borderRadius: 14, padding: "12px 8px" }}><div style={{ fontSize: 24, fontWeight: 900, color: c.terraText }}><Metric value={`${cut}%`} /></div><div style={{ fontSize: 10.5, color: c.terraText }}>{D.stipendCut}</div></div>
+      </div>
+      {INCOME_SRC.map((x, i) => <BarRow key={i} n={lang === "ar" ? x[0] : x[1]} pct={x[2]} col={c[x[3]]} c={c} />)}
+      <MiniChart kind="donut" c={c} data={INCOME_SRC.map((x) => [lang === "ar" ? x[0] : x[1], x[2], c[x[3]] || c.accent])} />
+      <div style={{ background: c.terra + "14", border: `1px dashed ${c.terra}66`, borderRadius: 13, padding: 12, fontSize: 11.5, color: c.terraText, lineHeight: 1.6, marginTop: 12 }}><TriangleAlert size={12} aria-hidden="true" style={{ verticalAlign: "middle", marginInlineEnd: 4 }} /> {D.cutNote}</div>
+    </div>
+    <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18, marginBottom: 14 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}><Sparkles size={15} color={c.accent} aria-hidden="true" /><h2 style={{ fontWeight: 800, fontSize: 13.5, color: c.text, margin: 0 }}>{D.suggestTitle}</h2></div>
+      <div style={{ fontSize: 11, color: c.muted, marginBottom: 14 }}>{D.suggestSub}</div>
+      {INCOME_SUGGEST.map((x, i) => (
+        <div key={i} style={{ display: "flex", gap: 12, alignItems: "center", padding: "10px 0", borderBottom: i < INCOME_SUGGEST.length - 1 ? `1px solid ${c.line}` : "none" }}>
+          <div style={{ width: 38, height: 38, borderRadius: 11, background: c.accentText + "1f", display: "grid", placeItems: "center", flexShrink: 0 }}>{(() => { const Ic = x[0]; return <Ic size={19} color={c.accentText} aria-hidden="true" />; })()}</div>
+          <div style={{ flex: 1 }}><div style={{ fontSize: 13, fontWeight: 700, color: c.text }}>{lang === "ar" ? x[1] : x[2]}</div><div style={{ fontSize: 11, color: c.muted, lineHeight: 1.5 }}>{lang === "ar" ? x[3] : x[4]}</div></div>
+          <div style={{ textAlign: "center", flexShrink: 0 }}><div style={{ fontSize: 12.5, fontWeight: 900, color: c.green, whiteSpace: "nowrap" }}>{x[5][0]}–{x[5][1]} <RS size="0.7em" /></div><div style={{ fontSize: 9, color: c.muted }}>{D.riyalM}</div></div>
+        </div>
+      ))}
+    </div>
+  </>);
+}
+// نافذة تأكيد
+function ConfirmDialog({ title, sub, yes, no, onYes, onNo, c, danger }) {
+  const noRef = useRef(null);
+  useEffect(() => {
+    noRef.current?.focus();
+    const onKey = (e) => { if (e.key === "Escape") onNo(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onNo]);
+  return (
+    <div onClick={onNo} style={{ position: "fixed", inset: 0, background: "rgba(0,8,14,0.6)", backdropFilter: "blur(5px)", display: "grid", placeItems: "center", zIndex: 80, padding: 20 }}>
+      <div onClick={(e) => e.stopPropagation()} role="alertdialog" aria-modal="true" aria-label={title} style={{ width: "100%", maxWidth: 340, background: c.card, border: `1px solid ${c.line}`, borderRadius: 22, padding: 22, animation: "wPop .28s ease both" }}>
+        <div style={{ fontWeight: 800, fontSize: 17, marginBottom: 6 }}>{title}</div>
+        <div style={{ fontSize: 13, color: c.muted, lineHeight: 1.6, marginBottom: 20 }}>{sub}</div>
+        <div style={{ display: "flex", gap: 10 }}>
+          <button ref={noRef} onClick={onNo} style={{ flex: 1, padding: "12px", borderRadius: 13, border: `1px solid ${c.line}`, background: "transparent", color: c.text, cursor: "pointer", fontFamily: "inherit", fontSize: 13.5, fontWeight: 700 }}>{no}</button>
+          <button onClick={onYes} style={{ flex: 1, padding: "12px", borderRadius: 13, border: "none", background: danger ? c.terraText : c.accent, color: "#fff", cursor: "pointer", fontFamily: "inherit", fontSize: 13.5, fontWeight: 800 }}>{yes}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+// شريط التنبيهات الذكية اليومية
+function AlertsStrip({ c, D, lang, scope, cutRate }) {
+  const ar = lang === "ar";
+  const alerts = scope === "bank"
+    ? [[Target, ar ? `فرصة: ${cutRate}% منقطعون عن المكافأة — شريحة جاهزة لمنتج التمويل التعليمي.` : `Opportunity: ${cutRate}% cut off — ready segment for education-financing.`, c.accent],
+       [TrendingUp, ar ? "جامعة جدة (مكة) الأعلى ادخاراً هذا الشهر (+4%)." : "Univ. of Jeddah (Makkah) leads savings this month (+4%).", c.green],
+       [Coffee, ar ? "إنفاق القهوة اليومي ارتفع 12% — فرصة منتج ادخار تلقائي." : "Daily coffee spend up 12% — round-up savings chance.", c.terra]]
+    : [[TriangleAlert, ar ? `${cutRate}% من طلابك منقطعون عن المكافأة ويحتاجون بدائل دخل.` : `${cutRate}% of your students are cut off and need income alternatives.`, c.terra],
+       [GraduationCap, ar ? "34% من الإنفاق الدراسي على الخصوصي — أعلاه مادة التفاضل (تقييم 2.1 على hemhuj)." : "34% of academic spend is tutoring — top: Calculus (2.1 on hemhuj).", c.accentText],
+       [TrendingUp, ar ? "متوسط وعي طلابك ارتفع 3 نقاط هذا الأسبوع." : "Your students' avg awareness rose 3 pts this week.", c.green]];
+  return (
+    <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 16, marginBottom: 14 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+        <span style={{ position: "relative", display: "grid", placeItems: "center", width: 30, height: 30, borderRadius: 9, background: c.accent + "1f" }}><Bell size={15} color={c.accent} aria-hidden="true" /><span aria-hidden="true" style={{ position: "absolute", top: 5, insetInlineEnd: 6, width: 7, height: 7, borderRadius: 9, background: c.terraText, animation: "wDot 1.4s infinite" }} /></span>
+        <div><h2 style={{ fontWeight: 800, fontSize: 13.5, margin: 0 }}>{D.alertsTitle}</h2><div style={{ fontSize: 10.5, color: c.muted }}>{D.alertsSub}</div></div>
+      </div>
+      {alerts.map((a, i) => { const Ic = a[0]; return (
+        <div key={i} style={{ display: "flex", gap: 10, alignItems: "center", padding: "10px 11px", borderRadius: 12, background: c.card2, marginBottom: i < alerts.length - 1 ? 8 : 0, borderInlineStart: `3px solid ${a[2]}` }}>
+          <Ic size={17} color={a[2]} aria-hidden="true" style={{ flexShrink: 0 }} />
+          <span style={{ fontSize: 12, color: c.textSoft, lineHeight: 1.6 }}>{a[1]}</span>
+        </div>
+      ); })}
+    </div>
+  );
+}
+// تعريف أول دخول للأدوار
+function RoleOnboarding({ scope, onDone, c, s, lang }) {
+  const steps = scope === "bank" ? s.dash.onbBank : s.dash.onbUni;
+  const icons = scope === "bank" ? [Sparkles, Building2, Lightbulb] : [Sparkles, BarChart3, FileSpreadsheet];
+  const [i, setI] = useState(0);
+  const accent = scope === "bank" ? c.terra : c.accentText;
+  const StepIc = icons[i] || Sparkles;
+  const nextRef = useRef(null);
+  useEffect(() => { nextRef.current?.focus(); }, []);
+  return (
+    <div role="dialog" aria-modal="true" aria-label={steps[0][0]} style={{ position: "fixed", inset: 0, background: `linear-gradient(160deg, ${c.bg1}, ${c.bg0})`, zIndex: 90, display: "flex", flexDirection: "column", padding: "calc(env(safe-area-inset-top,0px) + 20px) 22px calc(24px + env(safe-area-inset-bottom,0px))" }}>
+      <div style={{ display: "flex", justifyContent: "center", gap: 7, marginTop: 6 }}>{steps.map((_, k) => <span key={k} style={{ width: k === i ? 26 : 7, height: 7, borderRadius: 9, background: k === i ? accent : c.line, transition: "width .25s" }} />)}</div>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", maxWidth: 420, margin: "0 auto", width: "100%" }}>
+        <div style={{ width: 96, height: 96, borderRadius: 28, background: `linear-gradient(135deg, ${accent}, ${c.accent})`, display: "grid", placeItems: "center", marginBottom: 20, boxShadow: `0 16px 34px -10px ${accent}` }}><StepIc size={42} color="#fff" aria-hidden="true" /></div>
+        <div style={{ fontWeight: 800, fontSize: 23, marginBottom: 12 }}>{steps[i][0]}</div>
+        <div style={{ fontSize: 14.5, color: c.muted, lineHeight: 1.8 }}>{steps[i][1]}</div>
+      </div>
+      <div style={{ maxWidth: 420, margin: "0 auto", width: "100%" }}>
+        <button ref={nextRef} onClick={() => (i < steps.length - 1 ? setI(i + 1) : onDone())} style={{ width: "100%", padding: "15px", borderRadius: 16, border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 15.5, fontWeight: 800, background: accent, color: "#fff", boxShadow: `0 12px 26px -8px ${accent}` }}>{i < steps.length - 1 ? s.dash.onbNext : s.dash.onbStart}</button>
+        <button onClick={onDone} style={{ width: "100%", marginTop: 12, background: "none", border: "none", color: c.muted, cursor: "pointer", fontFamily: "inherit", fontSize: 13.5, fontWeight: 600 }}>{s.dash.onbSkip}</button>
+      </div>
+    </div>
+  );
+}
+// لوحة الحوكمة والخصوصية
+function GovernancePanel({ c, D, lang }) {
+  const ar = lang === "ar";
+  const principleIcons = [Lock, Check, Users2, Trash2, Hourglass, ShieldCheck];
+  return (
+    <div>
+      <div style={{ background: `linear-gradient(135deg, ${c.accent}14, ${c.green}14)`, border: `1px solid ${c.green}44`, borderRadius: 20, padding: 18, marginBottom: 14, display: "flex", alignItems: "center", gap: 16 }}>
+        <RingStat value={98} label={D.govScore} col={c.green} c={c} size={86} />
+        <div style={{ flex: 1 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 7, fontWeight: 800, fontSize: 15 }}><span style={{ width: 24, height: 24, borderRadius: 7, background: c.green + "22", display: "grid", placeItems: "center" }}><ShieldCheck size={14} color={c.green} aria-hidden="true" /></span>{D.govTitle}</div>
+          <div style={{ fontSize: 11.5, color: c.muted, marginTop: 3, lineHeight: 1.6 }}>{D.govSub}</div>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 8, background: c.green + "1f", color: c.green, borderRadius: 999, padding: "4px 11px", fontSize: 11, fontWeight: 800 }}><Check size={12} aria-hidden="true" /> {D.govVerified}</div>
+        </div>
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 14 }}>
+        {D.govBadges.map((b, i) => (
+          <div key={i} style={{ flex: "1 1 46%", display: "flex", alignItems: "center", gap: 9, background: c.card, border: `1px solid ${c.line}`, borderRadius: 14, padding: "10px 12px" }}>
+            <span style={{ width: 26, height: 26, borderRadius: 8, background: c.accent + "1a", display: "grid", placeItems: "center", flexShrink: 0 }}><Check size={14} color={c.accentText} aria-hidden="true" /></span>
+            <div style={{ minWidth: 0 }}><div style={{ fontSize: 11.5, fontWeight: 700, color: c.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{b[0]}</div><div style={{ fontSize: 10, color: c.green, fontWeight: 700 }}>{b[1]}</div></div>
+          </div>
+        ))}
+      </div>
+      <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18, marginBottom: 14 }}>
+        <h2 style={{ fontWeight: 700, fontSize: 13.5, color: c.accentText, margin: "0 0 12px" }}>{ar ? "مبادئ حماية البيانات" : "Data protection principles"}</h2>
+        {D.govPrinciples.map((p, i) => { const Ic = principleIcons[i % principleIcons.length]; return (
+          <div key={i} style={{ display: "flex", gap: 12, alignItems: "flex-start", padding: "10px 0", borderBottom: i < D.govPrinciples.length - 1 ? `1px solid ${c.line}` : "none" }}>
+            <span style={{ width: 28, height: 28, borderRadius: 9, background: c.accent + "14", display: "grid", placeItems: "center", flexShrink: 0 }}><Ic size={15} color={c.accentText} aria-hidden="true" /></span>
+            <div><div style={{ fontSize: 13, fontWeight: 700, color: c.text }}>{p[0]}</div><div style={{ fontSize: 11, color: c.muted, lineHeight: 1.6, marginTop: 1 }}>{p[1]}</div></div>
+          </div>
+        ); })}
+      </div>
+      <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18, marginBottom: 14 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}><span style={{ width: 28, height: 28, borderRadius: 8, background: c.accent + "1a", display: "grid", placeItems: "center" }}><ClipboardList size={15} color={c.accentText} aria-hidden="true" /></span><h2 style={{ fontWeight: 700, fontSize: 13.5, color: c.text, margin: 0 }}>{D.govAudit}</h2></div>
+        {D.govLog.map((l, i) => (
+          <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "9px 0", borderBottom: i < D.govLog.length - 1 ? `1px solid ${c.line}` : "none" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 9 }}><span aria-hidden="true" style={{ width: 7, height: 7, borderRadius: 9, background: c.green, flexShrink: 0 }} /><span style={{ fontSize: 12.5, color: c.textSoft }}>{l[0]}</span></div>
+            <span style={{ fontSize: 10.5, color: c.muted }}>{l[1]}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+// شاشة دخول بوابة الجامعة/البنك — دخول تجريبي (أي بيانات تُقبل، والملاحظة توضح ذلك).
+function RoleLogin({ scope, onLogin, onBack }) {
+  const { c, s, lang, dir, setLang, theme, setTheme } = useCtx();
+  const D = s.dash; const ar = lang === "ar";
+  const [email, setEmail] = useState(""); const [pass, setPass] = useState("");
+  const accent = scope === "bank" ? c.terra : c.accentText;
+  const Back = ar ? ChevronRight : ChevronLeft;
+  return (
+    <div dir={dir} data-waey-theme={theme} style={{ fontFamily: FONT_STACK, background: `linear-gradient(160deg, ${c.bg1}, ${c.bg0})`, color: c.text, minHeight: "100dvh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 18px", position: "relative" }}>
+      <button onClick={onBack} aria-label={s.role.back} style={{ position: "absolute", top: "calc(env(safe-area-inset-top,0px) + 16px)", insetInlineStart: 18, width: 44, height: 44, borderRadius: 12, background: c.card, border: `1px solid ${c.line}`, color: c.text, display: "grid", placeItems: "center", cursor: "pointer" }}><Back size={20} aria-hidden="true" /></button>
+      <div style={{ display: "flex", gap: 8, position: "absolute", top: "calc(env(safe-area-inset-top,0px) + 16px)", insetInlineEnd: 18 }}>
+        <button onClick={() => setLang(ar ? "en" : "ar")} style={{ height: 44, padding: "0 14px", borderRadius: 12, background: c.card, border: `1px solid ${c.line}`, color: c.text, cursor: "pointer", fontFamily: "inherit", fontSize: 12.5, fontWeight: 700 }}>{ar ? "EN" : "ع"}</button>
+        <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")} aria-label={ar ? "تغيير المظهر" : "Toggle theme"} style={{ width: 44, height: 44, borderRadius: 12, background: c.card, border: `1px solid ${c.line}`, color: c.text, cursor: "pointer", display: "grid", placeItems: "center" }}>{theme === "dark" ? <Sun size={17} aria-hidden="true" /> : <Moon size={17} aria-hidden="true" />}</button>
+      </div>
+      <div style={{ width: "100%", maxWidth: 400 }}>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 26 }}>
+          <div style={{ width: 66, height: 66, borderRadius: 20, background: `linear-gradient(135deg, ${accent}, ${c.accent})`, display: "grid", placeItems: "center", marginBottom: 14, boxShadow: `0 14px 30px -8px ${accent}` }}>{scope === "bank" ? <Landmark size={30} color="#fff" aria-hidden="true" /> : <Building2 size={30} color="#fff" aria-hidden="true" />}</div>
+          <h1 style={{ fontWeight: 800, fontSize: 22, margin: 0 }}>{scope === "bank" ? D.loginBank : D.loginUni}</h1>
+          <div style={{ fontSize: 12.5, color: c.muted, marginTop: 3 }}>{scope === "bank" ? D.loginSubBank : D.loginSubUni}</div>
+        </div>
+        <form onSubmit={(e) => { e.preventDefault(); onLogin(); }} style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 22, padding: 20 }}>
+          <label htmlFor="waey-role-email" style={{ fontSize: 11.5, color: c.muted, fontWeight: 700 }}>{D.email}</label>
+          <input id="waey-role-email" name="username" type="text" inputMode="email" autoComplete="username" dir="ltr" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={scope === "bank" ? "analyst@alinma.com" : "analytics@uj.edu.sa"} style={{ ...inp(c), width: "100%", margin: "6px 0 14px", textAlign: "start" }} />
+          <label htmlFor="waey-role-pass" style={{ fontSize: 11.5, color: c.muted, fontWeight: 700 }}>{D.pass}</label>
+          <input id="waey-role-pass" name="password" type="password" autoComplete="current-password" dir="ltr" value={pass} onChange={(e) => setPass(e.target.value)} style={{ ...inp(c), width: "100%", margin: "6px 0 18px", textAlign: "start" }} />
+          <button type="submit" style={{ width: "100%", padding: "14px", borderRadius: 15, border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 15, fontWeight: 800, background: accent, color: "#fff", boxShadow: `0 10px 24px -8px ${accent}` }}>{D.loginBtn}</button>
+          <div style={{ fontSize: 11, color: c.muted, textAlign: "center", marginTop: 12 }}>{D.loginDemo}</div>
+        </form>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, marginTop: 16, fontSize: 11, color: c.muted }}><ShieldCheck size={13} color={c.green} aria-hidden="true" /> {D.secure}</div>
+      </div>
+    </div>
+  );
+}
+// شريط تنقّل سفلي للوحات الأدوار — بزر الذكاء العائم في المنتصف.
+function RoleBottomNav({ items, value, onChange, c }) {
+  return (
+    <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, display: "flex", justifyContent: "center", background: `linear-gradient(180deg, transparent 0%, ${c.bg0} 55%)`, padding: "0 0 env(safe-area-inset-bottom,0px)", flexShrink: 0 }}>
+      <nav aria-label="لوحة التحكم" style={{ width: "100%", maxWidth: 600, minHeight: 84, display: "flex", alignItems: "center", justifyContent: "space-around", padding: "0 14px 14px" }}>
+        {items.map((x) => {
+          const on = value === x.tab, Icon = x.icon;
+          if (x.center) return <button key={x.tab} onClick={() => onChange(x.tab)} aria-label={x.label} aria-current={on ? "page" : undefined} style={{ width: 58, height: 58, borderRadius: 20, border: "none", cursor: "pointer", background: `linear-gradient(135deg, ${c.accent}, ${c.accentText})`, display: "grid", placeItems: "center", transform: "translateY(-12px)", boxShadow: `0 12px 26px -6px ${c.accent}` }}><Icon size={26} color={c.onAccent} aria-hidden="true" /></button>;
+          return <button key={x.tab} onClick={() => onChange(x.tab)} aria-current={on ? "page" : undefined} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 4, color: on ? c.accentText : c.muted, flex: 1, fontFamily: "inherit", padding: "8px 0" }}><Icon size={22} aria-hidden="true" /><span style={{ fontSize: 10, fontWeight: on ? 700 : 500, whiteSpace: "nowrap" }}>{x.label}</span></button>;
+        })}
+      </nav>
+    </div>
+  );
+}
+// شريط جانبي للوحات الأدوار على الشاشات العريضة.
+function RoleSidebar({ items, value, onChange, roleTitle, roleSub, onBack, onLogout, c, s, lang, setLang, theme, setTheme }) {
+  const Back = lang === "ar" ? ChevronRight : ChevronLeft;
+  return (
+    <div style={{ width: 236, flexShrink: 0, height: "100dvh", background: c.card, borderInlineEnd: `1px solid ${c.line}`, display: "flex", flexDirection: "column", padding: "22px 14px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "0 6px", marginBottom: 22 }}>
+        {onBack && <button onClick={onBack} aria-label={s.role.back} style={{ width: 34, height: 34, borderRadius: 10, background: c.card2, border: `1px solid ${c.line}`, color: c.text, display: "grid", placeItems: "center", cursor: "pointer", flexShrink: 0 }}><Back size={18} aria-hidden="true" /></button>}
+        <div style={{ minWidth: 0 }}><div style={{ fontWeight: 800, fontSize: 16, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{roleTitle}</div>{roleSub && <div style={{ fontSize: 11, color: c.muted }}>{roleSub}</div>}</div>
+      </div>
+      <nav aria-label={roleTitle} style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+        {items.map((x) => {
+          const on = value === x.tab, Icon = x.icon;
+          return <button key={x.tab} onClick={() => onChange(x.tab)} aria-current={on ? "page" : undefined} style={{ display: "flex", alignItems: "center", gap: 13, padding: "12px 14px", borderRadius: 14, border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 14.5, fontWeight: on ? 700 : 500, background: on ? c.accent : "transparent", color: on ? c.onAccent : c.textSoft, textAlign: "start", transition: "background .15s" }}><Icon size={20} aria-hidden="true" />{x.label}</button>;
+        })}
+      </nav>
+      <div style={{ marginTop: "auto", display: "flex", flexDirection: "column", gap: 8 }}>
+        {onLogout && <button onClick={onLogout} style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 14px", borderRadius: 13, border: `1px solid ${c.line}`, cursor: "pointer", fontFamily: "inherit", fontSize: 13, fontWeight: 700, background: "transparent", color: c.terraText, textAlign: "start" }}><LogOut size={17} aria-hidden="true" />{s.dash.logout}</button>}
+        <div style={{ display: "flex", gap: 8 }}>
+          <button onClick={() => setLang(lang === "ar" ? "en" : "ar")} style={{ flex: 1, height: 38, borderRadius: 12, background: c.card2, border: `1px solid ${c.line}`, color: c.text, cursor: "pointer", fontFamily: "inherit", fontSize: 12.5, fontWeight: 700 }}>{lang === "ar" ? "EN" : "ع"}</button>
+          <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")} aria-label={lang === "ar" ? "تغيير المظهر" : "Toggle theme"} style={{ flex: 1, height: 38, borderRadius: 12, background: c.card2, border: `1px solid ${c.line}`, color: c.text, cursor: "pointer", display: "grid", placeItems: "center" }}>{theme === "dark" ? <Sun size={17} aria-hidden="true" /> : <Moon size={17} aria-hidden="true" />}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
 function UniDashScreen() {
+  const { setScreen } = useCtx();
+  const [authed, setAuthed] = useState(false);
+  const [onb, setOnb] = useState(() => { try { return !localStorage.getItem("waey_onb_uni"); } catch { return true; } });
+  if (!authed) return <RoleLogin scope="uni" onLogin={() => setAuthed(true)} onBack={() => setScreen("role")} />;
+  return <UniDashInner onLogout={() => setAuthed(false)} onb={onb} doneOnb={() => { setOnb(false); try { localStorage.setItem("waey_onb_uni", "1"); } catch {} }} />;
+}
+function UniDashInner({ onLogout, onb, doneOnb }) {
   const { c, s, lang, setScreen } = useCtx();
-  const P = s.plat, D = s.dash;
+  const D = s.dash;
+  const [confirmOut, setConfirmOut] = useState(false);
   const [period, setPeriod] = useState(1);
   const [tab, setTab] = useState(0);
   const [college, setCollege] = useState(-1);
   const [sel, setSel] = useState(null);
-  const [statSel, setStatSel] = useState(null);
-  const [chatOpen, setChatOpen] = useState(false);
-  // The college filter scopes the Personas tab only — Overview always shows
-  // institution-wide figures so a hidden filter can't silently reshape KPIs.
+  const [ben, setBen] = useState(0);
+  const benM = BEN_MULT[ben];
+  const cutRate = clampPct(Math.round(14 * benM[2]));
+  // The college filter scopes the Personas/colleges tab only — Overview always
+  // shows institution-wide figures so a hidden filter can't silently reshape KPIs.
   const cm = college < 0 ? null : college;
   const studentsN = scaleUp(4250, period, null);
   const students = studentsN.toLocaleString("en-US");
   const awareness = clampPct(scaleUp(64, period, null));
-  const cutRate = clampPct(scaleUp(18, period, null));
   const completion = clampPct(scaleUp(78, period, null));
   const avgSave = scaleUp(447, period, null);
   // Hero total reconciles with its own parts: participants × avg savings.
-  const savedM = ((studentsN * avgSave) / 1e6).toFixed(1);
+  const savedM = studentsN * avgSave / 1e6;
+  // Sparkline trends derive from each stat's own current value (series ends at
+  // today's actual figure) — no shared fabricated curve.
+  const riseTo = (v) => [0.85, 0.9, 0.94, 0.97, 1].map((f) => v * f);
   const personaShares = normalizeShares([34, 27, 22, 17].map((b) => scaleUp(b, period, cm)));
   const personaColors = [c.accent, c.terra, c.warn, c.green];
   const personas = ["social", "impulsive", "emotional", "planning"].map((k, i) => [lang === "ar" ? PERSONA_META[k].ar : PERSONA_META[k].en, personaShares[i], personaColors[i]]);
   const challenges = [[lang === "ar" ? "لا مطاعم بعد 8 مساءً" : "No restaurants after 8 PM", 84, 71], [lang === "ar" ? "انتظر 24 ساعة قبل الشراء" : "Wait 24h before buying", 79, 63], [lang === "ar" ? "سجّل شعورك قبل الشراء" : "Log mood before buying", 72, 58], [lang === "ar" ? "زد ادخارك 5%" : "Increase savings 5%", 68, 54]];
   const colleges = D.colleges.map((n, i) => [n, clampPct(Math.round(64 * COLLEGE_MULT[i] * PERIOD_MULT[period])), Math.round(scaleUp(4250, period, null) * COLLEGE_MULT[i] / 5)]);
-  const trend = period === 0
-    ? [58, 60, 61, 63, 64, 66, 68].map((v, i) => ({ l: D.days[i], v }))
-    : [55, 59, 62, 64, 68, 71].map((v, i) => ({ l: String(i + 1), v }));
-  // Heatmap grid (category × weekday) — the SAME source feeds the category
-  // ColumnChart below, so its totals reconcile with the cells shown above.
   const spendGrid = [[9, 5, 6, 5, 7, 8, 10], [4, 3, 5, 4, 6, 5, 7], [3, 2, 4, 3, 5, 9, 8], [2, 4, 3, 6, 4, 7, 5], [6, 1, 2, 0, 3, 2, 4]];
-  const catCols = [c.accent, c.accentText, c.terra, c.green, c.warn];
-  const catData = [D.catFood, D.catTrans, D.catFun, D.catShop, D.catBills].map((n, i) => [n, spendGrid[i].reduce((a, b) => a + b, 0), catCols[i]]);
-  // Academic-spend rows open the richer StatSheet drill-down (year split + top items).
-  const academic = ACADEMIC.map((x, i) => ({ Icon: x[0], title: lang === "ar" ? x[1] : x[2], share: x[3], sar: x[4], sub: lang === "ar" ? `${x[3]}% · ${x[4]} ر.س/شهر` : `${x[3]}% · ${x[4]} SAR/mo`, detail: ACAD_DETAIL[i] }));
-  if (chatOpen) return (
-    <RoleShell title={s.role.uni} sub={lang === "ar" ? "المساعد التحليلي" : "Analytics assistant"} onBack={() => setChatOpen(false)} fill>
-      <RoleAIChat scope="uni" data={{ awareness, cutRate }} />
-    </RoleShell>
-  );
   if (sel) {
     const [n, pct, col, kind] = sel;
-    // Detail trend derives from the selected entity's own value — no shared
-    // fabricated curve, and the series ends at today's actual figure.
+    // Detail trend derives from the selected entity's own value — the series
+    // ends at today's actual figure.
     const dtrend = [0.82, 0.9, 0.96, 1].map((f, i) => ({ l: String(i + 1), v: clampPct(Math.round(pct * f)) }));
     return (
       <RoleShell title={D.detailFor(n)} onBack={() => setSel(null)}>
@@ -1564,79 +2062,77 @@ function UniDashScreen() {
     );
   }
   return (
-    <RoleShell title={s.role.uni} sub={P.uniDash} onBack={() => setScreen("role")}>
-      <div style={{ marginBottom: 6 }}><Segmented options={D.period} value={period} onChange={setPeriod} c={c} label={D.period.join(" / ")} /></div>
-      <div style={{ fontSize: 10.5, color: c.muted, margin: "0 2px 12px" }}>{D.asOf} · {D.deltaNote}</div>
-      <button onClick={() => setChatOpen(true)} style={{ width: "100%", display: "flex", alignItems: "center", gap: 11, background: `linear-gradient(135deg, ${c.accent}, ${c.terra})`, color: c.onAccent, border: "none", borderRadius: 16, padding: "13px 15px", marginBottom: 12, cursor: "pointer", fontFamily: "inherit", textAlign: "start" }}>
-        <Sparkles size={19} aria-hidden="true" />
-        <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontWeight: 800, fontSize: 13.5 }}>{lang === "ar" ? "اسأل المساعد التحليلي" : "Ask the analytics assistant"}</div><div style={{ fontSize: 11, opacity: 0.9 }}>{lang === "ar" ? "رسوم بيانية وإحصائيات · تصدير Excel" : "Charts & stats · export to Excel"}</div></div>
-        {lang === "ar" ? <ArrowLeft size={17} aria-hidden="true" /> : <ArrowRight size={17} aria-hidden="true" />}
-      </button>
-      <div style={{ marginBottom: 14 }}><Tabs options={D.tabsUni} value={tab} onChange={setTab} c={c} /></div>
+    <>
+    <RoleShell title={s.role.uni} sub={D.tabsUni[tab]} onBack={() => setScreen("role")} onLogout={() => setConfirmOut(true)} fill={tab === 1} tab={tab} setTab={setTab} navItems={[
+      { tab: 0, label: D.navUni[0], icon: Home },
+      { tab: 2, label: D.navUni[1], icon: BarChart3 },
+      { tab: 1, label: D.navUni[2], icon: Sparkles, center: true },
+      { tab: 3, label: D.navUni[3], icon: Coins },
+      { tab: 4, label: D.navUni[4], icon: LayoutGrid },
+    ]}>
+      {tab === 1 ? <RoleAIChat scope="uni" data={{ awareness, cutRate }} /> : (<>
       {tab === 0 && (<>
-        <div style={{ display: "flex", gap: 10, marginBottom: 10 }}>
-          <DashStat label={D.participation} value={students} col={c.accent} c={c} delta="6%" />
-          <DashStat label={D.awareness} value={`${awareness}%`} col={c.accentText} c={c} delta="4%" />
-          <DashStat label={D.completion} value={`${completion}%`} col={c.green} c={c} delta="9%" />
+        <div style={{ marginBottom: 6 }}><Segmented options={D.period} value={period} onChange={setPeriod} c={c} label={D.period.join(" / ")} /></div>
+        <div style={{ fontSize: 10.5, color: c.muted, margin: "0 2px 12px" }}>{D.asOf} · {D.deltaNote}</div>
+        <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 15, padding: "11px 13px", marginBottom: 14 }}>
+          <div style={{ fontSize: 11, color: c.muted, marginBottom: 8, fontWeight: 700 }}><User size={13} aria-hidden="true" style={{ verticalAlign: "middle", marginInlineEnd: 4 }} /> {D.benSelect}</div>
+          <Segmented options={D.benSegs} value={ben} onChange={setBen} c={c} label={D.benSelect} />
+        </div>
+        <AlertsStrip c={c} D={D} lang={lang} scope="uni" cutRate={cutRate} />
+        <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18, marginBottom: 14 }}>
+          <div style={{ display: "flex", justifyContent: "space-around", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
+            <RingStat value={awareness} label={D.awareness} col={c.accent} c={c} />
+            <RingStat value={completion} label={D.completion} col={c.green} c={c} />
+            <RingStat value={clampPct(scaleUp(23, period, null))} label={D.invPart} col={c.terra} c={c} />
+          </div>
         </div>
         <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
-          <DashStat label={D.savedTotal} value={`${savedM}${D.unitM}`} col={c.green} c={c} delta="12%" unit={<RS size="0.5em" color={c.muted} />} />
-          <DashStat label={D.avgSave} value={`${avgSave}`} col={c.accent} c={c} delta="7%" unit={<RS size="0.5em" color={c.muted} />} />
-          <DashStat label={D.invPart} value={`${clampPct(scaleUp(23, period, null))}%`} col={c.terra} c={c} delta="5%" />
+          <TrendStat label={D.participation} value={<Metric value={students} />} col={c.accent} c={c} trend={riseTo(studentsN)} />
+          <TrendStat label={D.savedTotal} value={<><Metric value={savedM.toFixed(1)} /><span style={{ fontSize: 12 }}>{D.unitM}</span> <RS size="0.55em" color={c.muted} /></>} col={c.green} c={c} trend={riseTo(savedM)} />
+          <TrendStat label={D.avgSave} value={<><Metric value={String(avgSave)} /> <RS size="0.55em" color={c.muted} /></>} col={c.terra} c={c} trend={riseTo(avgSave)} />
         </div>
-        <div style={{ display: "flex", gap: 12, marginBottom: 14 }}>
-          <div style={{ flex: 1, background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 16, display: "grid", placeItems: "center" }}><Gauge value={clampPct(scaleUp(58, period, null))} c={c} label={D.wellness} low={D.wellLow} mid={D.wellMid} high={D.wellHigh} /></div>
-          <div style={{ flex: 1, background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 16, display: "grid", placeItems: "center" }}><Gauge value={clampPct(scaleUp(71, period, null))} c={c} label={D.litScore} low={D.wellLow} mid={D.wellMid} high={D.wellHigh} /></div>
-        </div>
-        <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18, marginBottom: 14 }}>
-          <h2 style={{ fontWeight: 700, fontSize: 13, margin: 0, color: c.accentText }}>{lang === "ar" ? "تطوّر متوسط الوعي المالي" : "Financial awareness over time"}</h2>
-          <div style={{ fontSize: 11, color: c.muted, marginBottom: 12 }}>{lang === "ar" ? (period === 0 ? "المحور: الدرجة من 100 · أيام الأسبوع" : "المحور: الدرجة من 100 · آخر 6 فترات") : (period === 0 ? "Axis: score out of 100 · days of the week" : "Axis: score out of 100 · last 6 periods")}</div>
-          <MiniBars data={trend} c={c} col={c.accent} max={100} />
-        </div>
-        <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18, marginBottom: 14 }}>
-          <h2 style={{ fontWeight: 700, fontSize: 13, margin: 0, color: c.accentText }}>{D.spendHeat}</h2>
-          <div style={{ fontSize: 11, color: c.muted, marginBottom: 14 }}>{lang === "ar" ? "كل مربّع = كثافة الإنفاق (أغمق = أعلى) لكل فئة عبر أيام الأسبوع" : "Each cell = spending intensity (darker = higher) per category across weekdays"}</div>
-          <Heatmap rows={[D.catFood, D.catTrans, D.catFun, D.catShop, D.catBills]} cols={D.days} c={c} accent={c.accent} grid={spendGrid} />
+        <div style={{ display: "flex", gap: 12, marginBottom: 14, flexWrap: "wrap" }}>
+          <div style={{ flex: "1 1 240px", background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18 }}>
+            <h2 style={{ fontWeight: 700, fontSize: 13, color: c.accentText, margin: 0 }}>{lang === "ar" ? "الحمض السلوكي (رادار)" : "Behavior DNA (radar)"}</h2>
+            <div style={{ fontSize: 10.5, color: c.muted, marginBottom: 6 }}>{lang === "ar" ? "متوسط الأبعاد السلوكية للطلاب" : "Avg behavioral dimensions"}</div>
+            <Radar c={c} label={lang === "ar" ? "الأبعاد السلوكية" : "Behavior DNA"} data={[[lang === "ar" ? "تخطيط" : "Planning", 64, c.green], [lang === "ar" ? "اجتماعي" : "Social", 72, c.accentText], [lang === "ar" ? "عاطفي" : "Emotional", 48, c.terra], [lang === "ar" ? "اندفاع" : "Impulse", 38, c.accent]]} />
+          </div>
+          <div style={{ flex: "1 1 240px", background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18, display: "grid", placeItems: "center" }}><Gauge value={clampPct(scaleUp(58, period, null))} c={c} label={D.wellness} low={D.wellLow} mid={D.wellMid} high={D.wellHigh} /></div>
         </div>
         <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18, marginBottom: 14 }}>
-          <h2 style={{ fontWeight: 700, fontSize: 13, margin: 0, color: c.accentText }}>{lang === "ar" ? "إجمالي الإنفاق حسب الفئة" : "Total spend by category"}</h2>
-          <div style={{ fontSize: 11, color: c.muted, marginBottom: 6 }}>{lang === "ar" ? "مؤشّر نسبي مجمّع من خريطة الحرارة أعلاه" : "Relative index aggregated from the heatmap above"}</div>
-          <ColumnChart c={c} data={catData} />
+          <h2 style={{ fontWeight: 700, fontSize: 13, color: c.accentText, margin: 0 }}>{lang === "ar" ? "الإنفاق حسب الفئة" : "Spending by category"}</h2>
+          <div style={{ fontSize: 10.5, color: c.muted, marginBottom: 6 }}>{riyalText(lang === "ar" ? "متوسط شهري لكل طالب (ر.س)" : "Monthly avg per student (ر.س)")}</div>
+          <ColumnChart c={c} data={[[D.catFood, 285, c.accent, ""], [D.catTrans, 140, c.accentText, ""], [D.catFun, 120, c.terra, ""], [D.catShop, 95, c.green, ""], [D.catBills, 60, c.warn, ""]]} />
         </div>
         <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18, marginBottom: 14 }}>
           <h2 style={{ fontWeight: 700, fontSize: 13, margin: "0 0 12px", color: c.accentText }}>{D.personaMix}</h2>
           <StackedBar c={c} data={personas.map(([n, pct, col]) => [n, pct, col])} />
         </div>
         <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18, marginBottom: 14 }}>
-          <h2 style={{ fontWeight: 700, fontSize: 13.5, margin: "0 0 4px", color: c.accentText }}>{lang === "ar" ? "الإنفاق الدراسي" : "Academic spending"}</h2>
-          <div style={{ fontSize: 11, color: c.muted, marginBottom: 8 }}>{lang === "ar" ? "اضغط أي بند لتفاصيله (توزيع السنوات وأعلى المواد)" : "Tap any item for its breakdown (year split & top courses)"}</div>
-          {academic.map((it, i) => (
-            <button key={i} type="button" onClick={() => setStatSel(it)} style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, background: "transparent", border: "none", borderBottom: i < academic.length - 1 ? `1px solid ${c.line}` : "none", padding: "11px 0", cursor: "pointer", fontFamily: "inherit", color: c.text, textAlign: "start" }}>
-              <div style={{ width: 34, height: 34, borderRadius: 10, background: c.accent + "1a", display: "grid", placeItems: "center", flexShrink: 0 }}><it.Icon size={16} color={c.accentText} aria-hidden="true" /></div>
-              <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: 13, fontWeight: 600 }}>{it.title}</div><div style={{ height: 5, borderRadius: 9, background: c.card2, marginTop: 5 }}><div style={{ height: "100%", width: `${it.share}%`, background: c.accent, borderRadius: 9 }} /></div></div>
-              <div style={{ textAlign: "center", flexShrink: 0 }}><div style={{ fontWeight: 800, fontSize: 13, color: c.accent }}>{it.share}%</div><div style={{ fontSize: 9.5, color: c.muted }}>{it.sar} <RS size="0.72em" color={c.muted} /></div></div>
-              {lang === "ar" ? <ChevronLeft size={16} color={c.muted} aria-hidden="true" /> : <ChevronRight size={16} color={c.muted} aria-hidden="true" />}
-            </button>
-          ))}
+          <h2 style={{ fontWeight: 700, fontSize: 13, margin: 0, color: c.accentText }}>{D.spendHeat}</h2>
+          <div style={{ fontSize: 11, color: c.muted, marginBottom: 14 }}>{lang === "ar" ? "كل مربّع = كثافة الإنفاق (أغمق = أعلى) لكل فئة عبر أيام الأسبوع" : "Each cell = spending intensity (darker = higher) per category across weekdays"}</div>
+          <Heatmap rows={[D.catFood, D.catTrans, D.catFun, D.catShop, D.catBills]} cols={D.days} c={c} accent={c.accent} grid={spendGrid} />
         </div>
         <div style={{ background: c.card, border: `1px solid ${c.line}`, borderInlineStart: `4px solid ${c.accent}`, color: c.text, borderRadius: 18, padding: 16, fontSize: 13, fontWeight: 600, lineHeight: 1.7 }}><Sparkles size={16} color={c.accentText} aria-hidden="true" style={{ verticalAlign: "middle", marginInlineEnd: 6 }} />{D.insightUni}</div>
       </>)}
-      {tab === 1 && (<>
+      {tab === 2 && (<>
+        <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4, marginBottom: 14 }} role="radiogroup" aria-label={D.benSelect}>{D.benSegs.map((x, i) => <button key={i} role="radio" aria-checked={ben === i} onClick={() => setBen(i)} style={{ padding: "8px 13px", borderRadius: 999, border: ben === i ? "none" : `1px solid ${c.line}`, background: ben === i ? c.accent : "transparent", color: ben === i ? c.onAccent : c.muted, fontSize: 11.5, fontWeight: 700, fontFamily: "inherit", cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0 }}>{x}</button>)}</div>
+        <DailySpendPanel c={c} D={D} lang={lang} mult={benM[0]} />
+        <AcademicPanel c={c} D={D} lang={lang} />
+        <AIAcademicPanel c={c} D={D} lang={lang} />
+      </>)}
+      {tab === 3 && <IncomePanel c={c} D={D} lang={lang} cutRate={cutRate} />}
+      {tab === 4 && (<>
+        <GovernancePanel c={c} D={D} lang={lang} />
         <div style={{ marginBottom: 14 }}><Tabs options={[D.allColleges, ...D.colleges]} value={college + 1} onChange={(i) => setCollege(i - 1)} c={c} /></div>
         <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18, marginBottom: 14 }}>
           <Donut c={c} data={personas.map(([n, pct, col]) => ({ l: n, v: pct, col }))} center={Math.round(studentsN * (cm == null ? 1 : COLLEGE_MULT[cm] / 5)).toLocaleString("en-US")} centerSub={D.students} />
         </div>
         <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18, marginBottom: 14 }}>
-          <h2 style={{ fontWeight: 700, fontSize: 13.5, margin: "0 0 10px", color: c.accentText }}>{lang === "ar" ? "الأبعاد السلوكية" : "Behavioral dimensions"}</h2>
-          <Radar c={c} label={D.personaMix} data={(lang === "ar" ? ["اجتماعي", "اندفاع", "عاطفي", "تخطيط"] : ["Social", "Impulse", "Emotional", "Planning"]).map((n, i) => [n, personaShares[i], personaColors[i]])} />
-        </div>
-        <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18 }}>
           <h2 style={{ fontWeight: 700, fontSize: 13.5, margin: "0 0 14px", color: c.accentText }}>{D.personaMix}</h2>
           {personas.map(([n, pct, col]) => <BarRow key={n} n={n} pct={pct} col={col} c={c} onClick={() => setSel([n, pct, col, "share"])} sub={D.tapForDetail} />)}
         </div>
-      </>)}
-      {tab === 2 && (
-        <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18 }}>
+        <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18, marginBottom: 14 }}>
           <h2 style={{ fontWeight: 700, fontSize: 13.5, margin: "0 0 14px", color: c.accentText }}>{D.chTitle}</h2>
           {challenges.map(([n, acc, done]) => (
             <div key={n} style={{ marginBottom: 14, paddingBottom: 12, borderBottom: `1px solid ${c.line}` }}>
@@ -1648,58 +2144,66 @@ function UniDashScreen() {
             </div>
           ))}
         </div>
-      )}
-      {tab === 3 && (
         <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18 }}>
           <h2 style={{ fontWeight: 700, fontSize: 13.5, margin: "0 0 14px", color: c.accentText }}>{D.collegeTitle}</h2>
           {colleges.map(([n, pct, cnt], i) => <BarRow key={n} n={`${n}`} pct={pct} col={LB_COLORS[i % LB_COLORS.length]} c={c} onClick={() => setSel([n, pct, LB_COLORS[i % LB_COLORS.length], "score"])} sub={<><Metric value={cnt.toLocaleString("en-US")} /> {D.students}</>} />)}
         </div>
-      )}
+      </>)}
       <PrivacyNote c={c} style={{ marginTop: 14 }}>{D.anon}</PrivacyNote>
-      {statSel && <StatSheet item={statSel} c={c} D={D} lang={lang} onClose={() => setStatSel(null)} />}
+      </>)}
     </RoleShell>
+    {confirmOut && <ConfirmDialog title={D.confirmLogoutT} sub={D.confirmLogoutS} yes={D.yes} no={D.no} danger onYes={onLogout} onNo={() => setConfirmOut(false)} c={c} />}
+    {onb && <RoleOnboarding scope="uni" onDone={doneOnb} c={c} s={s} lang={lang} />}
+    </>
   );
 }
 function BankDashScreen() {
+  const { setScreen } = useCtx();
+  const [authed, setAuthed] = useState(false);
+  const [onb, setOnb] = useState(() => { try { return !localStorage.getItem("waey_onb_bank"); } catch { return true; } });
+  if (!authed) return <RoleLogin scope="bank" onLogin={() => setAuthed(true)} onBack={() => setScreen("role")} />;
+  return <BankDashInner onLogout={() => setAuthed(false)} onb={onb} doneOnb={() => { setOnb(false); try { localStorage.setItem("waey_onb_bank", "1"); } catch {} }} />;
+}
+function BankDashInner({ onLogout, onb, doneOnb }) {
   const { c, s, lang, setScreen } = useCtx();
-  const P = s.plat, D = s.dash;
+  const D = s.dash;
+  const [confirmOut, setConfirmOut] = useState(false);
   const [period, setPeriod] = useState(1);
   const [tab, setTab] = useState(0);
   const [sel, setSel] = useState(null);
   const [rankBy, setRankBy] = useState(0);
   const [region, setRegion] = useState(0);
-  const [chatOpen, setChatOpen] = useState(false);
+  const [ben, setBen] = useState(0);
+  const [uniPick, setUniPick] = useState(0);
+  const benM = BEN_MULT[ben];
+  const cutRate = clampPct(Math.round(14 * benM[2]));
   const rankBase = [
-    { n: s.dash.uniList[0], region: 0, v: [1240, 82, 71] },
-    { n: s.dash.uniList[1], region: 0, v: [1180, 78, 68] },
-    { n: s.dash.uniList[2], region: 0, v: [960, 74, 64] },
-    { n: s.dash.uniList[3], region: 1, v: [1090, 70, 66] },
-    { n: s.dash.uniList[4], region: 1, v: [820, 66, 61] },
-    { n: s.dash.uniList[5], region: 2, v: [980, 72, 65] },
+    { n: D.uniList[0], region: 0, v: [1240, 82, 71] },
+    { n: D.uniList[1], region: 0, v: [1180, 78, 68] },
+    { n: D.uniList[2], region: 0, v: [960, 74, 64] },
+    { n: D.uniList[3], region: 1, v: [1090, 70, 66] },
+    { n: D.uniList[4], region: 1, v: [820, 66, 61] },
+    { n: D.uniList[5], region: 2, v: [1150, 80, 69] },
   ];
   // An empty region renders an honest empty state — never a silently
   // substituted full list posing as the filtered result.
   const regionFilter = region === 0 ? rankBase : rankBase.filter((u) => u.region === region - 1);
   const ranking = regionFilter.map((u) => ({ n: u.n, v: u.v[rankBy] })).sort((a, b) => b.v - a.v);
   const aware = clampPct(scaleUp(64, period, null));
-  const cutRate = clampPct(scaleUp(18, period, null));
-  const users = (scaleUp(4200, period, null) / 1000).toFixed(1) + "K";
+  const usersK = scaleUp(4200, period, null) / 1000;
+  const users = usersK.toFixed(1) + "K";
   // Hero total = the ranking's own itemization (sum of v[0], in thousands).
-  const savedM = (rankBase.reduce((a, u) => a + u.v[0], 0) / 1000).toFixed(1);
+  const savedM = rankBase.reduce((a, u) => a + u.v[0], 0) / 1000;
+  const riseTo = (v) => [0.85, 0.9, 0.94, 0.97, 1].map((f) => v * f);
   const personaShares = normalizeShares([34, 27, 22, 17].map((b) => scaleUp(b, period, null)));
   const personaColors = [c.accent, c.terra, c.warn, c.green];
   const personas = ["social", "impulsive", "emotional", "planning"].map((k, i) => [lang === "ar" ? PERSONA_META[k].ar : PERSONA_META[k].en, personaShares[i], personaColors[i]]);
   const habits = [[lang === "ar" ? "قهوة يومية خارجية" : "Daily takeaway coffee", clampPct(scaleUp(62, period, null)), c.terra], [lang === "ar" ? "شراء اندفاعي بالخصومات" : "Impulse buys on discounts", clampPct(scaleUp(48, period, null)), c.terraText], [lang === "ar" ? "طلبات توصيل متكررة" : "Frequent delivery orders", clampPct(scaleUp(41, period, null)), c.accentText], [lang === "ar" ? "لا ادخار شهري" : "No monthly savings", clampPct(scaleUp(35, period, null)), c.accent]];
   const ages = [{ l: "18-20", v: 46 }, { l: "21-22", v: 36 }, { l: "23-24", v: 14 }, { l: "25+", v: 4 }];
   // Region split derives from the ranking's own saved-K figures, summed by region,
-  // so the stacked bar reconciles with the ranking list above it.
+  // so the stacked bar reconciles with the ranking list.
   const regionCols = [c.accent, c.accentText, c.terra];
   const regionData = D.regions.map((rn, ri) => [rn, rankBase.filter((u) => u.region === ri).reduce((a, u) => a + u.v[0], 0), regionCols[ri % regionCols.length]]);
-  if (chatOpen) return (
-    <RoleShell title={s.role.bank} sub={lang === "ar" ? "المساعد التحليلي" : "Analytics assistant"} onBack={() => setChatOpen(false)} fill>
-      <RoleAIChat scope="bank" data={{ awareness: aware, cutRate }} />
-    </RoleShell>
-  );
   if (sel) {
     const [n, pct, col, kind] = sel;
     const dtrend = [0.82, 0.9, 0.96, 1].map((f, i) => ({ l: String(i + 1), v: clampPct(Math.round(pct * f)) }));
@@ -1719,25 +2223,34 @@ function BankDashScreen() {
     );
   }
   return (
-    <RoleShell title={s.role.bank} sub={P.bankDash} onBack={() => setScreen("role")}>
-      <div style={{ marginBottom: 6 }}><Segmented options={D.period} value={period} onChange={setPeriod} c={c} label={D.period.join(" / ")} /></div>
-      <div style={{ fontSize: 10.5, color: c.muted, margin: "0 2px 12px" }}>{D.asOf} · {D.deltaNote}</div>
-      <button onClick={() => setChatOpen(true)} style={{ width: "100%", display: "flex", alignItems: "center", gap: 11, background: `linear-gradient(135deg, ${c.terra}, ${c.accent})`, color: c.onAccent, border: "none", borderRadius: 16, padding: "13px 15px", marginBottom: 12, cursor: "pointer", fontFamily: "inherit", textAlign: "start" }}>
-        <Sparkles size={19} aria-hidden="true" />
-        <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontWeight: 800, fontSize: 13.5 }}>{lang === "ar" ? "اسأل المساعد التحليلي" : "Ask the analytics assistant"}</div><div style={{ fontSize: 11, opacity: 0.9 }}>{lang === "ar" ? "رسوم بيانية وإحصائيات · تصدير Excel" : "Charts & stats · export to Excel"}</div></div>
-        {lang === "ar" ? <ArrowLeft size={17} aria-hidden="true" /> : <ArrowRight size={17} aria-hidden="true" />}
-      </button>
-      <div style={{ marginBottom: 14 }}><Tabs options={D.tabsBank} value={tab} onChange={setTab} c={c} /></div>
+    <>
+    <RoleShell title={s.role.bank} sub={D.tabsBank[tab]} onBack={() => setScreen("role")} onLogout={() => setConfirmOut(true)} fill={tab === 1} tab={tab} setTab={setTab} navItems={[
+      { tab: 0, label: D.navBank[0], icon: Home },
+      { tab: 2, label: D.navBank[1], icon: Users },
+      { tab: 1, label: D.navBank[2], icon: Sparkles, center: true },
+      { tab: 3, label: D.navBank[3], icon: BarChart3 },
+      { tab: 4, label: D.navBank[4], icon: LayoutGrid },
+    ]}>
+      {tab === 1 ? <RoleAIChat scope="bank" data={{ awareness: aware, cutRate }} /> : (<>
       {tab === 0 && (<>
-        <div style={{ display: "flex", gap: 10, marginBottom: 10 }}>
-          <DashStat label={D.awareness} value={`${aware}%`} col={c.accent} c={c} delta="4%" />
-          <DashStat label={D.activeUsers} value={users} col={c.accentText} c={c} delta="8%" />
-          <DashStat label={lang === "ar" ? "أعمار 18–24" : "Ages 18–24"} value="96%" col={c.terra} c={c} />
+        <div style={{ marginBottom: 6 }}><Segmented options={D.period} value={period} onChange={setPeriod} c={c} label={D.period.join(" / ")} /></div>
+        <div style={{ fontSize: 10.5, color: c.muted, margin: "0 2px 12px" }}>{D.asOf} · {D.deltaNote}</div>
+        <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 15, padding: "11px 13px", marginBottom: 14 }}>
+          <div style={{ fontSize: 11, color: c.muted, marginBottom: 8, fontWeight: 700 }}><User size={13} aria-hidden="true" style={{ verticalAlign: "middle", marginInlineEnd: 4 }} /> {D.benSelect}</div>
+          <Segmented options={D.benSegs} value={ben} onChange={setBen} c={c} label={D.benSelect} />
+        </div>
+        <AlertsStrip c={c} D={D} lang={lang} scope="bank" cutRate={cutRate} />
+        <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18, marginBottom: 14 }}>
+          <div style={{ display: "flex", justifyContent: "space-around", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
+            <RingStat value={aware} label={D.awareness} col={c.accent} c={c} />
+            <RingStat value={82} label={lang === "ar" ? "أعمار 18–24" : "Ages 18–24"} col={c.terra} c={c} />
+            <RingStat value={clampPct(scaleUp(21, period, null))} label={D.invPart} col={c.green} c={c} />
+          </div>
         </div>
         <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
-          <DashStat label={D.savedTotal} value={`${savedM}${D.unitM}`} col={c.green} c={c} delta="14%" unit={<RS size="0.5em" color={c.muted} />} />
-          <DashStat label={lang === "ar" ? "جامعات" : "Universities"} value="6" col={c.accentText} c={c} />
-          <DashStat label={D.invPart} value={`${clampPct(scaleUp(21, period, null))}%`} col={c.terra} c={c} delta="6%" />
+          <TrendStat label={D.activeUsers} value={<Metric value={users} />} col={c.accentText} c={c} trend={riseTo(usersK)} />
+          <TrendStat label={D.savedTotal} value={<><Metric value={savedM.toFixed(1)} /><span style={{ fontSize: 12 }}>{D.unitM}</span> <RS size="0.55em" color={c.muted} /></>} col={c.green} c={c} trend={riseTo(savedM)} />
+          <TrendStat label={lang === "ar" ? "جامعات" : "Universities"} value={<Metric value="6" />} col={c.terra} c={c} trend={[3, 4, 4, 5, 6]} />
         </div>
         <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18, marginBottom: 14 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, gap: 10, flexWrap: "wrap" }}>
@@ -1759,7 +2272,7 @@ function BankDashScreen() {
         </div>
         <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18, marginBottom: 14 }}>
           <h2 style={{ fontWeight: 700, fontSize: 13, margin: 0, color: c.accentText }}>{lang === "ar" ? "توزيع المستخدمين حسب العمر" : "Users by age group"}</h2>
-          <div style={{ fontSize: 11, color: c.muted, marginBottom: 12 }}>{lang === "ar" ? "النسبة % من إجمالي المستخدمين" : "% of total users"}</div>
+          <div style={{ fontSize: 11, color: c.muted, marginBottom: 8 }}>{lang === "ar" ? "النسبة % من إجمالي المستخدمين" : "% of total users"}</div>
           <ColumnChart c={c} data={ages.map((a, i) => [a.l, a.v, [c.accent, c.accentText, c.terra, c.green][i % 4], "%"])} />
         </div>
         <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18, marginBottom: 14 }}>
@@ -1769,38 +2282,66 @@ function BankDashScreen() {
         </div>
         <div style={{ background: c.card, border: `1px solid ${c.line}`, borderInlineStart: `4px solid ${c.terra}`, color: c.text, borderRadius: 18, padding: 16, fontSize: 13, fontWeight: 600, lineHeight: 1.7 }}><Sparkles size={16} color={c.terraText} aria-hidden="true" style={{ verticalAlign: "middle", marginInlineEnd: 6 }} />{D.insightBank}</div>
       </>)}
-      {tab === 1 && (
-        <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18 }}>
+      {tab === 2 && (() => {
+        const u = rankBase[uniPick];
+        const uAware = u.v[2], uSave = u.v[0], uCut = clampPct(Math.round(cutRate * (1 + uniPick * 0.12)));
+        const uPersShares = normalizeShares([34 + uniPick * 2, 27 - uniPick, 22, 17 + uniPick]);
+        const uPers = ["social", "impulsive", "emotional", "planning"].map((k, i) => [lang === "ar" ? PERSONA_META[k].ar : PERSONA_META[k].en, uPersShares[i], personaColors[i]]);
+        return (<>
+          <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 15, padding: "11px 13px", marginBottom: 12 }}>
+            <div style={{ fontSize: 11, color: c.muted, marginBottom: 8, fontWeight: 700 }}><Building2 size={13} aria-hidden="true" style={{ verticalAlign: "middle", marginInlineEnd: 4 }} /> {D.uniPick} · {D.uniPickSub}</div>
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }} role="radiogroup" aria-label={D.uniPick}>{rankBase.map((x, i) => <button key={i} role="radio" aria-checked={uniPick === i} onClick={() => setUniPick(i)} style={{ padding: "8px 11px", borderRadius: 999, border: uniPick === i ? "none" : `1px solid ${c.line}`, background: uniPick === i ? c.accent : "transparent", color: uniPick === i ? c.onAccent : c.muted, fontSize: 11, fontWeight: 700, fontFamily: "inherit", cursor: "pointer" }}>{x.n}</button>)}</div>
+          </div>
+          <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 16, marginBottom: 12 }}>
+            <div style={{ display: "flex", justifyContent: "space-around", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+              <RingStat value={uAware} label={D.awareness} col={c.accent} c={c} size={82} />
+              <RingStat value={uCut} label={D.stipendCut} col={c.terra} c={c} size={82} />
+              <div style={{ textAlign: "center" }}><div style={{ fontSize: 22, fontWeight: 800, color: c.green }}><Metric value={String(uSave)} /> <RS size="0.55em" color={c.muted} /></div><div style={{ fontSize: 10.5, color: c.muted }}>{D.avgSave}</div></div>
+            </div>
+          </div>
+          <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18, marginBottom: 12 }}>
+            <h2 style={{ fontWeight: 800, fontSize: 13.5, margin: 0, color: c.text }}>{u.n}</h2>
+            <div style={{ fontSize: 11, color: c.muted, marginBottom: 8 }}>{D.personaMix}</div>
+            <Radar c={c} label={D.personaMix} data={(lang === "ar" ? ["اجتماعي", "اندفاع", "عاطفي", "تخطيط"] : ["Social", "Impulse", "Emotional", "Planning"]).map((n, i) => [n, uPersShares[i], personaColors[i]])} />
+          </div>
+          <DailySpendPanel c={c} D={D} lang={lang} mult={benM[0] * (1 + uniPick * 0.04)} />
+        </>);
+      })()}
+      {tab === 3 && (<>
+        <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4, marginBottom: 14 }} role="radiogroup" aria-label={D.benSelect}>{D.benSegs.map((x, i) => <button key={i} role="radio" aria-checked={ben === i} onClick={() => setBen(i)} style={{ padding: "8px 13px", borderRadius: 999, border: ben === i ? "none" : `1px solid ${c.line}`, background: ben === i ? c.accent : "transparent", color: ben === i ? c.onAccent : c.muted, fontSize: 11.5, fontWeight: 700, fontFamily: "inherit", cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0 }}>{x}</button>)}</div>
+        <DailySpendPanel c={c} D={D} lang={lang} mult={benM[0]} />
+        <AcademicPanel c={c} D={D} lang={lang} />
+        <IncomePanel c={c} D={D} lang={lang} cutRate={cutRate} />
+      </>)}
+      {tab === 4 && (<>
+        <GovernancePanel c={c} D={D} lang={lang} />
+        <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18, marginBottom: 14 }}>
           <h2 style={{ fontWeight: 700, fontSize: 13.5, margin: "0 0 14px", color: c.accentText }}>{D.personaMix}</h2>
           <div style={{ marginBottom: 16 }}><Donut c={c} data={personas.map(([n, pct, col]) => ({ l: n, v: pct, col }))} center={users} centerSub={D.activeUsers} /></div>
-          <div style={{ borderTop: `1px solid ${c.line}`, paddingTop: 16, marginBottom: 16 }}><Radar c={c} label={D.personaMix} data={(lang === "ar" ? ["اجتماعي", "اندفاع", "عاطفي", "تخطيط"] : ["Social", "Impulse", "Emotional", "Planning"]).map((n, i) => [n, personaShares[i], personaColors[i]])} /></div>
           {personas.map(([n, pct, col]) => <BarRow key={n} n={n} pct={pct} col={col} c={c} onClick={() => setSel([n, pct, col, "share"])} sub={D.tapForDetail} />)}
         </div>
-      )}
-      {tab === 2 && (
-        <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18 }}>
+        <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18, marginBottom: 14 }}>
           <h2 style={{ fontWeight: 700, fontSize: 13.5, margin: "0 0 4px", color: c.terra }}>{D.habitsTitle}</h2>
           <div style={{ fontSize: 11, color: c.muted, marginBottom: 14 }}>{lang === "ar" ? "اضغط أي عادة لتفاصيلها" : "Tap any habit for details"}</div>
           {habits.map(([n, pct, col]) => <BarRow key={n} n={n} pct={pct} col={col} c={c} onClick={() => setSel([n, pct, col, "share"])} sub={D.tapForDetail} />)}
         </div>
-      )}
-      {tab === 3 && (
-        <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
-          <h2 style={{ fontWeight: 700, fontSize: 13.5, margin: 0, color: c.accentText }}>{D.oppTitle}</h2>
-          {D.opps.map(([t, d], i) => (
-            <div key={i} style={{ display: "flex", gap: 12, background: c.card, border: `1px solid ${c.line}`, borderRadius: 16, padding: 15 }}>
-              <div style={{ width: 34, height: 34, borderRadius: 10, background: c.accent + "22", display: "grid", placeItems: "center", flexShrink: 0 }}><Target size={16} color={c.accent} /></div>
-              <div><div style={{ fontWeight: 700, fontSize: 13.5 }}>{t}</div><div style={{ fontSize: 11.5, color: c.muted, lineHeight: 1.6, marginTop: 2 }}>{d}</div></div>
-            </div>
-          ))}
-        </div>
-      )}
+        <h2 style={{ fontWeight: 700, fontSize: 13.5, color: c.accentText, margin: "16px 0 11px" }}>{D.oppTitle}</h2>
+        {D.opps.map(([t, d], i) => (
+          <div key={i} style={{ display: "flex", gap: 12, background: c.card, border: `1px solid ${c.line}`, borderRadius: 16, padding: 15, marginBottom: 11 }}>
+            <div style={{ width: 34, height: 34, borderRadius: 10, background: c.accent + "22", display: "grid", placeItems: "center", flexShrink: 0 }}><Target size={16} color={c.accent} aria-hidden="true" /></div>
+            <div><div style={{ fontWeight: 700, fontSize: 13.5 }}>{t}</div><div style={{ fontSize: 11.5, color: c.muted, lineHeight: 1.6, marginTop: 2 }}>{d}</div></div>
+          </div>
+        ))}
+        <ScalePanel c={c} lang={lang} />
+      </>)}
       <PrivacyNote c={c} style={{ marginTop: 14 }}>{D.anon}</PrivacyNote>
+      </>)}
     </RoleShell>
+    {confirmOut && <ConfirmDialog title={D.confirmLogoutT} sub={D.confirmLogoutS} yes={D.yes} no={D.no} danger onYes={onLogout} onNo={() => setConfirmOut(false)} c={c} />}
+    {onb && <RoleOnboarding scope="bank" onDone={doneOnb} c={c} s={s} lang={lang} />}
+    </>
   );
 }
-
-/* ===================== التقييم السلوكي (Onboarding + Assessment + WOW) ===================== */
 function AsTopBar() {
   const { c, lang, setLang, theme, setTheme, s, setScreen } = useCtx();
   return (

@@ -20,14 +20,16 @@ test("splash to University of Jeddah dashboard does not crash", async ({ page })
   await page.getByRole("button", { name: /ابدأ الآن|Get started/ }).first().click();
   await page.getByRole("button", { name: /جامعة جدة|University of Jeddah/ }).click();
 
-  await expect(page.getByText(/لوحة الجامعة|University dashboard/)).toBeVisible();
+  await signInToPortal(page);
+  await expect(page.getByText(/تنبيهات ذكية اليوم|Smart alerts today/)).toBeVisible();
   expect(pageErrors).toEqual([]);
 });
 
 test("direct hash load opens the university dashboard", async ({ page }) => {
   await page.goto("/#/university");
 
-  await expect(page.getByText(/لوحة الجامعة|University dashboard/)).toBeVisible();
+  await signInToPortal(page);
+  await expect(page.getByText(/تنبيهات ذكية اليوم|Smart alerts today/)).toBeVisible();
 });
 
 test("empty login is rejected", async ({ page }) => {
@@ -114,7 +116,8 @@ test("role cards are keyboard-operable", async ({ page }) => {
   await university.focus();
   await page.keyboard.press("Enter");
 
-  await expect(page.getByText(/لوحة الجامعة|University dashboard/)).toBeVisible();
+  // The institutional dashboards sit behind a demo login portal.
+  await expect(page.getByRole("heading", { name: /بوابة الجامعة|University portal/ })).toBeVisible();
 });
 
 test("mobile viewport renders the student app", async ({ page }) => {
@@ -160,4 +163,12 @@ async function enterAsGuest(page) {
   await page.getByRole("button", { name: /تسجيل الدخول|Sign in/ }).first().click();
   await page.getByRole("button", { name: /الدخول كضيف|Continue as guest/ }).click();
   await expect(page).toHaveURL(/#\/student/);
+}
+
+// The uni/bank dashboards sit behind a demo login (any credentials pass) and a
+// one-time onboarding walkthrough — sign in, then skip the walkthrough.
+async function signInToPortal(page) {
+  await expect(page.getByRole("heading", { name: /بوابة الجامعة|بوابة البنك|University portal|Bank portal/ })).toBeVisible();
+  await page.getByRole("button", { name: /^تسجيل الدخول$|^Sign in$/ }).click();
+  await page.getByRole("button", { name: /تخطّي|Skip/ }).click().catch(() => {});
 }
