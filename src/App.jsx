@@ -582,7 +582,7 @@ const storeData = [
   { ar: "قسيمة قهوة", en: "Coffee voucher", cost: 300, icon: Coffee },
   { ar: "بطاقة متجر 50 ر.س", en: "50 ر.س gift card", cost: 1200, icon: Gift },
   { ar: "اشتراك شهر", en: "1-month subscription", cost: 800, icon: Film },
-  { ar: "خصم رسوم تحويل", en: "Transfer-fee discount", cost: 200, icon: Banknote },
+  { ar: "قسيمة مواصلات", en: "Transport voucher", cost: 200, icon: Bus },
 ];
 const LB = [
   { id: "A12", pct: 94, done: 5 }, { id: "L09", pct: 92, done: 5 }, { id: "K77", pct: 90, done: 4 },
@@ -717,8 +717,8 @@ function investLocal(st, lang) {
     ? `حلو إنك تفكّر بالاستثمار\nلو حوّلت ${monthly} ر.س ادخار تلقائي أول كل شهر (إجمالي ${fmt(contrib)} ر.س بالسنة)، هذا تقدير نمو محفظتك:`
     : `Great that you're thinking about investing\nIf you auto-save ${monthly} ر.س each month (${fmt(contrib)} ر.س/yr), here's an estimate of your portfolio growth:`;
   const tips = lang === "ar"
-    ? [`قهوتك ومطاعمك ${st.cats.food} ر.س — قلّلها 30% توفّر ~${Math.round(st.cats.food * 0.3)} ر.س`, "فعّل تحويل 20% ادخار تلقائي أول الشهر", "ألغِ الاشتراكات اللي ما تستخدمها"]
-    : [`Food & coffee is ${st.cats.food} ر.س — cut 30% to save ~${Math.round(st.cats.food * 0.3)} ر.س`, "Auto-transfer 20% to savings at month start", "Cancel subscriptions you don't use"];
+    ? [`قهوتك ومطاعمك ${st.cats.food} ر.س — قلّلها 30% توفّر ~${Math.round(st.cats.food * 0.3)} ر.س`, "خصّص 20% للادخار أول الشهر قبل ما تصرف", "ألغِ الاشتراكات اللي ما تستخدمها"]
+    : [`Food & coffee is ${st.cats.food} ر.س — cut 30% to save ~${Math.round(st.cats.food * 0.3)} ر.س`, "Set aside 20% for savings at month start, before spending", "Cancel subscriptions you don't use"];
   return { text, widget: { kind: "invest", monthly, chart, contrib, types, tips } };
 }
 function budgetLocal(lang) {
@@ -945,8 +945,6 @@ export default function App() {
           </div>
           {loanOffer && <LoanModal />}
           {demoPay && <DemoSheet />}
-          {sheet?.type === "transfer" && <TransferSheet />}
-          {sheet?.type === "topup" && <TopupSheet />}
           {showLeaderboard && <LeaderboardPage />}
           {overlay === "jamiyah" && <JamiyahPage />}
           {overlay === "jobs" && <JobsPage />}
@@ -3786,11 +3784,10 @@ function LeaderboardPage() {
 }
 
 function BalanceCard() {
-  const { c, s, balance, setTab, setSheet } = useCtx();
+  const { c, s, balance, setTab } = useCtx();
   const actions = [
-    { t: s.transfer, icon: ArrowLeftRight, go: () => setSheet({ type: "transfer" }) },
-    { t: s.deposit, icon: ArrowDownToLine, go: () => setSheet({ type: "topup" }) },
     { t: s.invest, icon: TrendingUp, go: () => setTab("invest") },
+    { t: s.nav.analytics, icon: BarChart3, go: () => setTab("analytics") },
   ];
   return (
     <div style={{ borderRadius: 26, padding: "20px 20px 16px", background: `linear-gradient(135deg, ${c.bg1} 0%, ${c.card2} 100%)`, border: `1px solid ${c.line}` }}>
@@ -4297,55 +4294,6 @@ function DemoSheet() {
 }
 
 /* ===================== تحويل / إيداع ===================== */
-function TransferSheet() {
-  const { c, s, balance, setBalance, pushTx, setSheet, flash } = useCtx();
-  // Recipient is stored as an index so a mid-sheet language switch can't
-  // orphan the selection (the localized names change, the index doesn't).
-  const [toIdx, setToIdx] = useState(0);
-  const [amt, setAmt] = useState("");
-  const [arm, setArm] = useState(false);
-  const to = s.people[toIdx];
-  function confirm() {
-    const a = parseFloat(amt);
-    if (!a || a <= 0) return flash(s.badAmount);
-    if (a > balance) return flash(s.noBal);
-    if (!arm) return setArm(true); // money moves on the second, explicit tap
-    setBalance((b) => +(b - a).toFixed(2)); pushTx({ amt: a, place: { ar: `${L.ar.transfer} · ${L.ar.people[toIdx]}`, en: `${L.en.transfer} · ${L.en.people[toIdx]}` }, cat: "transfer" });
-    setSheet(null); flash(s.sent(a, to));
-  }
-  return (
-    <Sheet title={s.transferT} icon={ArrowLeftRight} subtitle={s.yourBal(fmt(balance))}>
-      <div className="whz" style={{ display: "flex", gap: 10, overflowX: "auto", padding: "4px 0 8px" }}>
-        {s.people.map((p, i) => (
-          <button key={p} aria-pressed={toIdx === i} onClick={() => { setToIdx(i); setArm(false); }} style={{ flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "center", gap: 6, background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
-            <span style={{ width: 50, height: 50, borderRadius: 999, display: "grid", placeItems: "center", fontSize: 18, fontWeight: 700, color: toIdx === i ? c.onAccent : c.accentText, background: toIdx === i ? c.accent : c.card, border: `2px solid ${toIdx === i ? c.accent : c.line}` }}>{p[0]}</span>
-            <span style={{ fontSize: 11, color: toIdx === i ? c.text : c.muted }}>{p}</span>
-          </button>
-        ))}
-      </div>
-      <input value={amt} onChange={(e) => { setAmt(e.target.value.replace(/[^\d.]/g, "")); setArm(false); }} placeholder={s.amount} inputMode="decimal" aria-label={s.amount} style={{ ...inp(c), textAlign: "center", fontSize: 22, fontWeight: 700, padding: "14px" }} />
-      <div style={{ display: "flex", gap: 8, marginTop: 10 }}>{[50, 100, 200, 500].map((q) => <button key={q} onClick={() => { setAmt(String(q)); setArm(false); }} style={chip(c)}>{q}</button>)}</div>
-      <button onClick={confirm} style={btn(arm ? c.terra : c.accent, arm ? c.onTerra : c.onAccent)}>{arm ? s.confirmSend(parseFloat(amt) || 0, to) : s.sendNow}</button>
-    </Sheet>
-  );
-}
-function TopupSheet() {
-  const { c, s, setBalance, pushTx, setSheet, flash } = useCtx();
-  const [amt, setAmt] = useState("");
-  function confirm() {
-    const a = parseFloat(amt);
-    if (!a || a <= 0) return flash(s.badAmount);
-    setBalance((b) => +(b + a).toFixed(2)); pushTx({ amt: a, place: { ar: L.ar.deposit, en: L.en.deposit }, cat: "topup" });
-    setSheet(null); flash(s.deposited(a));
-  }
-  return (
-    <Sheet title={s.depositT} icon={ArrowDownToLine} subtitle={s.addFunds}>
-      <input value={amt} onChange={(e) => setAmt(e.target.value.replace(/[^\d.]/g, ""))} placeholder={s.amount} inputMode="decimal" style={{ ...inp(c), textAlign: "center", fontSize: 22, fontWeight: 700, padding: "14px" }} />
-      <div style={{ display: "flex", gap: 8, marginTop: 10 }}>{[200, 500, 1000].map((q) => <button key={q} onClick={() => setAmt(String(q))} style={chip(c)}>{q}</button>)}</div>
-      <button onClick={confirm} style={btn(c.accent, c.onAccent)}>{s.depositT}</button>
-    </Sheet>
-  );
-}
 
 /* ===================== عرض القرض ===================== */
 function LoanModal() {

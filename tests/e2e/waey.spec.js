@@ -84,19 +84,6 @@ test("loan success and insufficient-loan block are visible in the browser flow",
   await expect(page.getByText(/الرصيد لا يكفي|balance/i)).toBeVisible();
 });
 
-test("transfer arms a confirmation step before moving money", async ({ page }) => {
-  await enterAsGuest(page);
-  await page.getByRole("button", { name: /^تحويل$|^Transfer$/ }).first().click();
-  await page.getByLabel(/المبلغ|Amount/).fill("100");
-  await page.getByRole("button", { name: /تحويل الآن|Send now/ }).click();
-
-  // First tap only arms the button — money moves on the explicit confirm.
-  const confirm = page.getByRole("button", { name: /تأكيد إرسال|Confirm sending/ });
-  await expect(confirm).toBeVisible();
-  await confirm.click();
-  await expect(page.getByText(/حوّلت|Sent 100/)).toBeVisible();
-});
-
 test("language switch updates document direction and persists across reload", async ({ page }) => {
   await page.goto("/#/landing");
   await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
