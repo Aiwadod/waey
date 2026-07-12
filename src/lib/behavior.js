@@ -198,6 +198,13 @@ export function financialFitness(klontz, comb) {
   return clamp(Math.round(health * 0.6 + readiness * 0.4), 0, 100);
 }
 
+// Daily tracking nudges Financial Fitness: a committed day lifts it, a missed
+// day dips it — bounded, so the score drifts with real behaviour, not fabricated.
+export function nextFitness(current, committed) {
+  const f = clamp(Number(current) || 0, 0, 100);
+  return clamp(committed ? f + 2 : f - 1, 0, 100);
+}
+
 /* ------------------------------- budget ---------------------------------- */
 // A suggested monthly split for a limited student income; adjusted by type.
 

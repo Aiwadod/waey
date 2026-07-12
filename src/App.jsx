@@ -5,7 +5,7 @@ import { applyLanguageMetadata, translateSystemMessages } from "./lib/i18n.js";
 import { resolveInitialScreen, sanitizeScreen, screenForHash, SCREEN_HASHES } from "./lib/routing.js";
 import { clearSession, createGuestSession, createLoginSession, loadSession, saveScreen, saveSession } from "./lib/session.js";
 import { applyThemeVars, FONT_STACK, themes } from "./lib/theme.js";
-import { KLONTZ_QUESTIONS, COMB_QUESTIONS, CHOICES, KLONTZ_LABELS, COMB_LABELS, levelFor, analyze } from "./lib/behavior.js";
+import { KLONTZ_QUESTIONS, COMB_QUESTIONS, CHOICES, KLONTZ_LABELS, COMB_LABELS, levelFor, analyze, nextFitness, LEVELS } from "./lib/behavior.js";
 import {
   Home, BarChart3, Sparkles, TrendingUp, Bell, Plus, ChevronLeft, ChevronRight, Wallet, Trophy,
   Users, Target, BookOpen, HelpCircle, Coins, Send, Sun, Moon, Bus, Gamepad2, Coffee,
@@ -831,6 +831,9 @@ export default function App() {
   const [roundMult, setRoundMult] = useState(1);
   const [roundVault, setRoundVault] = useState(3.6);
   const [assess, setAssess] = useState({ dominant: "social", dna: { planning: 45, social: 72, emotional: 55, impulsive: 60 }, score: 62, confidence: 84, saveable: 120, points: 15 });
+  // Journey tracking: streak/saved are seeded demo state (like balance/points);
+  // fitness tracks from the assessment baseline and moves with each daily log.
+  const [journey, setJourney] = useState({ streak: 3, saved: 240, fitness: null, base: null, todayDone: false, badges: [], logs: [] });
   const [initialShell] = useState(() => {
     if (typeof window === "undefined") return { session: null, screen: "splash" };
     const saved = loadSession(window.localStorage);
@@ -914,11 +917,22 @@ export default function App() {
       if (change > 0.001) { setRoundVault((v) => +(v + change).toFixed(2)); setBalance((b) => b - change); }
     }
   }
+  // A saved daily log moves the journey indicators: a committed day extends the
+  // streak and lifts fitness; a missed day resets the streak and dips it.
+  function logDay(log) {
+    setJourney((j) => {
+      const committed = !!log.committed;
+      const seed = assess.fitness ?? assess.score ?? 50;
+      const cur = j.fitness ?? seed;
+      const base = j.base ?? seed;
+      return { ...j, fitness: nextFitness(cur, committed), base, streak: committed ? j.streak + 1 : 0, saved: j.saved + (Number(log.saved) || 0), todayDone: true, logs: [{ ...log, t: Date.now() }, ...j.logs].slice(0, 30) };
+    });
+  }
 
   const value = {
     c, s, lang, setLang, dir, mobile, theme, setTheme, tab, setTab, cats, weeks, weekCats, entries, setEntries, curWeek, tx, setTx, addSpend, pushTx,
     balance, setBalance, points, setPoints, savings, setSavings, loanTaken, setLoanTaken, invested, setInvested,
-    spent, available, nextStipend, loanOffer, setLoanOffer, demoPay, setDemoPay, sheet, setSheet, showLeaderboard, setShowLeaderboard, overlay, setOverlay, persona, setPersona, chDone, setChDone, vw, screen, setScreen, session, startSession, enterGuest, logout, roundOn, setRoundOn, roundMult, setRoundMult, roundVault, setRoundVault, assess, setAssess, flash,
+    spent, available, nextStipend, loanOffer, setLoanOffer, demoPay, setDemoPay, sheet, setSheet, showLeaderboard, setShowLeaderboard, overlay, setOverlay, persona, setPersona, chDone, setChDone, vw, screen, setScreen, session, startSession, enterGuest, logout, roundOn, setRoundOn, roundMult, setRoundMult, roundVault, setRoundVault, assess, setAssess, journey, setJourney, logDay, flash,
   };
   const appBg = `linear-gradient(180deg, ${c.bg1} 0%, ${c.bg0} 100%)`;
 
@@ -949,6 +963,7 @@ export default function App() {
           {overlay === "jamiyah" && <JamiyahPage />}
           {overlay === "jobs" && <JobsPage />}
           {overlay === "cashback" && <CashbackPage />}
+          {overlay === "achievements" && <AchievementsPage />}
           {overlay === "platform" && <PlatformPage />}
           <AnimatePresence>
             {toast && (
@@ -3100,6 +3115,99 @@ function InvestCalc() {
     </div>
   );
 }
+// Page 3 — the research-led daily dashboard: Financial Fitness, streak, monthly
+// goal, today's missions, Behavior Coach, and daily-activity logging that moves
+// every indicator. Reads the assessment result + journey tracking from context.
+function JourneyDashboard() {
+  const { c, s, lang, assess, journey, logDay, setOverlay, flash } = useCtx();
+  const ar = lang === "ar";
+  const pickL = (o) => (o && (o[lang] ?? o.ar)) || "";
+  const baseFit = Math.round(journey.base ?? assess.fitness ?? assess.score ?? 62);
+  const curFit = Math.round(journey.fitness ?? assess.fitness ?? assess.score ?? 62);
+  const improvement = curFit - baseFit;
+  const goal = assess.monthlyGoal ?? 300;
+  const dailyTarget = assess.dailyTarget ?? Math.max(1, Math.round(goal / 30));
+  const lvl = levelFor(curFit);
+  const goalPct = Math.min(100, Math.round((journey.saved / goal) * 100));
+  const gap = assess.analysis?.gap;
+  const coachNote = gap ? pickL(gap.coachNote) : (ar ? "سجّل مصروفك اليوم وخذ خطوة صغيرة نحو هدفك." : "Log today's spending and take one small step toward your goal.");
+  const weekMission = gap ? pickL(gap.mission) : (ar ? "سجّل مصاريف اليوم" : "Log today's expenses");
+  const hour = new Date().getHours();
+  const greet = hour < 12 ? (ar ? "صباح الخير" : "Good morning") : (ar ? "مساء الخير" : "Good evening");
+  const [committed, setCommitted] = useState(true);
+  const [savedToday, setSavedToday] = useState("");
+  function save() {
+    logDay({ committed, saved: parseFloat(savedToday) || 0 });
+    setSavedToday("");
+    flash(ar ? "تم تسجيل يومك — تحدّثت مؤشراتك" : "Day logged — your indicators updated");
+  }
+  const card = { background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 16 };
+  const missions = [
+    { icon: Wallet, t: ar ? "سجّل مصروف اليوم" : "Log today's expense" },
+    { icon: Coins, t: ar ? `ادّخر ${dailyTarget} ر.س اليوم` : `Save ${dailyTarget} ر.س today` },
+    { icon: Target, t: weekMission },
+  ];
+  return (
+    <>
+      <div>
+        <div style={{ fontSize: 21, fontWeight: 800 }}>{greet}</div>
+        <div style={{ fontSize: 12.5, color: c.muted }}>{ar ? "جاهز تكمّل رحلتك المالية اليوم؟" : "Ready to continue your money journey today?"}</div>
+      </div>
+      <div style={{ background: `linear-gradient(135deg, ${c.accent}, ${c.terra})`, color: c.onAccent, borderRadius: 22, padding: 18 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div>
+            <div style={{ fontSize: 12.5, opacity: 0.9 }}>{ar ? "لياقتك المالية" : "Financial Fitness"}</div>
+            <div style={{ fontSize: 40, fontWeight: 800, lineHeight: 1 }}><Metric value={curFit} /><span style={{ fontSize: 18, opacity: 0.8 }}>/100</span></div>
+            {improvement !== 0 && <div style={{ fontSize: 12, fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 4, marginTop: 4 }}><TrendingUp size={13} aria-hidden="true" />{improvement > 0 ? "+" : ""}{improvement} {ar ? "منذ البداية" : "since start"}</div>}
+          </div>
+          <div style={{ textAlign: "center" }}>
+            <div style={{ width: 54, height: 54, borderRadius: 16, background: "rgba(255,255,255,0.18)", display: "grid", placeItems: "center" }}><Medal size={26} aria-hidden="true" /></div>
+            <div style={{ fontSize: 11.5, fontWeight: 700, marginTop: 5 }}>{pickL(lvl)}</div>
+          </div>
+        </div>
+      </div>
+      <div style={{ display: "flex", gap: 12 }}>
+        <div style={{ flex: 1, ...card, display: "flex", alignItems: "center", gap: 9 }}>
+          <span style={{ width: 34, height: 34, borderRadius: 11, background: c.terra + "1f", display: "grid", placeItems: "center", flexShrink: 0 }}><Flame size={17} color={c.terra} aria-hidden="true" /></span>
+          <div><div style={{ fontSize: 22, fontWeight: 800 }}><Metric value={journey.streak} /></div><div style={{ fontSize: 10.5, color: c.muted }}>{ar ? "يوم متتالي" : "day streak"}</div></div>
+        </div>
+        <div style={{ flex: 1.5, ...card }}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}><span style={{ fontSize: 11.5, color: c.muted }}>{ar ? "هدف الشهر" : "Month goal"}</span><span style={{ fontSize: 11.5, fontWeight: 800, color: c.green }}>{goalPct}%</span></div>
+          <div style={{ height: 7, borderRadius: 9, background: c.card2, overflow: "hidden", marginBottom: 6 }}><div style={{ height: "100%", width: `${goalPct}%`, background: c.green, borderRadius: 9 }} /></div>
+          <div style={{ fontSize: 11, color: c.muted }}><b style={{ color: c.text }}>{fmt(journey.saved)}</b> / {fmt(goal)} <RS size="0.7em" color={c.muted} /></div>
+        </div>
+      </div>
+      <div style={card}>
+        <div style={{ fontWeight: 800, fontSize: 13.5, marginBottom: 10, display: "flex", alignItems: "center", gap: 7 }}><Target size={15} color={c.accentText} aria-hidden="true" />{ar ? "مهام اليوم" : "Today's missions"}</div>
+        {missions.map((m, i) => { const I = m.icon; return (
+          <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: i < missions.length - 1 ? `1px solid ${c.line}` : "none" }}>
+            <span style={{ width: 30, height: 30, borderRadius: 9, background: c.accent + "14", display: "grid", placeItems: "center", flexShrink: 0 }}><I size={15} color={c.accentText} aria-hidden="true" /></span>
+            <span style={{ flex: 1, fontSize: 13 }}>{m.t}</span>
+            {journey.todayDone && <Check size={16} color={c.green} aria-hidden="true" />}
+          </div>
+        ); })}
+      </div>
+      <div style={{ background: `linear-gradient(135deg, ${c.accent}14, ${c.terra}14)`, border: `1px solid ${c.accent}44`, borderRadius: 20, padding: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 7, fontWeight: 800, fontSize: 12.5, color: c.accentText, marginBottom: 6 }}><Sparkles size={15} aria-hidden="true" />{ar ? "مدرّب وعي السلوكي" : "Waey Behavior Coach"}</div>
+        <div style={{ fontSize: 12.5, lineHeight: 1.7 }}>{coachNote}</div>
+      </div>
+      <div style={card}>
+        <div style={{ fontWeight: 800, fontSize: 13.5, marginBottom: 12 }}>{ar ? "سجّل نشاط اليوم" : "Log today's activity"}</div>
+        <div style={{ display: "flex", gap: 10, marginBottom: 12 }}>
+          <button onClick={() => setCommitted(true)} style={{ flex: 1, padding: "10px", borderRadius: 12, border: committed ? "none" : `1px solid ${c.line}`, background: committed ? c.green : "transparent", color: committed ? c.onGreen : c.muted, fontWeight: 700, fontFamily: "inherit", fontSize: 12.5, cursor: "pointer" }}>{ar ? "التزمت بمهامي" : "I committed"}</button>
+          <button onClick={() => setCommitted(false)} style={{ flex: 1, padding: "10px", borderRadius: 12, border: !committed ? "none" : `1px solid ${c.line}`, background: !committed ? c.terra : "transparent", color: !committed ? c.onTerra : c.muted, fontWeight: 700, fontFamily: "inherit", fontSize: 12.5, cursor: "pointer" }}>{ar ? "ما قدرت اليوم" : "Not today"}</button>
+        </div>
+        <input value={savedToday} onChange={(e) => setSavedToday(e.target.value.replace(/[^\d.]/g, ""))} inputMode="decimal" placeholder={ar ? `كم ادّخرت اليوم؟ (مثلاً ${dailyTarget})` : `How much did you save today? (e.g. ${dailyTarget})`} aria-label={ar ? "المبلغ المدّخر اليوم" : "Amount saved today"} style={{ ...inp(c), width: "100%" }} />
+        <button onClick={save} style={{ ...btn(c.accent, c.onAccent), marginTop: 10 }}>{ar ? "احفظ وحدّث مؤشراتي" : "Save & update my indicators"}</button>
+      </div>
+      <button onClick={() => setOverlay("achievements")} style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, background: c.card, border: `1px solid ${c.line}`, borderRadius: 18, padding: 15, cursor: "pointer", fontFamily: "inherit", textAlign: "start", color: c.text }}>
+        <span style={{ width: 40, height: 40, borderRadius: 12, background: c.accent + "18", display: "grid", placeItems: "center", flexShrink: 0 }}><Trophy size={19} color={c.accentText} aria-hidden="true" /></span>
+        <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontWeight: 800, fontSize: 13.5 }}>{ar ? "الإنجازات والتقدم" : "Achievements & progress"}</div><div style={{ fontSize: 11.5, color: c.muted }}>{ar ? "خطك الزمني، الترتيب، المواسم، والشارات" : "Timeline, leaderboard, seasons & badges"}</div></div>
+        {ar ? <ChevronLeft size={18} color={c.muted} aria-hidden="true" /> : <ChevronRight size={18} color={c.muted} aria-hidden="true" />}
+      </button>
+    </>
+  );
+}
 function HomeScreen() {
   const { c, s, lang, setLang, points, theme, setTheme, setOverlay, flash } = useCtx();
   const stack = useRef(null);
@@ -3130,11 +3238,8 @@ function HomeScreen() {
       </div>
 
       <div ref={stack} style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 16 }}>
+        <JourneyDashboard />
         <BalanceCard />
-        <SectionTitle icon={Brain}>{s.homeSections.behavior}</SectionTitle>
-        <PersonaCard />
-        <AwarenessCard />
-        <InsightCard />
         <SectionTitle icon={BarChart2}>{s.homeSections.spending}</SectionTitle>
         <WeeklyCard />
         <PeerCard />
@@ -3701,6 +3806,199 @@ function CashbackPage() {
             </div>
           );
         })}
+      </div>
+    </FullPage>
+  );
+}
+// Page 4 — Progress & Achievements: behavior timeline, leaderboard (by fitness /
+// streak / commitment / improvement), the awareness season, hall of fame, badges,
+// the Bronze->Elite ladder, and a shareable certificate. Reads the journey +
+// assessment from context; all peers are illustrative, never real people.
+function AchievementsPage() {
+  const { c, s, lang, assess, journey, setOverlay, flash } = useCtx();
+  const ar = lang === "ar";
+  const L = (a, e) => (ar ? a : e);
+  const pickL = (o) => (o && (o[lang] ?? o.ar)) || "";
+  const curFit = Math.round(journey.fitness ?? assess.fitness ?? assess.score ?? 62);
+  const baseFit = Math.round(journey.base ?? assess.fitness ?? assess.score ?? 62);
+  const improvement = Math.max(0, curFit - baseFit);
+  const lvl = levelFor(curFit);
+  const commitCount = journey.logs.filter((l) => l.committed).length || journey.streak;
+  const dailyTarget = assess.dailyTarget ?? 10;
+  const typeName = assess.analysis?.type ? pickL(assess.analysis.type) : L("مستكشف مالي", "Money Explorer");
+  const [board, setBoard] = useState("fitness");
+
+  const card = { background: c.card, border: `1px solid ${c.line}`, borderRadius: 18, padding: 16, marginBottom: 12 };
+
+  // Behavior timeline — real logs when present, else the current streak.
+  const timeline = journey.logs.length
+    ? journey.logs.slice(0, 6).map((l, i) => ({ committed: l.committed, saved: Number(l.saved) || 0, ago: i }))
+    : Array.from({ length: Math.max(1, Math.min(journey.streak, 5)) }, (_, i) => ({ committed: true, saved: dailyTarget, ago: i }));
+  const agoLabel = (n) => (n === 0 ? L("اليوم", "Today") : n === 1 ? L("أمس", "Yesterday") : L(`قبل ${n} أيام`, `${n} days ago`));
+
+  // Badges — earned from real journey milestones.
+  const badges = [
+    { key: "start", icon: Check, name: { ar: "أول خطوة", en: "First Step" }, need: { ar: "سجّلت أول يوم", en: "Logged your first day" }, earned: journey.todayDone || journey.logs.length > 0 },
+    { key: "assess", icon: ClipboardList, name: { ar: "وعي بالذات", en: "Self-Aware" }, need: { ar: "أكملت تقييمك", en: "Completed your assessment" }, earned: !!assess.analysis || !!assess.type },
+    { key: "week", icon: Flame, name: { ar: "أسبوع متواصل", en: "Week Warrior" }, need: { ar: "٧ أيام متتالية", en: "A 7-day streak" }, earned: journey.streak >= 7 },
+    { key: "saver", icon: CircleDollarSign, name: { ar: "مدّخر", en: "Saver" }, need: { ar: "ادّخرت 200 ر.س", en: "Saved 200 SAR" }, earned: journey.saved >= 200 },
+    { key: "silver", icon: Medal, name: { ar: "وصلت الفضّي", en: "Reached Silver" }, need: { ar: "لياقة 40+", en: "Fitness 40+" }, earned: curFit >= 40 },
+    { key: "gold", icon: Crown, name: { ar: "وصلت الذهبي", en: "Reached Gold" }, need: { ar: "لياقة 70+", en: "Fitness 70+" }, earned: curFit >= 70 },
+  ];
+  const earnedCount = badges.filter((b) => b.earned).length;
+
+  // Leaderboard — four boards over one illustrative roster; the user is spliced
+  // in by their real metric, then ranked. Peers are examples, not real students.
+  const roster = [
+    { ar: "نورة", en: "Noura" }, { ar: "سلطان", en: "Sultan" }, { ar: "ريم", en: "Reem" }, { ar: "فهد", en: "Fahad" }, { ar: "لينا", en: "Lina" },
+  ];
+  const boards = [
+    { key: "fitness", label: { ar: "اللياقة", en: "Fitness" }, icon: TrendingUp, me: curFit, vals: [94, 88, 81, 73, 66], fmtV: (v) => `${v}` },
+    { key: "streak", label: { ar: "السلسلة", en: "Streak" }, icon: Flame, me: journey.streak, vals: [41, 29, 22, 15, 8], fmtV: (v) => L(`${v} يوم`, `${v}d`) },
+    { key: "commit", label: { ar: "الالتزام", en: "Commitment" }, icon: Target, me: commitCount, vals: [38, 31, 25, 18, 11], fmtV: (v) => L(`${v} يوم`, `${v}d`) },
+    { key: "improve", label: { ar: "التحسّن", en: "Improvement" }, icon: Sparkles, me: improvement, vals: [22, 17, 12, 8, 4], fmtV: (v) => `+${v}` },
+  ];
+  const sb = boards.find((b) => b.key === board) || boards[0];
+  const ranked = [
+    ...roster.map((r, i) => ({ name: r[lang], v: sb.vals[i], me: false })),
+    { name: L("أنت", "You"), v: Number(sb.me) || 0, me: true },
+  ].sort((a, b) => b.v - a.v);
+
+  // Awareness season — a bounded month-long cycle with a live countdown.
+  const now = new Date();
+  const seasonEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+  const seasonStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const daysLeft = Math.max(0, Math.ceil((seasonEnd - now) / 86400000));
+  const seasonPct = Math.min(100, Math.round(((now - seasonStart) / (seasonEnd - seasonStart)) * 100));
+  const issueDate = new Intl.DateTimeFormat(ar ? "ar-SA" : "en-US", { year: "numeric", month: "long", day: "numeric" }).format(now);
+
+  const hall = [
+    { n: { ar: "عبدالله", en: "Abdullah" }, lvl: { ar: "النخبة", en: "Elite" }, note: { ar: "أعلى لياقة مالية بالحرم", en: "Top financial fitness on campus" }, icon: Crown },
+    { n: { ar: "جواهر", en: "Jawaher" }, lvl: { ar: "ذهبي", en: "Gold" }, note: { ar: "أطول سلسلة التزام", en: "Longest commitment streak" }, icon: Medal },
+    { n: { ar: "ماجد", en: "Majed" }, lvl: { ar: "ذهبي", en: "Gold" }, note: { ar: "أكبر تحسّن هذا الموسم", en: "Biggest gain this season" }, icon: Star },
+  ];
+
+  function shareLinkedIn() {
+    try {
+      const url = "https://www.linkedin.com/sharing/share-offsite/?url=" + encodeURIComponent(window.location.origin);
+      window.open(url, "_blank", "noopener,noreferrer");
+    } catch { /* pop-up blocked — nothing to publish, the certificate stays on screen */ }
+    flash(L("فتحنا نافذة المشاركة على لينكدإن", "Opened the LinkedIn share window"));
+  }
+
+  return (
+    <FullPage title={L("الإنجازات والتقدم", "Achievements & progress")} sub={L("رحلتك، ترتيبك، وشاراتك", "Your journey, rank & badges")} onClose={() => setOverlay(null)}>
+      {/* Hero — current standing */}
+      <div style={{ background: `linear-gradient(135deg, ${c.accent}, ${c.terra})`, color: c.onAccent, borderRadius: 22, padding: 18, marginBottom: 14 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div>
+            <div style={{ fontSize: 12.5, opacity: 0.9 }}>{L("مستواك الحالي", "Your current level")}</div>
+            <div style={{ fontSize: 26, fontWeight: 800, marginTop: 2 }}>{pickL(lvl)}</div>
+            <div style={{ fontSize: 12, opacity: 0.9, marginTop: 2 }}>{L("لياقة", "Fitness")} <b><Metric value={curFit} /></b> / 100 · {earnedCount}/{badges.length} {L("شارة", "badges")}</div>
+          </div>
+          <div style={{ width: 62, height: 62, borderRadius: 18, background: "rgba(255,255,255,0.18)", display: "grid", placeItems: "center" }}><Trophy size={30} aria-hidden="true" /></div>
+        </div>
+      </div>
+
+      {/* Level ladder Bronze -> Elite */}
+      <Sect title={L("سلّم المستويات", "Level ladder")} c={c}>
+        <div style={{ display: "flex", gap: 8 }}>
+          {LEVELS.map((lv) => {
+            const on = curFit >= lv.min;
+            const here = lv.key === lvl.key;
+            return (
+              <div key={lv.key} style={{ flex: 1, textAlign: "center", borderRadius: 14, padding: "12px 4px", background: here ? c.accent : on ? c.card2 : "transparent", color: here ? c.onAccent : on ? c.text : c.muted, border: `1px solid ${here ? "transparent" : c.line}` }}>
+                {on ? <Medal size={18} aria-hidden="true" style={{ marginBottom: 4 }} /> : <Lock size={16} aria-hidden="true" style={{ marginBottom: 4 }} />}
+                <div style={{ fontSize: 12, fontWeight: 800 }}>{pickL(lv)}</div>
+                <div style={{ fontSize: 10, opacity: 0.85 }}>{lv.min}+</div>
+              </div>
+            );
+          })}
+        </div>
+      </Sect>
+
+      {/* Behavior timeline */}
+      <Sect title={L("خطك السلوكي", "Behavior timeline")} c={c}>
+        {timeline.map((t, i) => (
+          <div key={i} style={{ display: "flex", alignItems: "center", gap: 11, padding: "9px 0", borderBottom: i < timeline.length - 1 ? `1px solid ${c.line}` : "none" }}>
+            <span style={{ width: 30, height: 30, borderRadius: 9, flexShrink: 0, background: (t.committed ? c.green : c.terra) + "1f", display: "grid", placeItems: "center" }}>
+              {t.committed ? <Check size={15} color={c.green} aria-hidden="true" /> : <TriangleAlert size={15} color={c.terra} aria-hidden="true" />}
+            </span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 13, fontWeight: 600 }}>{t.committed ? L("التزمت بمهامك", "You committed") : L("يوم فائت", "A missed day")}</div>
+              <div style={{ fontSize: 11, color: c.muted }}>{agoLabel(t.ago)}</div>
+            </div>
+            {t.saved > 0 && <div style={{ fontSize: 12.5, fontWeight: 700, color: c.green }}>+{fmt(t.saved)} <RS size="0.7em" color={c.muted} /></div>}
+          </div>
+        ))}
+      </Sect>
+
+      {/* Leaderboard */}
+      <Sect title={L("لوحة الصدارة", "Leaderboard")} c={c}>
+        <div style={{ display: "flex", gap: 7, marginBottom: 12, flexWrap: "wrap" }}>
+          {boards.map((b) => { const I = b.icon; const on = b.key === board; return (
+            <button key={b.key} onClick={() => setBoard(b.key)} style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "7px 11px", borderRadius: 999, border: on ? "none" : `1px solid ${c.line}`, background: on ? c.accent : "transparent", color: on ? c.onAccent : c.textSoft, fontFamily: "inherit", fontSize: 11.5, fontWeight: 700, cursor: "pointer" }}>
+              <I size={13} aria-hidden="true" />{pickL(b.label)}
+            </button>
+          ); })}
+        </div>
+        {ranked.map((r, i) => (
+          <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", borderRadius: 14, marginBottom: 7, background: r.me ? c.accent : c.card2, color: r.me ? c.onAccent : c.text, border: r.me ? "none" : `1px solid ${c.line}` }}>
+            <span style={{ fontSize: 14, fontWeight: 800, width: 20, textAlign: "center" }}>{i + 1}</span>
+            <span style={{ width: 34, height: 34, borderRadius: 999, flexShrink: 0, background: r.me ? "rgba(255,255,255,0.25)" : c.card, display: "grid", placeItems: "center", fontSize: 14, fontWeight: 700, color: r.me ? c.onAccent : c.accentText }}>{r.name[0]}</span>
+            <div style={{ flex: 1, minWidth: 0, fontSize: 13.5, fontWeight: r.me ? 800 : 600 }}>{r.name}</div>
+            <div style={{ fontSize: 15, fontWeight: 800 }}>{sb.fmtV(r.v)}</div>
+          </div>
+        ))}
+      </Sect>
+
+      {/* Awareness season */}
+      <div style={{ ...card, background: `linear-gradient(135deg, ${c.accent}14, ${c.terra}14)`, border: `1px solid ${c.accent}44` }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 800, fontSize: 13.5, color: c.accentText }}><Clock size={16} aria-hidden="true" />{L("موسم الوعي", "Awareness Season")}</div>
+          <div style={{ fontSize: 12, fontWeight: 800, color: c.terra }}>{L(`${daysLeft} يوم متبقٍّ`, `${daysLeft} days left`)}</div>
+        </div>
+        <div style={{ height: 7, borderRadius: 9, background: c.card2, overflow: "hidden", marginBottom: 8 }}><div style={{ height: "100%", width: `${seasonPct}%`, background: `linear-gradient(90deg, ${c.accent}, ${c.terra})`, borderRadius: 9 }} /></div>
+        <div style={{ fontSize: 11.5, color: c.muted, lineHeight: 1.6 }}>{L("أنهِ الموسم ضمن الذهبي أو أعلى لتحصل على شارة الموسم ومكانة في قاعة المشاهير.", "Finish the season at Gold or above to earn the season badge and a spot in the hall of fame.")}</div>
+      </div>
+
+      {/* Hall of fame */}
+      <Sect title={L("قاعة المشاهير", "Hall of fame")} c={c}>
+        {hall.map((h, i) => { const I = h.icon; return (
+          <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "9px 0", borderBottom: i < hall.length - 1 ? `1px solid ${c.line}` : "none" }}>
+            <span style={{ width: 36, height: 36, borderRadius: 11, flexShrink: 0, background: c.accent + "16", display: "grid", placeItems: "center" }}><I size={18} color={c.accentText} aria-hidden="true" /></span>
+            <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: 13.5, fontWeight: 700 }}>{pickL(h.n)}</div><div style={{ fontSize: 11, color: c.muted }}>{pickL(h.note)}</div></div>
+            <span style={{ fontSize: 11, fontWeight: 800, color: c.accentText, background: c.card2, borderRadius: 999, padding: "4px 10px" }}>{pickL(h.lvl)}</span>
+          </div>
+        ); })}
+      </Sect>
+
+      {/* Badges */}
+      <Sect title={L("الشارات", "Badges")} c={c}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+          {badges.map((b) => { const I = b.icon; return (
+            <div key={b.key} style={{ display: "flex", alignItems: "center", gap: 10, background: b.earned ? c.card2 : "transparent", border: `1px solid ${c.line}`, borderRadius: 14, padding: 12, opacity: b.earned ? 1 : 0.55 }}>
+              <span style={{ width: 34, height: 34, borderRadius: 10, flexShrink: 0, background: b.earned ? c.accent + "1f" : c.card2, display: "grid", placeItems: "center" }}>
+                {b.earned ? <I size={16} color={c.accentText} aria-hidden="true" /> : <Lock size={14} color={c.muted} aria-hidden="true" />}
+              </span>
+              <div style={{ minWidth: 0 }}><div style={{ fontSize: 12.5, fontWeight: 700 }}>{pickL(b.name)}</div><div style={{ fontSize: 10.5, color: c.muted, lineHeight: 1.4 }}>{pickL(b.need)}</div></div>
+            </div>
+          ); })}
+        </div>
+      </Sect>
+
+      {/* Certificate */}
+      <div style={{ borderRadius: 20, padding: 20, marginBottom: 12, background: c.card, border: `2px solid ${c.accent}`, textAlign: "center" }}>
+        <ShieldCheck size={30} color={c.accentText} aria-hidden="true" />
+        <div style={{ fontSize: 12, color: c.muted, marginTop: 6 }}>{L("شهادة وعي مالي", "Certificate of Financial Awareness")}</div>
+        <div style={{ fontSize: 20, fontWeight: 800, marginTop: 6 }}>{s.name}</div>
+        <div style={{ fontSize: 12.5, color: c.textSoft, marginTop: 4, lineHeight: 1.7 }}>
+          {L(`أكمل رحلة وعي المالية كـ«${typeName}» وبلغ مستوى «${pickL(lvl)}» بلياقة مالية ${curFit}/100.`, `Completed the Waey awareness journey as a "${typeName}", reaching "${pickL(lvl)}" with a financial fitness of ${curFit}/100.`)}
+        </div>
+        <div style={{ fontSize: 10.5, color: c.muted, marginTop: 10 }}>{L("صادرة عن وعي", "Issued by Waey")} · {issueDate}</div>
+        <button onClick={shareLinkedIn} style={{ ...btn(c.accent, c.onAccent), display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, width: "auto", padding: "0 20px" }}>
+          <Send size={16} aria-hidden="true" />{L("شارك على لينكدإن", "Share on LinkedIn")}
+        </button>
       </div>
     </FullPage>
   );
@@ -4354,7 +4652,7 @@ function Sidebar() {
         <WaeyMark size={36} />
         <span style={{ fontWeight: 800, fontSize: 19 }}>{s.brand}</span>
       </button>
-      <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+      <nav aria-label={lang === "ar" ? "التنقل الرئيسي" : "Main navigation"} style={{ display: "flex", flexDirection: "column", gap: 5 }}>
         {items.map((x) => {
           const on = tab === x.id, Icon = x.icon;
           return (
@@ -4364,7 +4662,7 @@ function Sidebar() {
             </motion.button>
           );
         })}
-      </div>
+      </nav>
       <div style={{ marginTop: 18, borderTop: `1px solid ${c.line}`, paddingTop: 14, display: "flex", flexDirection: "column", gap: 5 }}>
         <button onClick={() => setOverlay("platform")} style={{ display: "flex", alignItems: "center", gap: 13, padding: "12px 14px", borderRadius: 14, border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 14, fontWeight: 500, background: "transparent", color: c.textSoft, textAlign: "start" }}><Store size={19} />{s.plat.title}</button>
       </div>
@@ -4381,7 +4679,7 @@ function Sidebar() {
   );
 }
 function BottomNav() {
-  const { c, s, tab, setTab } = useCtx();
+  const { c, s, tab, setTab, lang } = useCtx();
   const items = [
     { id: "home", label: s.nav.home, icon: Home }, { id: "analytics", label: s.nav.analytics, icon: BarChart3 },
     { id: "ai", label: s.nav.ai, icon: Sparkles, center: true }, { id: "invest", label: s.nav.invest, icon: TrendingUp },
@@ -4389,13 +4687,13 @@ function BottomNav() {
   ];
   return (
     <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, display: "flex", justifyContent: "center", background: `linear-gradient(180deg, transparent 0%, ${c.bg0} 55%)`, padding: "0 0 env(safe-area-inset-bottom,0px)" }}>
-      <div style={{ width: "100%", maxWidth: 600, minHeight: 84, display: "flex", alignItems: "center", justifyContent: "space-around", padding: "0 14px 14px" }}>
+      <nav aria-label={lang === "ar" ? "التنقل الرئيسي" : "Main navigation"} style={{ width: "100%", maxWidth: 600, minHeight: 84, display: "flex", alignItems: "center", justifyContent: "space-around", padding: "0 14px 14px" }}>
       {items.map((x) => {
         const on = tab === x.id, Icon = x.icon;
         if (x.center) return <motion.button key={x.id} onClick={() => setTab(x.id)} aria-label={x.label} aria-current={on ? "page" : undefined} whileTap={{ scale: 0.92 }} style={{ width: 58, height: 58, borderRadius: 20, border: "none", cursor: "pointer", background: `linear-gradient(135deg, ${c.accent}, ${c.accentText})`, display: "grid", placeItems: "center", y: -12, boxShadow: `0 12px 26px -6px ${c.accent}` }}><Icon size={26} color={c.onAccent} aria-hidden="true" /></motion.button>;
         return <motion.button key={x.id} onClick={() => setTab(x.id)} aria-current={on ? "page" : undefined} whileTap={{ scale: 0.9 }} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 4, color: on ? c.accentText : c.muted, flex: 1, position: "relative", minHeight: 48 }}><Icon size={22} aria-hidden="true" /><span style={{ fontSize: 10.5, fontWeight: on ? 700 : 500 }}>{x.label}</span>{on && <motion.span layoutId="waey-bottomnav-dot" transition={{ type: "spring", duration: 0.42, bounce: 0.16 }} style={{ position: "absolute", top: -6, width: 5, height: 5, borderRadius: 999, background: c.accentText }} />}</motion.button>;
       })}
-      </div>
+      </nav>
     </div>
   );
 }

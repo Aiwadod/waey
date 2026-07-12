@@ -7,6 +7,7 @@ import {
   dominantType,
   weakestGap,
   financialFitness,
+  nextFitness,
   budgetFor,
   levelFor,
   analyze,
@@ -98,6 +99,15 @@ describe("budget", () => {
     const v = budgetFor("vigilance").find((b) => b.key === "savings").pct;
     const base = budgetFor("avoidance").find((b) => b.key === "savings").pct;
     expect(v).toBeGreaterThan(base);
+  });
+});
+
+describe("daily fitness nudge", () => {
+  it("lifts on a committed day and dips on a missed day, staying in 0..100", () => {
+    expect(nextFitness(50, true)).toBe(52);
+    expect(nextFitness(50, false)).toBe(49);
+    expect(nextFitness(100, true)).toBe(100);
+    expect(nextFitness(0, false)).toBe(0);
   });
 });
 

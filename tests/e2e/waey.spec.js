@@ -69,7 +69,9 @@ test("valid login and guest entry persist the student app on reload", async ({ p
 
 test("loan success and insufficient-loan block are visible in the browser flow", async ({ page }) => {
   await enterAsGuest(page);
-  await page.getByRole("button", { name: /التحليلات|Analytics/ }).click();
+  // Analytics appears both as a Balance-card shortcut and a nav destination —
+  // click the primary navigation entry so the selector stays unambiguous.
+  await page.getByRole("navigation").getByRole("button", { name: /التحليلات|Analytics/ }).click();
 
   await page.getByPlaceholder(/المبلغ|Amount/).fill("650");
   await page.getByPlaceholder(/السبب|Reason/).fill("coffee e2e");
@@ -82,6 +84,26 @@ test("loan success and insufficient-loan block are visible in the browser flow",
   await page.getByPlaceholder(/السبب|Reason/).fill("rent e2e");
   await page.getByRole("button", { name: /تسجيل|Log/ }).click();
   await expect(page.getByText(/الرصيد لا يكفي|balance/i)).toBeVisible();
+});
+
+test("the journey dashboard and achievements page render for a guest", async ({ page }) => {
+  const pageErrors = [];
+  page.on("pageerror", (error) => pageErrors.push(error.message));
+  await enterAsGuest(page);
+
+  // Page 3 — the daily dashboard leads the student home.
+  await expect(page.getByText(/لياقتك المالية|Financial Fitness/)).toBeVisible();
+
+  // Page 4 — open the achievements overlay and confirm its sections render.
+  await page.getByRole("button", { name: /الإنجازات والتقدم|Achievements & progress/ }).click();
+  await expect(page.getByText(/لوحة الصدارة|Leaderboard/)).toBeVisible();
+  await expect(page.getByText(/سلّم المستويات|Level ladder/)).toBeVisible();
+
+  // The leaderboard boards switch without error.
+  await page.getByRole("button", { name: /^السلسلة$|^Streak$/ }).click();
+  await expect(page.getByText(/موسم الوعي|Awareness Season/)).toBeVisible();
+
+  expect(pageErrors).toEqual([]);
 });
 
 test("language switch updates document direction and persists across reload", async ({ page }) => {
