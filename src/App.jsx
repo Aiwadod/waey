@@ -229,16 +229,16 @@ const L = {
     dash: {
       period: ["أسبوع", "شهر", "فصل"],
       tabsUni: ["نظرة عامة", "ذكاء اصطناعي", "الإنفاق اليومي", "الدخل والمنح", "المزيد"],
-      tabsBank: ["نظرة عامة", "ذكاء اصطناعي", "الجامعات", "الإنفاق اليومي", "الفرص"],
+      tabsBank: ["نظرة عامة", "ذكاء اصطناعي", "رؤى الشباب", "الحملات والتقارير", "المزيد"],
       navUni: ["الرئيسية", "الإنفاق", "ذكاء", "الدخل", "المزيد"],
-      navBank: ["الرئيسية", "الجامعات", "ذكاء", "التحليلات", "المزيد"],
+      navBank: ["الرئيسية", "رؤى الشباب", "ذكاء", "الحملات", "المزيد"],
       college: "الكلية", allColleges: "كل الكليات",
       colleges: ["الحاسب", "الهندسة", "إدارة الأعمال", "الطب", "العلوم"],
       participation: "المشاركة", awareness: "متوسط الوعي", completion: "إكمال التحديات", activeUsers: "مستخدمون نشطون",
       personaMix: "توزيع الشخصيات المالية", tapForDetail: "اضغط للتفاصيل ←",
       chTitle: "التحديات الأكثر نجاحاً", chAccept: "نسبة القبول", chDone: "نسبة الإكمال",
       collegeTitle: "الوعي حسب الكلية", students: "طالب",
-      habitsTitle: "أكثر العادات السلبية", oppTitle: "فرص للبنك", ageGroup: "الفئة العمرية",
+      habitsTitle: "أكثر التحديات المالية شيوعاً", oppTitle: "فرص للبنك", ageGroup: "الفئة العمرية",
       trend: "الاتجاه", growth: "النمو", vs: "مقابل الفصل السابق",
       detailFor: (n) => `تفاصيل: ${n}`, share: "من الطلاب", back: "رجوع",
       anon: "كل البيانات مجمّعة ومجهّلة الهوية — بدون أي معلومة فردية",
@@ -287,6 +287,35 @@ const L = {
       suggestTitle: "مصادر دخل مقترحة (بالذكاء)", suggestSub: "مبنية على مهارات الطالب ووقته وسوق العمل الطلابي",
       uniPick: "اختر الجامعة", uniPickSub: "لكل جامعة تفاصيلها الخاصة",
       riyalM: "شهرياً",
+      engagementRateLbl: "معدل التفاعل مع التطبيق", awareImproveLbl: "نسبة التحسن في الوعي المالي",
+      kpisTitle: "مؤشرات الأداء (KPIs)",
+      kpiCampaigns: "حملات منفذة", kpiCampPart: "معدل مشاركة الحملات", kpiAvgCompletion: "متوسط إكمال الحملات",
+      kpiReports: "تقارير صادرة", kpiUserGrowth: "نمو المستخدمين", kpiContentEngage: "التفاعل مع المحتوى التوعوي",
+      insightsTitle: "رؤى الشباب (Youth Insights)",
+      mostEngagedUni: "الجامعة الأكثر تفاعلاً", engagementWord: "تفاعل",
+      topicsTitle: "أكثر المواضيع التعليمية تفاعلاً",
+      topics: [["أساسيات الميزانية الشخصية", 78], ["فهم الفائدة المركبة", 71], ["تجنّب ديون الاندفاع", 65], ["بناء صندوق طوارئ", 60]],
+      improveTrend: "اتجاه تحسّن السلوك المالي", improveTrendSub: "متوسط درجة الوعي المالي عبر آخر 6 أسابيع",
+      campTitle: "الحملات والتقارير", campSub: "أنشئ حملات توعية مالية وتابع أثرها",
+      campNew: "حملة جديدة", campNewSub: "استهدف جامعة أو شريحة، وحدّد الهدف والمدة",
+      campNameLbl: "اسم الحملة", campNamePh: "مثال: تحدي الادخار التلقائي",
+      campTargetLbl: "الجامعة المستهدفة", campAllUnis: "كل الجامعات",
+      campObjLbl: "الهدف", campObjs: ["زيادة الادخار الشهري", "خفض الشراء الاندفاعي", "رفع معدل إكمال التحديات", "دعم منقطعي المكافأة"],
+      campDurLbl: "المدة (أيام)", campContentLbl: "نوع المحتوى", campContents: ["تحدٍّ سلوكي", "محتوى تعليمي", "مسابقة", "برنامج مكافآت"],
+      campCreate: "إنشاء الحملة", campCancel: "إلغاء",
+      campStatusActive: "نشطة", campStatusDraft: "مسودة", campStatusCompleted: "مكتملة",
+      campParticipants: "المشاركون", campCompletion: "نسبة الإكمال", campImpact: "الأثر",
+      campEmpty: "لا حملات بعد — أنشئ أول حملة لك",
+      campLaunched: "حملات أُطلقت", campAvgPart: "متوسط المشاركة", campAvgDone: "متوسط الإكمال",
+      reportsTitle: "التقارير الدورية", reportsSub: "ملخص المؤشرات لتنزيل تقرير PDF أو Excel",
+      reportPeriod: ["شهري", "ربع سنوي"],
+      exportPdf: "تصدير PDF", exportExcel: "تصدير Excel",
+      campaigns: [
+        ["دفعة الادخار التلقائي", 0, "زيادة الادخار الشهري", 30, "active", 1240, 68, 5],
+        ["أسبوع توعية الشراء الاندفاعي", -1, "خفض الشراء الاندفاعي", 14, "active", 3400, 54, 3],
+        ["تحدي الراتب الأول", 5, "رفع معدل إكمال التحديات", 45, "completed", 860, 91, 8],
+        ["برنامج دعم منقطعي المكافأة", 2, "دعم منقطعي المكافأة", 21, "draft", 0, 0, 0],
+      ],
     },
     cashTitle: "كاش باك وعروض", cashSub: "استرجع جزء من مصاريفك اليومية", cashPageSub: "فعّل فئاتك واسترجع كاش باك مع كل عملية",
     cashEarned: "كاش باك هذا الشهر", cashActivate: "تفعيل", cashActive: "مفعّل", cashOn: "تم تفعيل الكاش باك", backWord: "كاش باك",
@@ -472,16 +501,16 @@ const L = {
     dash: {
       period: ["Week", "Month", "Term"],
       tabsUni: ["Overview", "AI Insights", "Daily spending", "Income & aid", "More"],
-      tabsBank: ["Overview", "AI Insights", "Universities", "Daily spending", "Opportunities"],
+      tabsBank: ["Overview", "AI Insights", "Youth Insights", "Campaigns & reports", "More"],
       navUni: ["Home", "Spending", "AI", "Income", "More"],
-      navBank: ["Home", "Universities", "AI", "Analytics", "More"],
+      navBank: ["Home", "Youth Insights", "AI", "Campaigns", "More"],
       college: "College", allColleges: "All colleges",
       colleges: ["Computer Science", "Engineering", "Business", "Medicine", "Science"],
       participation: "Participation", awareness: "Avg awareness", completion: "Challenge completion", activeUsers: "Active users",
       personaMix: "Financial personality mix", tapForDetail: "Tap for details →",
       chTitle: "Most successful challenges", chAccept: "Accept rate", chDone: "Completion rate",
       collegeTitle: "Awareness by college", students: "students",
-      habitsTitle: "Most common negative habits", oppTitle: "Opportunities for the bank", ageGroup: "Age group",
+      habitsTitle: "Most common financial challenges", oppTitle: "Opportunities for the bank", ageGroup: "Age group",
       trend: "Trend", growth: "Growth", vs: "vs last term",
       detailFor: (n) => `Details: ${n}`, share: "of students", back: "Back",
       anon: "All data aggregated & anonymized — no individual info",
@@ -530,6 +559,35 @@ const L = {
       suggestTitle: "AI-suggested income sources", suggestSub: "Based on student skills, time and the student job market",
       uniPick: "Choose university", uniPickSub: "Each university has its own details",
       riyalM: "/mo",
+      engagementRateLbl: "App engagement rate", awareImproveLbl: "Financial-awareness improvement",
+      kpisTitle: "Performance indicators (KPIs)",
+      kpiCampaigns: "Campaigns launched", kpiCampPart: "Campaign participation rate", kpiAvgCompletion: "Avg campaign completion",
+      kpiReports: "Reports issued", kpiUserGrowth: "User growth rate", kpiContentEngage: "Educational-content engagement",
+      insightsTitle: "Youth Insights",
+      mostEngagedUni: "Most engaged university", engagementWord: "engagement",
+      topicsTitle: "Most engaging educational topics",
+      topics: [["Personal budgeting basics", 78], ["Understanding compound interest", 71], ["Avoiding impulse debt", 65], ["Building an emergency fund", 60]],
+      improveTrend: "Financial-behavior improvement trend", improveTrendSub: "Avg financial-awareness score over the last 6 weeks",
+      campTitle: "Campaigns & reports", campSub: "Launch financial-awareness campaigns and track their impact",
+      campNew: "New campaign", campNewSub: "Target a university or segment, set objective and duration",
+      campNameLbl: "Campaign name", campNamePh: "e.g. Auto-savings challenge",
+      campTargetLbl: "Target university", campAllUnis: "All universities",
+      campObjLbl: "Objective", campObjs: ["Increase monthly savings", "Reduce impulsive buying", "Raise challenge completion", "Support stipend-cut students"],
+      campDurLbl: "Duration (days)", campContentLbl: "Content type", campContents: ["Behavioral challenge", "Educational content", "Contest", "Rewards program"],
+      campCreate: "Create campaign", campCancel: "Cancel",
+      campStatusActive: "Active", campStatusDraft: "Draft", campStatusCompleted: "Completed",
+      campParticipants: "Participants", campCompletion: "Completion rate", campImpact: "Impact",
+      campEmpty: "No campaigns yet — create your first one",
+      campLaunched: "Campaigns launched", campAvgPart: "Avg participation", campAvgDone: "Avg completion",
+      reportsTitle: "Periodic reports", reportsSub: "KPI summary — download as PDF or Excel",
+      reportPeriod: ["Monthly", "Quarterly"],
+      exportPdf: "Export PDF", exportExcel: "Export Excel",
+      campaigns: [
+        ["Auto-savings push", 0, "Increase monthly savings", 30, "active", 1240, 68, 5],
+        ["Impulse-buy awareness week", -1, "Reduce impulsive buying", 14, "active", 3400, 54, 3],
+        ["First-salary challenge", 5, "Raise challenge completion", 45, "completed", 860, 91, 8],
+        ["Stipend-cut support program", 2, "Support stipend-cut students", 21, "draft", 0, 0, 0],
+      ],
     },
     cashTitle: "Cashback & offers", cashSub: "Get part of your daily spending back", cashPageSub: "Activate your categories and earn cashback on every purchase",
     cashEarned: "Cashback this month", cashActivate: "Activate", cashActive: "Active", cashOn: "Cashback activated", backWord: "cashback",
@@ -1468,6 +1526,32 @@ function downloadXls(sheetName, rows, filename) {
   a.href = url; a.download = filename; document.body.appendChild(a); a.click();
   setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 500);
 }
+// تصدير PDF عبر نافذة طباعة المتصفح (بدون مكتبة خارجية) — المستخدم يختار "حفظ كـ PDF" من حوار الطباعة.
+function downloadPdfReport(title, subtitle, rows, lang) {
+  const ar = lang === "ar";
+  const win = window.open("", "_blank", "width=720,height=900");
+  if (!win) return;
+  const esc = (v) => String(v ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const trs = rows.map(([l, v]) => `<tr><td>${esc(l)}</td><td>${esc(v)}</td></tr>`).join("");
+  win.document.write(`<!doctype html><html dir="${ar ? "rtl" : "ltr"}" lang="${ar ? "ar" : "en"}"><head><meta charset="UTF-8"><title>${esc(title)}</title>
+<style>
+body{font-family:Arial,Tahoma,sans-serif;color:#0f2230;padding:32px;}
+h1{font-size:22px;margin:0 0 4px;}
+.sub{color:#5a6b75;font-size:13px;margin-bottom:24px;}
+table{width:100%;border-collapse:collapse;}
+td{padding:10px 12px;border-bottom:1px solid #e2e8ec;font-size:14px;}
+td:first-child{color:#5a6b75;}
+td:last-child{font-weight:700;text-align:${ar ? "left" : "right"};}
+.foot{margin-top:24px;font-size:11px;color:#8a97a0;}
+</style></head><body>
+<h1>${esc(title)}</h1><div class="sub">${esc(subtitle)}</div>
+<table>${trs}</table>
+<div class="foot">${ar ? "بيانات توضيحية للعرض التجريبي — Illustrative prototype demo data" : "Illustrative prototype demo data"}</div>
+</body></html>`);
+  win.document.close();
+  win.focus();
+  setTimeout(() => win.print(), 300);
+}
 // رسم متنوّع داخل فقاعة الشات: أعمدة / دائرة / ذبذبة
 function MiniChart({ data, c, kind = "bars" }) {
   if (kind === "donut") {
@@ -1831,6 +1915,124 @@ function IncomePanel({ c, D, lang, cutRate }) {
       ))}
     </div>
   </>);
+}
+// لوحة إدارة الحملات — إنشاء ومتابعة حملات التوعية المالية الموجّهة للجامعات
+function CampaignsPanel({ c, D, lang }) {
+  const ar = lang === "ar";
+  const statusMeta = { active: [D.campStatusActive, c.green], draft: [D.campStatusDraft, c.muted], completed: [D.campStatusCompleted, c.accentText] };
+  const [campaigns, setCampaigns] = useState(() => D.campaigns.map((x, i) => ({ id: i, name: x[0], target: x[1], objective: x[2], duration: x[3], status: x[4], participants: x[5], completion: x[6], impact: x[7] })));
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({ name: "", target: -1, objective: 0, duration: 30, content: 0 });
+  const launched = campaigns.length;
+  const avgPart = campaigns.length ? Math.round(campaigns.reduce((a, x) => a + x.participants, 0) / campaigns.length) : 0;
+  const avgDone = campaigns.length ? Math.round(campaigns.reduce((a, x) => a + x.completion, 0) / campaigns.length) : 0;
+  const targetName = (t) => (t < 0 ? D.campAllUnis : D.uniList[t]);
+  // Engagement level reads off the campaign's own completion rate, so it never
+  // disagrees with the completion bar shown right below it.
+  const engLevel = (pct) => (pct >= 70 ? [D.wellHigh, c.green] : pct >= 40 ? [D.wellMid, c.terra] : [D.wellLow, c.muted]);
+  const create = () => {
+    if (!form.name.trim()) return;
+    setCampaigns((cc) => [{ id: Date.now(), name: form.name.trim(), target: form.target, objective: D.campObjs[form.objective], duration: form.duration, status: "draft", participants: 0, completion: 0, impact: 0 }, ...cc]);
+    setForm({ name: "", target: -1, objective: 0, duration: 30, content: 0 });
+    setOpen(false);
+  };
+  return (
+    <>
+    <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18, marginBottom: 14 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 4, flexWrap: "wrap" }}>
+        <div><h2 style={{ fontWeight: 700, fontSize: 13.5, margin: 0, color: c.accentText }}>{D.campTitle}</h2><div style={{ fontSize: 11, color: c.muted, marginTop: 2 }}>{D.campSub}</div></div>
+        <button onClick={() => setOpen(true)} style={{ display: "flex", alignItems: "center", gap: 6, padding: "10px 14px", borderRadius: 12, border: "none", background: c.accent, color: c.onAccent, fontFamily: "inherit", fontSize: 12.5, fontWeight: 800, cursor: "pointer", flexShrink: 0 }}><Plus size={15} aria-hidden="true" />{D.campNew}</button>
+      </div>
+      <div style={{ display: "flex", gap: 10, margin: "14px 0" }}>
+        <DashStat label={D.campLaunched} value={String(launched)} col={c.accent} c={c} />
+        <DashStat label={D.campAvgPart} value={String(avgPart)} col={c.terra} c={c} />
+        <DashStat label={D.campAvgDone} value={`${avgDone}%`} col={c.green} c={c} />
+      </div>
+      {campaigns.length === 0 && <div style={{ textAlign: "center", color: c.muted, fontSize: 12.5, padding: "18px 0" }}>{D.campEmpty}</div>}
+      {campaigns.map((x) => { const st = statusMeta[x.status]; const eng = engLevel(x.completion); return (
+        <div key={x.id} style={{ background: c.card2, borderRadius: 14, padding: 13, marginBottom: 10 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+            <div style={{ fontWeight: 700, fontSize: 13 }}>{x.name}</div>
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", flexShrink: 0, justifyContent: "flex-end" }}>
+              <span style={{ fontSize: 10, fontWeight: 800, color: st[1], background: st[1] + "1f", borderRadius: 999, padding: "3px 9px", whiteSpace: "nowrap" }}>{st[0]}</span>
+              <span style={{ fontSize: 10, fontWeight: 800, color: eng[1], background: eng[1] + "1f", borderRadius: 999, padding: "3px 9px", whiteSpace: "nowrap" }}>{eng[0]}</span>
+            </div>
+          </div>
+          <div style={{ fontSize: 11, color: c.muted, marginTop: 3 }}>{targetName(x.target)} · {x.objective} · {x.duration} {ar ? "يوم" : "days"}</div>
+          <div style={{ display: "flex", gap: 14, marginTop: 10 }}>
+            <div style={{ flex: 1 }}><div style={{ fontSize: 10, color: c.muted }}>{D.campParticipants}</div><div style={{ fontSize: 13, fontWeight: 800 }}><Metric value={x.participants.toLocaleString("en-US")} /></div></div>
+            <div style={{ flex: 1 }}><div style={{ fontSize: 10, color: c.muted, marginBottom: 3 }}>{D.campCompletion} <Metric value={`${x.completion}%`} /></div><div style={{ height: 6, borderRadius: 9, background: c.line }}><div style={{ height: "100%", width: `${x.completion}%`, background: c.accentText, borderRadius: 9 }} /></div></div>
+            <div style={{ flex: 1 }}><div style={{ fontSize: 10, color: c.muted }}>{D.campImpact}</div><div style={{ fontSize: 13, fontWeight: 800, color: c.green }}>{x.impact ? `+${x.impact}%` : "—"}</div></div>
+          </div>
+        </div>
+      ); })}
+    </div>
+    {open && (
+      <div onClick={() => setOpen(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,8,14,0.6)", backdropFilter: "blur(5px)", display: "grid", placeItems: "center", zIndex: 80, padding: 20 }}>
+        <div onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={D.campNew} style={{ width: "100%", maxWidth: 380, maxHeight: "85vh", overflowY: "auto", background: c.card, border: `1px solid ${c.line}`, borderRadius: 22, padding: 22, animation: "wPop .28s ease both" }}>
+          <div style={{ fontWeight: 800, fontSize: 17, marginBottom: 4 }}>{D.campNew}</div>
+          <div style={{ fontSize: 12, color: c.muted, marginBottom: 16 }}>{D.campNewSub}</div>
+          <label style={{ display: "block", fontSize: 11.5, fontWeight: 700, color: c.muted, marginBottom: 6 }}>{D.campNameLbl}</label>
+          <input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder={D.campNamePh} style={{ width: "100%", padding: "11px 13px", borderRadius: 12, border: `1px solid ${c.line}`, background: c.card2, color: c.text, fontFamily: "inherit", fontSize: 13, marginBottom: 14, boxSizing: "border-box" }} />
+          <label style={{ display: "block", fontSize: 11.5, fontWeight: 700, color: c.muted, marginBottom: 6 }}>{D.campTargetLbl}</label>
+          <select value={form.target} onChange={(e) => setForm((f) => ({ ...f, target: Number(e.target.value) }))} style={{ width: "100%", padding: "11px 13px", borderRadius: 12, border: `1px solid ${c.line}`, background: c.card2, color: c.text, fontFamily: "inherit", fontSize: 13, marginBottom: 14, boxSizing: "border-box" }}>
+            <option value={-1}>{D.campAllUnis}</option>
+            {D.uniList.map((n, i) => <option key={i} value={i}>{n}</option>)}
+          </select>
+          <label style={{ display: "block", fontSize: 11.5, fontWeight: 700, color: c.muted, marginBottom: 6 }}>{D.campObjLbl}</label>
+          <select value={form.objective} onChange={(e) => setForm((f) => ({ ...f, objective: Number(e.target.value) }))} style={{ width: "100%", padding: "11px 13px", borderRadius: 12, border: `1px solid ${c.line}`, background: c.card2, color: c.text, fontFamily: "inherit", fontSize: 13, marginBottom: 14, boxSizing: "border-box" }}>
+            {D.campObjs.map((n, i) => <option key={i} value={i}>{n}</option>)}
+          </select>
+          <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
+            <div style={{ flex: 1 }}>
+              <label style={{ display: "block", fontSize: 11.5, fontWeight: 700, color: c.muted, marginBottom: 6 }}>{D.campDurLbl}</label>
+              <input type="number" min={1} max={180} value={form.duration} onChange={(e) => setForm((f) => ({ ...f, duration: Math.max(1, Number(e.target.value) || 1) }))} style={{ width: "100%", padding: "11px 13px", borderRadius: 12, border: `1px solid ${c.line}`, background: c.card2, color: c.text, fontFamily: "inherit", fontSize: 13, boxSizing: "border-box" }} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <label style={{ display: "block", fontSize: 11.5, fontWeight: 700, color: c.muted, marginBottom: 6 }}>{D.campContentLbl}</label>
+              <select value={form.content} onChange={(e) => setForm((f) => ({ ...f, content: Number(e.target.value) }))} style={{ width: "100%", padding: "11px 13px", borderRadius: 12, border: `1px solid ${c.line}`, background: c.card2, color: c.text, fontFamily: "inherit", fontSize: 13, boxSizing: "border-box" }}>
+                {D.campContents.map((n, i) => <option key={i} value={i}>{n}</option>)}
+              </select>
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 10 }}>
+            <button onClick={() => setOpen(false)} style={{ flex: 1, padding: "12px", borderRadius: 13, border: `1px solid ${c.line}`, background: "transparent", color: c.text, cursor: "pointer", fontFamily: "inherit", fontSize: 13.5, fontWeight: 700 }}>{D.campCancel}</button>
+            <button onClick={create} disabled={!form.name.trim()} style={{ flex: 1, padding: "12px", borderRadius: 13, border: "none", background: c.accent, color: c.onAccent, cursor: form.name.trim() ? "pointer" : "not-allowed", opacity: form.name.trim() ? 1 : 0.5, fontFamily: "inherit", fontSize: 13.5, fontWeight: 800 }}>{D.campCreate}</button>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
+  );
+}
+// لوحة التقارير الدورية — ملخص مؤشرات قابل للتصدير PDF / Excel
+function ReportsPanel({ c, D, lang, aware, users, savedM }) {
+  const ar = lang === "ar";
+  const [rp, setRp] = useState(0);
+  const rows = [
+    [D.activeUsers, users],
+    [D.awareness, `${aware}%`],
+    [ar ? "جامعات شريكة" : "Partner universities", String(D.uniList.length)],
+    [D.savedTotal, `${savedM.toFixed(1)}${D.unitM}`],
+  ];
+  const doPdf = () => downloadPdfReport(D.reportsTitle, D.reportPeriod[rp], rows, lang);
+  const doExcel = () => downloadXls(D.reportsTitle, [[ar ? "المؤشر" : "Metric", ar ? "القيمة" : "Value"], ...rows], `waey-report-${rp === 0 ? "monthly" : "quarterly"}.xls`);
+  return (
+    <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18, marginBottom: 14 }}>
+      <h2 style={{ fontWeight: 700, fontSize: 13.5, margin: 0, color: c.accentText }}>{D.reportsTitle}</h2>
+      <div style={{ fontSize: 11, color: c.muted, marginBottom: 12 }}>{D.reportsSub}</div>
+      <div style={{ marginBottom: 12 }}><Segmented options={D.reportPeriod} value={rp} onChange={setRp} c={c} label={D.reportPeriod.join(" / ")} /></div>
+      {rows.map(([l, v]) => (
+        <div key={l} style={{ display: "flex", justifyContent: "space-between", padding: "9px 0", borderBottom: `1px solid ${c.line}`, fontSize: 12.5 }}>
+          <span style={{ color: c.muted }}>{l}</span><span style={{ fontWeight: 700 }}>{v}</span>
+        </div>
+      ))}
+      <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
+        <button onClick={doPdf} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "11px", borderRadius: 12, border: `1px solid ${c.line}`, background: "transparent", color: c.text, cursor: "pointer", fontFamily: "inherit", fontSize: 12.5, fontWeight: 800 }}><Printer size={15} aria-hidden="true" />{D.exportPdf}</button>
+        <button onClick={doExcel} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "11px", borderRadius: 12, border: `1px solid ${c.green}`, background: c.green + "18", color: c.green, cursor: "pointer", fontFamily: "inherit", fontSize: 12.5, fontWeight: 800 }}><FileSpreadsheet size={15} aria-hidden="true" />{D.exportExcel}</button>
+      </div>
+    </div>
+  );
 }
 // نافذة تأكيد
 function ConfirmDialog({ title, sub, yes, no, onYes, onNo, c, danger }) {
@@ -2218,6 +2420,20 @@ function BankDashInner({ onLogout, onb, doneOnb }) {
   // so the stacked bar reconciles with the ranking list.
   const regionCols = [c.accent, c.accentText, c.terra];
   const regionData = D.regions.map((rn, ri) => [rn, rankBase.filter((u) => u.region === ri).reduce((a, u) => a + u.v[0], 0), regionCols[ri % regionCols.length]]);
+  // Campaign KPI row on the Dashboard reads the same seed data as the Campaigns
+  // panel below, so the two pages never disagree on how many campaigns exist.
+  const campaignsSeed = D.campaigns;
+  const campAvgCompletion = Math.round(campaignsSeed.reduce((a, x) => a + x[6], 0) / campaignsSeed.length);
+  // Growth rate reconciles with the Active-users sparkline's own series (first → last).
+  const usersTrend = riseTo(usersK);
+  const growthPct = Math.round((usersTrend[usersTrend.length - 1] / usersTrend[0] - 1) * 100);
+  const engagementRate = clampPct(scaleUp(57, period, null));
+  // Awareness improvement reconciles with the awareness ring's own series (first → last),
+  // same reconciliation pattern as growthPct above.
+  const awareTrend = riseTo(aware);
+  const awareImprovePct = Math.round((awareTrend[awareTrend.length - 1] / awareTrend[0] - 1) * 100);
+  const mostEngaged = [...rankBase].sort((a, b) => b.v[1] - a.v[1])[0];
+  const trendWeeks = [58, 62, 66, 70, 73, 76];
   if (sel) {
     const [n, pct, col, kind] = sel;
     const dtrend = [0.82, 0.9, 0.96, 1].map((f, i) => ({ l: String(i + 1), v: clampPct(Math.round(pct * f)) }));
@@ -2242,7 +2458,7 @@ function BankDashInner({ onLogout, onb, doneOnb }) {
       { tab: 0, label: D.navBank[0], icon: Home },
       { tab: 2, label: D.navBank[1], icon: Users },
       { tab: 1, label: D.navBank[2], icon: Sparkles, center: true },
-      { tab: 3, label: D.navBank[3], icon: BarChart3 },
+      { tab: 3, label: D.navBank[3], icon: Target },
       { tab: 4, label: D.navBank[4], icon: LayoutGrid },
     ]}>
       {tab === 1 ? <RoleAIChat scope="bank" data={{ awareness: aware, cutRate }} /> : (<>
@@ -2256,8 +2472,8 @@ function BankDashInner({ onLogout, onb, doneOnb }) {
         <AlertsStrip c={c} D={D} lang={lang} scope="bank" cutRate={cutRate} />
         <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18, marginBottom: 14 }}>
           <div style={{ display: "flex", justifyContent: "space-around", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
-            <RingStat value={aware} label={D.awareness} col={c.accent} c={c} />
-            <RingStat value={82} label={lang === "ar" ? "أعمار 18–24" : "Ages 18–24"} col={c.terra} c={c} />
+            <RingStat value={engagementRate} label={D.engagementRateLbl} col={c.accent} c={c} />
+            <RingStat value={awareImprovePct} label={D.awareImproveLbl} col={c.terra} c={c} />
             <RingStat value={clampPct(scaleUp(21, period, null))} label={D.invPart} col={c.green} c={c} />
           </div>
         </div>
@@ -2265,6 +2481,19 @@ function BankDashInner({ onLogout, onb, doneOnb }) {
           <TrendStat label={D.activeUsers} value={<Metric value={users} />} col={c.accentText} c={c} trend={riseTo(usersK)} />
           <TrendStat label={D.savedTotal} value={<><Metric value={savedM.toFixed(1)} /><span style={{ fontSize: 12 }}>{D.unitM}</span> <RS size="0.55em" color={c.muted} /></>} col={c.green} c={c} trend={riseTo(savedM)} />
           <TrendStat label={lang === "ar" ? "جامعات" : "Universities"} value={<Metric value="6" />} col={c.terra} c={c} trend={[3, 4, 4, 5, 6]} />
+        </div>
+        <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18, marginBottom: 14 }}>
+          <h2 style={{ fontWeight: 700, fontSize: 13.5, margin: "0 0 12px", color: c.accentText }}>{D.kpisTitle}</h2>
+          <div style={{ display: "flex", gap: 10, marginBottom: 10 }}>
+            <DashStat label={D.kpiCampaigns} value={String(campaignsSeed.length)} col={c.accent} c={c} />
+            <DashStat label={D.kpiCampPart} value="41%" col={c.terra} c={c} />
+            <DashStat label={D.kpiAvgCompletion} value={`${campAvgCompletion}%`} col={c.green} c={c} />
+          </div>
+          <div style={{ display: "flex", gap: 10 }}>
+            <DashStat label={D.kpiReports} value="12" col={c.accentText} c={c} />
+            <DashStat label={D.kpiUserGrowth} value={`+${growthPct}%`} col={c.green} c={c} />
+            <DashStat label={D.kpiContentEngage} value="71%" col={c.accent} c={c} />
+          </div>
         </div>
         <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18, marginBottom: 14 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, gap: 10, flexWrap: "wrap" }}>
@@ -2296,39 +2525,7 @@ function BankDashInner({ onLogout, onb, doneOnb }) {
         </div>
         <div style={{ background: c.card, border: `1px solid ${c.line}`, borderInlineStart: `4px solid ${c.terra}`, color: c.text, borderRadius: 18, padding: 16, fontSize: 13, fontWeight: 600, lineHeight: 1.7 }}><Sparkles size={16} color={c.terraText} aria-hidden="true" style={{ verticalAlign: "middle", marginInlineEnd: 6 }} />{D.insightBank}</div>
       </>)}
-      {tab === 2 && (() => {
-        const u = rankBase[uniPick];
-        const uAware = u.v[2], uSave = u.v[0], uCut = clampPct(Math.round(cutRate * (1 + uniPick * 0.12)));
-        const uPersShares = normalizeShares([34 + uniPick * 2, 27 - uniPick, 22, 17 + uniPick]);
-        const uPers = ["social", "impulsive", "emotional", "planning"].map((k, i) => [lang === "ar" ? PERSONA_META[k].ar : PERSONA_META[k].en, uPersShares[i], personaColors[i]]);
-        return (<>
-          <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 15, padding: "11px 13px", marginBottom: 12 }}>
-            <div style={{ fontSize: 11, color: c.muted, marginBottom: 8, fontWeight: 700 }}><Building2 size={13} aria-hidden="true" style={{ verticalAlign: "middle", marginInlineEnd: 4 }} /> {D.uniPick} · {D.uniPickSub}</div>
-            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }} role="radiogroup" aria-label={D.uniPick}>{rankBase.map((x, i) => <button key={i} role="radio" aria-checked={uniPick === i} onClick={() => setUniPick(i)} style={{ padding: "8px 11px", borderRadius: 999, border: uniPick === i ? "none" : `1px solid ${c.line}`, background: uniPick === i ? c.accent : "transparent", color: uniPick === i ? c.onAccent : c.muted, fontSize: 11, fontWeight: 700, fontFamily: "inherit", cursor: "pointer" }}>{x.n}</button>)}</div>
-          </div>
-          <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 16, marginBottom: 12 }}>
-            <div style={{ display: "flex", justifyContent: "space-around", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-              <RingStat value={uAware} label={D.awareness} col={c.accent} c={c} size={82} />
-              <RingStat value={uCut} label={D.stipendCut} col={c.terra} c={c} size={82} />
-              <div style={{ textAlign: "center" }}><div style={{ fontSize: 22, fontWeight: 800, color: c.green }}><Metric value={String(uSave)} /> <RS size="0.55em" color={c.muted} /></div><div style={{ fontSize: 10.5, color: c.muted }}>{D.avgSave}</div></div>
-            </div>
-          </div>
-          <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18, marginBottom: 12 }}>
-            <h2 style={{ fontWeight: 800, fontSize: 13.5, margin: 0, color: c.text }}>{u.n}</h2>
-            <div style={{ fontSize: 11, color: c.muted, marginBottom: 8 }}>{D.personaMix}</div>
-            <Radar c={c} label={D.personaMix} data={(lang === "ar" ? ["اجتماعي", "اندفاع", "عاطفي", "تخطيط"] : ["Social", "Impulse", "Emotional", "Planning"]).map((n, i) => [n, uPersShares[i], personaColors[i]])} />
-          </div>
-          <DailySpendPanel c={c} D={D} lang={lang} mult={benM[0] * (1 + uniPick * 0.04)} />
-        </>);
-      })()}
-      {tab === 3 && (<>
-        <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4, marginBottom: 14 }} role="radiogroup" aria-label={D.benSelect}>{D.benSegs.map((x, i) => <button key={i} role="radio" aria-checked={ben === i} onClick={() => setBen(i)} style={{ padding: "8px 13px", borderRadius: 999, border: ben === i ? "none" : `1px solid ${c.line}`, background: ben === i ? c.accent : "transparent", color: ben === i ? c.onAccent : c.muted, fontSize: 11.5, fontWeight: 700, fontFamily: "inherit", cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0 }}>{x}</button>)}</div>
-        <DailySpendPanel c={c} D={D} lang={lang} mult={benM[0]} />
-        <AcademicPanel c={c} D={D} lang={lang} />
-        <IncomePanel c={c} D={D} lang={lang} cutRate={cutRate} />
-      </>)}
-      {tab === 4 && (<>
-        <GovernancePanel c={c} D={D} lang={lang} />
+      {tab === 2 && (<>
         <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18, marginBottom: 14 }}>
           <h2 style={{ fontWeight: 700, fontSize: 13.5, margin: "0 0 14px", color: c.accentText }}>{D.personaMix}</h2>
           <div style={{ marginBottom: 16 }}><Donut c={c} data={personas.map(([n, pct, col]) => ({ l: n, v: pct, col }))} center={users} centerSub={D.activeUsers} /></div>
@@ -2336,9 +2533,64 @@ function BankDashInner({ onLogout, onb, doneOnb }) {
         </div>
         <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18, marginBottom: 14 }}>
           <h2 style={{ fontWeight: 700, fontSize: 13.5, margin: "0 0 4px", color: c.terra }}>{D.habitsTitle}</h2>
-          <div style={{ fontSize: 11, color: c.muted, marginBottom: 14 }}>{lang === "ar" ? "اضغط أي عادة لتفاصيلها" : "Tap any habit for details"}</div>
+          <div style={{ fontSize: 11, color: c.muted, marginBottom: 14 }}>{lang === "ar" ? "اضغط أي تحدٍّ لتفاصيله" : "Tap any challenge for details"}</div>
           {habits.map(([n, pct, col]) => <BarRow key={n} n={n} pct={pct} col={col} c={c} onClick={() => setSel([n, pct, col, "share"])} sub={D.tapForDetail} />)}
         </div>
+        <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18, marginBottom: 14, display: "flex", alignItems: "center", gap: 14 }}>
+          <RingStat value={mostEngaged.v[1]} label={D.engagementWord} col={c.terra} c={c} size={78} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 11, color: c.muted, fontWeight: 700 }}>{D.mostEngagedUni}</div>
+            <div style={{ fontWeight: 800, fontSize: 16, marginTop: 3 }}>{mostEngaged.n}</div>
+            <div style={{ fontSize: 11, color: c.muted, marginTop: 3 }}><Metric value={`${mostEngaged.v[1]}%`} /> {D.engagementWord}</div>
+          </div>
+        </div>
+        <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18, marginBottom: 14 }}>
+          <h2 style={{ fontWeight: 700, fontSize: 13.5, margin: "0 0 4px", color: c.accentText }}>{D.topicsTitle}</h2>
+          <div style={{ fontSize: 11, color: c.muted, marginBottom: 14 }}>{D.tapForDetail}</div>
+          {D.topics.map(([n, pct], i) => { const col = [c.accent, c.accentText, c.terra, c.green][i % 4]; return <BarRow key={n} n={n} pct={pct} col={col} c={c} onClick={() => setSel([n, pct, col, "share"])} sub={D.tapForDetail} />; })}
+        </div>
+        <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18, marginBottom: 14 }}>
+          <h2 style={{ fontWeight: 700, fontSize: 13, margin: "0 0 4px", color: c.accentText }}>{D.improveTrend}</h2>
+          <div style={{ fontSize: 11, color: c.muted, marginBottom: 8 }}>{D.improveTrendSub}</div>
+          <MiniBars data={trendWeeks.map((v, i) => ({ l: String(i + 1), v }))} c={c} col={c.accent} max={100} />
+        </div>
+      </>)}
+      {tab === 3 && (<>
+        <CampaignsPanel c={c} D={D} lang={lang} />
+        <ReportsPanel c={c} D={D} lang={lang} aware={aware} users={users} savedM={savedM} />
+      </>)}
+      {tab === 4 && (<>
+        <GovernancePanel c={c} D={D} lang={lang} />
+        {(() => {
+          const u = rankBase[uniPick];
+          const uAware = u.v[2], uSave = u.v[0], uCut = clampPct(Math.round(cutRate * (1 + uniPick * 0.12)));
+          const uPersShares = normalizeShares([34 + uniPick * 2, 27 - uniPick, 22, 17 + uniPick]);
+          return (<>
+            <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 15, padding: "11px 13px", marginBottom: 12 }}>
+              <div style={{ fontSize: 11, color: c.muted, marginBottom: 8, fontWeight: 700 }}><Building2 size={13} aria-hidden="true" style={{ verticalAlign: "middle", marginInlineEnd: 4 }} /> {D.uniPick} · {D.uniPickSub}</div>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }} role="radiogroup" aria-label={D.uniPick}>{rankBase.map((x, i) => <button key={i} role="radio" aria-checked={uniPick === i} onClick={() => setUniPick(i)} style={{ padding: "8px 11px", borderRadius: 999, border: uniPick === i ? "none" : `1px solid ${c.line}`, background: uniPick === i ? c.accent : "transparent", color: uniPick === i ? c.onAccent : c.muted, fontSize: 11, fontWeight: 700, fontFamily: "inherit", cursor: "pointer" }}>{x.n}</button>)}</div>
+            </div>
+            <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 16, marginBottom: 12 }}>
+              <div style={{ display: "flex", justifyContent: "space-around", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                <RingStat value={uAware} label={D.awareness} col={c.accent} c={c} size={82} />
+                <RingStat value={uCut} label={D.stipendCut} col={c.terra} c={c} size={82} />
+                <div style={{ textAlign: "center" }}><div style={{ fontSize: 22, fontWeight: 800, color: c.green }}><Metric value={String(uSave)} /> <RS size="0.55em" color={c.muted} /></div><div style={{ fontSize: 10.5, color: c.muted }}>{D.avgSave}</div></div>
+              </div>
+            </div>
+            <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18, marginBottom: 12 }}>
+              <h2 style={{ fontWeight: 800, fontSize: 13.5, margin: 0, color: c.text }}>{u.n}</h2>
+              <div style={{ fontSize: 11, color: c.muted, marginBottom: 8 }}>{D.personaMix}</div>
+              <Radar c={c} label={D.personaMix} data={(lang === "ar" ? ["اجتماعي", "اندفاع", "عاطفي", "تخطيط"] : ["Social", "Impulse", "Emotional", "Planning"]).map((n, i) => [n, uPersShares[i], personaColors[i]])} />
+            </div>
+            <div style={{ fontSize: 11, color: c.muted, fontWeight: 700, margin: "0 2px 4px" }}>{lang === "ar" ? `الإنفاق اليومي — ${u.n}` : `Daily spending — ${u.n}`}</div>
+            <DailySpendPanel c={c} D={D} lang={lang} mult={benM[0] * (1 + uniPick * 0.04)} />
+          </>);
+        })()}
+        <h2 style={{ fontWeight: 700, fontSize: 13.5, color: c.accentText, margin: "4px 0 11px" }}>{lang === "ar" ? "التحليل العام لكل الطلاب" : "Overall analysis, all students"}</h2>
+        <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4, marginBottom: 14 }} role="radiogroup" aria-label={D.benSelect}>{D.benSegs.map((x, i) => <button key={i} role="radio" aria-checked={ben === i} onClick={() => setBen(i)} style={{ padding: "8px 13px", borderRadius: 999, border: ben === i ? "none" : `1px solid ${c.line}`, background: ben === i ? c.accent : "transparent", color: ben === i ? c.onAccent : c.muted, fontSize: 11.5, fontWeight: 700, fontFamily: "inherit", cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0 }}>{x}</button>)}</div>
+        <DailySpendPanel c={c} D={D} lang={lang} mult={benM[0]} />
+        <AcademicPanel c={c} D={D} lang={lang} />
+        <IncomePanel c={c} D={D} lang={lang} cutRate={cutRate} />
         <h2 style={{ fontWeight: 700, fontSize: 13.5, color: c.accentText, margin: "16px 0 11px" }}>{D.oppTitle}</h2>
         {D.opps.map(([t, d], i) => (
           <div key={i} style={{ display: "flex", gap: 12, background: c.card, border: `1px solid ${c.line}`, borderRadius: 16, padding: 15, marginBottom: 11 }}>
