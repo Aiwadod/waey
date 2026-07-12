@@ -5,6 +5,7 @@ import { applyLanguageMetadata, translateSystemMessages } from "./lib/i18n.js";
 import { resolveInitialScreen, sanitizeScreen, screenForHash, SCREEN_HASHES } from "./lib/routing.js";
 import { clearSession, createGuestSession, createLoginSession, loadSession, saveScreen, saveSession } from "./lib/session.js";
 import { applyThemeVars, FONT_STACK, themes } from "./lib/theme.js";
+import { KLONTZ_QUESTIONS, COMB_QUESTIONS, CHOICES, KLONTZ_LABELS, COMB_LABELS, levelFor, analyze } from "./lib/behavior.js";
 import {
   Home, BarChart3, Sparkles, TrendingUp, Bell, Plus, ChevronLeft, ChevronRight, Wallet, Trophy,
   Users, Target, BookOpen, HelpCircle, Coins, Send, Sun, Moon, Bus, Gamepad2, Coffee,
@@ -2370,38 +2371,67 @@ function Chips({ options, value, onChange, c, label }) {
 function Assessment() {
   const { c, s, lang, dir, setScreen, setPersona, setAssess, enterGuest, theme } = useCtx();
   const A = s.as;
+  const ar = lang === "ar";
+  const L = (o) => (o && (o[lang] ?? o.ar ?? o.en)) || "";
+  // Flow: intro → profile (kept) → klontz(10) → bridge → comb(6) → loading → result.
   const [step, setStep] = useState("intro");
   const [slide, setSlide] = useState(0);
   const [profile, setProfile] = useState({ age: 0, uni: 0, city: 0, income: 1, source: 0, goal: 0 });
-  const [qi, setQi] = useState(0);
-  const [answers, setAnswers] = useState({});
+  const [ki, setKi] = useState(0);
+  const [ci, setCi] = useState(0);
+  const [answers, setAnswers] = useState({}); // keyed by question id (k1.., c1..)
   const [result, setResult] = useState(null);
+  const totalQ = KLONTZ_QUESTIONS.length + COMB_QUESTIONS.length;
+  const doneQ = step === "klontz" ? ki : step === "comb" ? KLONTZ_QUESTIONS.length + ci : 0;
 
   useEffect(() => {
     if (step !== "loading") return;
     const incomeKey = A.incomes[profile.income][0];
     const income = INCOME_MAP[incomeKey] || 1000;
-    const ansKeys = {}; ASSESS_Q.forEach((q, i) => { ansKeys["q" + (i + 1)] = answers[i]; });
-    const r = analyzeBehavior(ansKeys, income);
-    const t = setTimeout(() => { setResult(r); setStep("result"); }, 2600);
+    const r = analyze(answers, income);
+    const t = setTimeout(() => { setResult(r); setStep("result"); }, prefersReducedMotion() ? 300 : 2200);
     return () => clearTimeout(t);
   }, [step]);
 
   // A guard blocks double-taps: two rapid answers used to schedule two
   // advance timeouts, silently skipping a question and corrupting the result.
   const advancing = useRef(false);
-  function answer(k) {
+  function pick(v) {
     if (advancing.current) return;
     advancing.current = true;
-    setAnswers((a) => ({ ...a, [qi]: k }));
+    const isK = step === "klontz";
+    const q = isK ? KLONTZ_QUESTIONS[ki] : COMB_QUESTIONS[ci];
+    setAnswers((a) => ({ ...a, [q.id]: v }));
     setTimeout(() => {
       advancing.current = false;
-      if (qi < ASSESS_Q.length - 1) setQi((v) => v + 1);
-      else setStep("loading");
-    }, 160);
+      if (isK) { if (ki + 1 < KLONTZ_QUESTIONS.length) setKi((x) => x + 1); else setStep("bridge"); }
+      else { if (ci + 1 < COMB_QUESTIONS.length) setCi((x) => x + 1); else setStep("loading"); }
+    }, 150);
   }
-  function finish() { const map = { social: 0, emotional: 1, impulsive: 2, planning: 0 }; setPersona(map[result.dominant] ?? 0); if (result) setAssess(result); enterGuest(); }
+  function finish() {
+    if (result) {
+      // Map the Klontz type into the legacy persona index + dna/score so the
+      // current home keeps rendering until the new dashboard (Package B) replaces it.
+      const personaMap = { status: 0, worship: 1, avoidance: 2, vigilance: 0 };
+      setPersona(personaMap[result.type] ?? 0);
+      setAssess({
+        ...result,
+        dominant: result.type,
+        score: result.fitness,
+        saveable: result.dailyTarget * 7,
+        points: 15,
+        dna: {
+          planning: Math.round(result.klontz.vigilance / 5 * 100),
+          social: Math.round(result.klontz.status / 5 * 100),
+          emotional: Math.round(result.klontz.avoidance / 5 * 100),
+          impulsive: Math.round(result.klontz.worship / 5 * 100),
+        },
+      });
+    }
+    enterGuest();
+  }
   function skip() { enterGuest(); }
+  function retake() { setAnswers({}); setKi(0); setCi(0); setResult(null); setSlide(0); setStep("intro"); }
   const wrap = { fontFamily: FONT_STACK, background: c.bg0, color: c.text, height: "100dvh", display: "flex", flexDirection: "column", overflow: "hidden", position: "relative", zIndex: 0 };
   const body = { flex: 1, overflowY: "auto", padding: "8px 20px 28px", display: "flex", flexDirection: "column" };
   const inner = { width: "100%", maxWidth: 480, margin: "0 auto", flex: 1, display: "flex", flexDirection: "column" };
@@ -2435,31 +2465,48 @@ function Assessment() {
               <div key={key}><div style={{ fontWeight: 700, fontSize: 13.5, marginBottom: 9 }}>{label}</div><Chips options={opts} value={profile[key]} onChange={(i) => setProfile((p) => ({ ...p, [key]: i }))} c={c} /></div>
             ))}
           </div>
-          <button onClick={() => setStep("quiz")} style={{ ...btn(c.accent, c.onAccent), marginTop: 20 }}>{A.continue}</button>
+          <button onClick={() => setStep("klontz")} style={{ ...btn(c.accent, c.onAccent), marginTop: 20 }}>{A.continue}</button>
           <button onClick={skip} style={{ background: "none", border: "none", color: c.muted, fontSize: 13, cursor: "pointer", fontFamily: "inherit", padding: 6, marginTop: 6, alignSelf: "center" }}>{A.skip} {dir === "rtl" ? "‹" : "›"}</button>
         </div></div>
       </div>
     );
   }
-  if (step === "quiz") {
-    const q = ASSESS_Q[qi]; const pct = ((qi + 0.5) / ASSESS_Q.length) * 100;
+  if (step === "klontz" || step === "comb") {
+    const isK = step === "klontz";
+    const q = isK ? KLONTZ_QUESTIONS[ki] : COMB_QUESTIONS[ci];
+    const dimLabel = L(isK ? KLONTZ_LABELS[q.dim] : COMB_LABELS[q.dim]);
+    const idx = isK ? ki : ci;
+    const pct = ((doneQ + 0.5) / totalQ) * 100;
     const BackChev = lang === "ar" ? ChevronRight : ChevronLeft;
     return (
       <div dir={dir} style={wrap}>{bgField}<AsTopBar />
         <div style={body}><div style={inner}>
-          <div role="progressbar" aria-valuemin={1} aria-valuemax={ASSESS_Q.length} aria-valuenow={qi + 1} aria-label={A.qOf(qi + 1, ASSESS_Q.length)} style={{ height: 6, borderRadius: 9, background: c.card2, overflow: "hidden", marginBottom: 8 }}><div style={{ height: "100%", width: `${pct}%`, background: c.accent, borderRadius: 9, transition: "width .3s" }} /></div>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 26 }}>
-            {qi > 0 && <button onClick={() => setQi((v) => v - 1)} aria-label={s.dash.back} style={{ width: 32, height: 32, borderRadius: 9, background: c.card, border: `1px solid ${c.line}`, color: c.textSoft, display: "grid", placeItems: "center", cursor: "pointer" }}><BackChev size={16} aria-hidden="true" /></button>}
-            <div aria-live="polite" style={{ fontSize: 12, color: c.muted }}>{A.qOf(qi + 1, ASSESS_Q.length)}</div>
+          <div role="progressbar" aria-valuemin={1} aria-valuemax={totalQ} aria-valuenow={doneQ + 1} aria-label={A.qOf(doneQ + 1, totalQ)} style={{ height: 6, borderRadius: 9, background: c.card2, overflow: "hidden", marginBottom: 8 }}><div style={{ height: "100%", width: `${pct}%`, background: c.accent, borderRadius: 9, transition: "width .3s" }} /></div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 22 }}>
+            {idx > 0 && <button onClick={() => (isK ? setKi((v) => v - 1) : setCi((v) => v - 1))} aria-label={s.dash.back} style={{ width: 32, height: 32, borderRadius: 9, background: c.card, border: `1px solid ${c.line}`, color: c.textSoft, display: "grid", placeItems: "center", cursor: "pointer" }}><BackChev size={16} aria-hidden="true" /></button>}
+            <div style={{ fontSize: 11.5, fontWeight: 700, color: c.accentText }}>{isK ? (ar ? "علاقتك بالمال" : "Your money scripts") : (ar ? "عوائقك عن الالتزام" : "Your barriers")} · {dimLabel}</div>
+            <div aria-live="polite" style={{ fontSize: 12, color: c.muted, marginInlineStart: "auto" }}>{A.qOf(doneQ + 1, totalQ)}</div>
           </div>
-          <motion.div key={qi} initial={{ opacity: 0, x: dir === "rtl" ? -16 : 16 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.28, ease: easeOut }} style={{ fontSize: 22, fontWeight: 800, lineHeight: 1.5, marginBottom: 26 }}>{q.q[lang]}</motion.div>
+          <motion.div key={q.id} initial={{ opacity: 0, x: dir === "rtl" ? -16 : 16 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.28, ease: easeOut }} style={{ fontSize: 22, fontWeight: 800, lineHeight: 1.5, marginBottom: 26 }}>{L(q)}</motion.div>
           <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
-            {q.o.map((o) => {
-              const on = answers[qi] === o.k;
-              return <button key={o.k} onClick={() => answer(o.k)} style={{ textAlign: dir === "rtl" ? "right" : "left", padding: "16px 18px", borderRadius: 16, border: on ? `2px solid ${c.accent}` : `1px solid ${c.line}`, background: on ? c.accent + "1A" : c.card, color: c.text, fontWeight: 600, fontFamily: "inherit", fontSize: 15, cursor: "pointer", transition: "all .15s" }}>{o[lang]}</button>;
+            {CHOICES.map((o) => {
+              const on = answers[q.id] === o.v;
+              return <button key={o.v} onClick={() => pick(o.v)} style={{ textAlign: dir === "rtl" ? "right" : "left", padding: "15px 18px", borderRadius: 16, border: on ? `2px solid ${c.accent}` : `1px solid ${c.line}`, background: on ? c.accent + "1A" : c.card, color: c.text, fontWeight: 600, fontFamily: "inherit", fontSize: 15, cursor: "pointer", transition: "all .15s" }}>{L(o)}</button>;
             })}
           </div>
           <button onClick={skip} style={{ background: "none", border: "none", color: c.muted, fontSize: 13, cursor: "pointer", fontFamily: "inherit", padding: 6, marginTop: 18, alignSelf: "center" }}>{A.skip} {dir === "rtl" ? "‹" : "›"}</button>
+        </div></div>
+      </div>
+    );
+  }
+  if (step === "bridge") {
+    return (
+      <div dir={dir} style={wrap}>{bgField}<AsTopBar />
+        <div style={body}><div style={{ ...inner, justifyContent: "center", textAlign: "center", gap: 20 }}>
+          <div style={{ width: 84, height: 84, borderRadius: 24, background: `linear-gradient(135deg, ${c.accent}, ${c.terra})`, display: "grid", placeItems: "center", margin: "0 auto" }}><Zap size={38} color={c.onAccent} aria-hidden="true" /></div>
+          <div style={{ fontSize: 22, fontWeight: 800, lineHeight: 1.4 }}>{ar ? "خلصنا فهم علاقتك بالمال" : "That's your relationship with money"}</div>
+          <div style={{ fontSize: 14.5, color: c.muted, lineHeight: 1.8 }}>{ar ? "الحين بنفهم وش يمنعك فعلياً من الالتزام — عشان الخطة اللي تجيك تكون مصممة لك أنت، مو نصيحة عامة." : "Now we find what actually blocks you from following through — so your plan is built for you, not generic advice."}</div>
+          <button onClick={() => setStep("comb")} style={btn(c.accent, c.onAccent)}>{ar ? "كمّل ٦ أسئلة أخيرة" : "6 last questions"}</button>
         </div></div>
       </div>
     );
@@ -2477,55 +2524,76 @@ function Assessment() {
       </div>
     );
   }
-  // result (WOW)
-  const meta = PERSONA_META[result.dominant];
-  const name = lang === "ar" ? meta.ar : meta.en, altName = lang === "ar" ? meta.en : meta.ar;
-  const desc = lang === "ar" ? meta.descAr : meta.descEn, ch = lang === "ar" ? meta.chAr : meta.chEn;
-  const bars = [["dnaPlanning", "planning", c.green], ["dnaSocial", "social", c.accentText], ["dnaEmotional", "emotional", c.terra], ["dnaImpulsive", "impulsive", c.terraText]];
-  const traitLabel = { planning: A.dnaPlanning, social: A.dnaSocial, emotional: A.dnaEmotional, impulsive: A.dnaImpulsive }[result.dominant];
+  // result — research-led financial personality + personal plan
+  const an = result.analysis;
+  const lvl = levelFor(result.fitness);
+  const typeAlt = ar ? an.type.en : an.type.ar;
+  const kOrder = ["avoidance", "status", "worship", "vigilance"];
+  const kColors = { avoidance: c.terra, status: c.accentText, worship: c.warn, vigilance: c.green };
+  const kShort = { avoidance: { ar: "تجنّب", en: "Avoid" }, status: { ar: "مكانة", en: "Status" }, worship: { ar: "لحظي", en: "Impulse" }, vigilance: { ar: "يقظة", en: "Vigilance" } };
+  const radar = kOrder.map((d) => [L(kShort[d]), Math.round(result.klontz[d] / 5 * 100), kColors[d]]);
+  const card = { background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18 };
+  const cardTitle = { fontWeight: 700, fontSize: 13.5, marginBottom: 12, color: c.accentText };
   return (
     <div dir={dir} style={wrap}>{bgField}<AsTopBar />
       <div style={body}><div style={{ ...inner, gap: 14 }}>
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4, ease: easeOut }} style={{ textAlign: "center" }}>
           <div style={{ width: 76, height: 76, borderRadius: 24, background: `linear-gradient(135deg, ${c.accent}, ${c.terra})`, display: "grid", placeItems: "center", margin: "0 auto 12px" }}><Brain size={36} color={c.onAccent} aria-hidden="true" /></div>
-          <div style={{ fontSize: 12.5, color: c.muted }}>{A.identity}</div>
-          <h1 style={{ fontSize: 30, fontWeight: 800, margin: 0 }}>{name}</h1>
-          <div style={{ fontSize: 12.5, color: c.muted }}>{altName}</div>
-          <div style={{ fontSize: 13.5, color: c.textSoft, marginTop: 8, lineHeight: 1.7 }}>{desc}</div>
+          <div style={{ fontSize: 12.5, color: c.muted }}>{ar ? "نمطك المالي" : "Your money type"}</div>
+          <h1 style={{ fontSize: 30, fontWeight: 800, margin: 0 }}>{L(an.type)}</h1>
+          <div style={{ fontSize: 12.5, color: c.muted }}>{typeAlt}</div>
+          <div style={{ fontSize: 13.5, color: c.textSoft, marginTop: 8, lineHeight: 1.7 }}>{L(an.summary)}</div>
         </motion.div>
-        {/* The dominant trait, straight from the user's own answers — no
-            fabricated "better than X% of students" percentile. */}
-        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5, delay: 0.1, ease: easeOut }} style={{ background: `linear-gradient(135deg, ${c.accent}, ${c.terra})`, color: c.onAccent, borderRadius: 20, padding: "16px 18px", textAlign: "center" }}>
-          <div style={{ fontSize: 34, fontWeight: 800 }}><AnimatedNumber value={result.dna[result.dominant]} formatter={(n) => `${fmt(n)}%`} /></div>
-          <div style={{ fontSize: 13, fontWeight: 600, opacity: 0.95 }}>{traitLabel} · {A.dna}</div>
-        </motion.div>
-        <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18 }}>
-          <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 14 }}>{A.dna}</div>
-          {bars.map(([lab, key, col], i) => (
-            <div key={key} style={{ marginBottom: 12 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, marginBottom: 5 }}><span style={{ color: c.textSoft }}>{A[lab]}</span><span style={{ fontWeight: 700 }}><Metric value={`${result.dna[key]}%`} /></span></div>
-              <div style={{ height: 8, borderRadius: 9, background: c.card2, overflow: "hidden" }}><motion.div initial={{ scaleX: 0 }} animate={{ scaleX: result.dna[key] / 100 }} transition={{ duration: 0.7, delay: 0.15 + i * 0.08, ease: easeOut }} style={{ height: "100%", width: "100%", background: col, borderRadius: 9, transformOrigin: dir === "rtl" ? "right center" : "left center" }} /></div>
+        {/* The four Klontz money scripts, straight from the user's own answers */}
+        <div style={card}>
+          <div style={cardTitle}>{ar ? "أنماطك المالية الأربعة" : "Your four money scripts"}</div>
+          <Radar c={c} label={ar ? "الأنماط المالية" : "Money scripts"} data={radar} />
+        </div>
+        {/* Starting indicators: Financial Fitness, level, monthly goal */}
+        <div style={{ display: "flex", gap: 12 }}>
+          <div style={{ flex: 1, ...card, padding: 16, textAlign: "center" }}><div style={{ fontSize: 11.5, color: c.muted }}>{ar ? "لياقتك المالية" : "Financial Fitness"}</div><div style={{ fontSize: 30, fontWeight: 800, color: c.accent }}><AnimatedNumber value={result.fitness} formatter={(n) => fmt(n)} /><span style={{ fontSize: 15, color: c.muted }}>/100</span></div></div>
+          <div style={{ flex: 1, ...card, padding: 16, textAlign: "center" }}><div style={{ fontSize: 11.5, color: c.muted }}>{ar ? "مستواك" : "Your level"}</div><div style={{ fontSize: 18, fontWeight: 800, color: c.terra, marginTop: 10, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}><Medal size={18} aria-hidden="true" />{L(lvl)}</div></div>
+        </div>
+        <div style={{ ...card, padding: 16, textAlign: "center" }}><div style={{ fontSize: 11.5, color: c.muted }}>{ar ? "هدفك الشهري للادخار" : "Your monthly saving goal"}</div><div style={{ fontSize: 24, fontWeight: 800, color: c.green, marginTop: 2 }}><AnimatedNumber value={result.monthlyGoal} formatter={(n) => fmt(n)} /> <RS size="0.7em" color={c.muted} /></div></div>
+        {/* Strength / risk */}
+        <div style={{ display: "flex", gap: 12 }}>
+          <div style={{ flex: 1, ...card, padding: 14 }}><div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11.5, color: c.green, fontWeight: 700, marginBottom: 5 }}><TrendingUp size={14} aria-hidden="true" />{ar ? "نقطة قوتك" : "Your strength"}</div><div style={{ fontSize: 12.5, lineHeight: 1.6 }}>{L(an.strength)}</div></div>
+          <div style={{ flex: 1, ...card, padding: 14 }}><div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11.5, color: c.terraText, fontWeight: 700, marginBottom: 5 }}><TriangleAlert size={14} aria-hidden="true" />{ar ? "الخطر عليك" : "Your risk"}</div><div style={{ fontSize: 12.5, lineHeight: 1.6 }}>{L(an.risk)}</div></div>
+        </div>
+        {/* COM-B obstacle + Waey coach + first mission */}
+        <div style={{ background: `linear-gradient(135deg, ${c.accent}14, ${c.terra}14)`, border: `1px solid ${c.accent}44`, borderRadius: 20, padding: 16 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 7, fontWeight: 800, fontSize: 13, color: c.accentText, marginBottom: 5 }}><Target size={15} aria-hidden="true" />{ar ? "عائقك الأساسي" : "Your main obstacle"}: {L(an.gap.label)}</div>
+          <div style={{ fontSize: 12.5, color: c.text, lineHeight: 1.7, marginBottom: 12 }}>{L(an.gap.explanation)}</div>
+          <div style={{ background: c.card, borderRadius: 14, padding: 13 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 800, color: c.accentText, marginBottom: 5 }}><Sparkles size={13} aria-hidden="true" />{ar ? "مدرّب وعي" : "Waey Coach"}</div>
+            <div style={{ fontSize: 12.5, lineHeight: 1.7, marginBottom: 8 }}>{L(an.gap.coachNote)}</div>
+            <div style={{ fontSize: 11.5, color: c.muted }}>{ar ? "مهمة هذا الأسبوع" : "This week's mission"}: {L(an.gap.mission)}</div>
+          </div>
+        </div>
+        {/* 30-day plan */}
+        <div style={card}>
+          <div style={cardTitle}>{ar ? "خطتك لـ٣٠ يوم" : "Your 30-day plan"}</div>
+          {result.plan.map((w, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 11, padding: "9px 0", borderBottom: i < result.plan.length - 1 ? `1px solid ${c.line}` : "none" }}>
+              <div style={{ width: 30, height: 30, borderRadius: 9, background: c.accent + "1a", color: c.accentText, display: "grid", placeItems: "center", fontSize: 11, fontWeight: 800, flexShrink: 0 }}>{i + 1}</div>
+              <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: 13, fontWeight: 700 }}>{ar ? `الأسبوع ${i + 1}` : `Week ${i + 1}`} · {L(w.title)}</div><div style={{ fontSize: 11.5, color: c.muted, lineHeight: 1.5 }}>{L(w.task)}</div></div>
             </div>
           ))}
         </div>
-        <div style={{ display: "flex", gap: 12 }}>
-          <div style={{ flex: 1, background: c.card, border: `1px solid ${c.line}`, borderRadius: 18, padding: 16, textAlign: "center" }}><div style={{ fontSize: 11.5, color: c.muted }}>{A.awareness}</div><div style={{ fontSize: 30, fontWeight: 800, color: c.accent }}><AnimatedNumber value={result.score} formatter={(n) => fmt(n)} /><span style={{ fontSize: 15, color: c.muted }}>/100</span></div></div>
-          {/* Answered-question count — an honest measure, not a synthetic "AI confidence". */}
-          <div style={{ flex: 1, background: c.card, border: `1px solid ${c.line}`, borderRadius: 18, padding: 16, textAlign: "center" }}><div style={{ fontSize: 11.5, color: c.muted }}>{A.confidence}</div><div style={{ fontSize: 30, fontWeight: 800, color: c.terra }}><AnimatedNumber value={Object.keys(answers).length} formatter={(n) => fmt(n)} /><span style={{ fontSize: 15, color: c.muted }}>/{ASSESS_Q.length}</span></div></div>
+        {/* Suggested monthly budget */}
+        <div style={card}>
+          <div style={cardTitle}>{ar ? "ميزانيتك الشهرية المقترحة" : "Your suggested monthly budget"}</div>
+          {result.budget.map((b) => (
+            <div key={b.key} style={{ marginBottom: 12 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}><span style={{ fontSize: 13, fontWeight: 700 }}>{L(b.cat)}</span><span style={{ fontSize: 13, fontWeight: 800, color: c.accent }}>{b.pct}%</span></div>
+              <div style={{ height: 7, borderRadius: 9, background: c.card2, overflow: "hidden", marginBottom: 4 }}><div style={{ height: "100%", width: `${b.pct}%`, background: c.accent, borderRadius: 9 }} /></div>
+              <div style={{ fontSize: 10.5, color: c.muted }}>{L(b.note)}</div>
+            </div>
+          ))}
         </div>
-        <div style={{ background: `linear-gradient(135deg, ${c.accent}, ${c.accentText})`, color: c.onAccent, borderRadius: 20, padding: 18 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 800, fontSize: 14, marginBottom: 6 }}><Sparkles size={17} />{A.decisionTitle}</div>
-          <div style={{ fontSize: 15, fontWeight: 700, lineHeight: 1.6 }}>{riyalText(A.decisionText(result.saveable))}</div>
-          <div style={{ fontSize: 12, opacity: 0.9, marginTop: 6 }}>{A.decisionHow}</div>
-        </div>
-        <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 20, padding: 18 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 700, fontSize: 13.5, marginBottom: 8, color: c.accentText }}><Target size={16} />{A.challengeTitle}</div>
-          <div style={{ fontSize: 14.5, fontWeight: 600, lineHeight: 1.6 }}>{ch}</div>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 10, background: c.green + "22", color: c.green, borderRadius: 999, padding: "5px 12px", fontSize: 12, fontWeight: 700 }}><Trophy size={14} aria-hidden="true" />+<Metric value={result.points} /> {A.points}</div>
-        </div>
-        <button onClick={finish} style={btn(c.accent, c.onAccent)}>{A.acceptCh}</button>
-        <button onClick={finish} style={{ ...btn("transparent", c.textSoft), border: `1px solid ${c.line}`, marginTop: 4 }}>{A.meetJourney}</button>
-        <button onClick={() => { setAnswers({}); setQi(0); setResult(null); setSlide(0); setStep("intro"); }} style={{ background: "none", border: "none", color: c.muted, fontSize: 12.5, cursor: "pointer", fontFamily: "inherit", padding: 10 }}>{A.retake}</button>
+        <div style={{ display: "flex", gap: 9, background: c.green + "14", border: `1px solid ${c.green}44`, borderRadius: 14, padding: 13, fontSize: 12.5, color: c.text, lineHeight: 1.6 }}><Lightbulb size={15} color={c.green} aria-hidden="true" style={{ flexShrink: 0, marginTop: 1 }} /><span>{L(an.tip)}</span></div>
+        <button onClick={finish} style={btn(c.accent, c.onAccent)}>{ar ? "ابدأ رحلتك" : "Start your journey"}</button>
+        <button onClick={retake} style={{ background: "none", border: "none", color: c.muted, fontSize: 12.5, cursor: "pointer", fontFamily: "inherit", padding: 10 }}>{ar ? "أعد التقييم" : "Retake"}</button>
       </div></div>
     </div>
   );
