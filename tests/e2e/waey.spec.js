@@ -67,6 +67,20 @@ test("valid login and guest entry persist the student app on reload", async ({ p
   await expect(page.getByText(/رصيد الحساب|Balance/)).toBeVisible();
 });
 
+test("opportunities live in investment instead of home", async ({ page }) => {
+  await enterAsGuest(page);
+  await expect(page.getByText(/فرص لك|Opportunities for you/)).toHaveCount(0);
+
+  await page.getByRole("button", { name: /الاستثمار|Investment/ }).click();
+
+  await expect(page.getByText(/فرص لك|Opportunities for you/)).toBeVisible();
+  await expect(page.getByText(/كنز الفك|Spare-change vault/)).toBeVisible();
+  await expect(page.getByText(/الجمعية · ادخار جماعي|Savings circle/)).toBeVisible();
+  await expect(page.getByText(/وظائف مؤقتة · دخل إضافي|Side gigs · extra income/)).toBeVisible();
+  await expect(page.getByText(/كاش باك وعروض|Cashback & offers/)).toBeVisible();
+  await expect(page.getByText(/الأصدقاء|Friends/)).toBeVisible();
+});
+
 test("loan success and insufficient-loan block are visible in the browser flow", async ({ page }) => {
   await enterAsGuest(page);
   await page.getByRole("button", { name: /التحليلات|Analytics/ }).click();

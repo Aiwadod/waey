@@ -3103,7 +3103,7 @@ function InvestCalc() {
   );
 }
 function HomeScreen() {
-  const { c, s, lang, setLang, points, theme, setTheme, setOverlay, flash } = useCtx();
+  const { c, s, lang, setLang, points, theme, setTheme, flash } = useCtx();
   const stack = useRef(null);
   const level = Math.max(1, Math.floor(points / 100) + 1);
   useGsap(stack, (gsap, { reduce }) => {
@@ -3145,18 +3145,6 @@ function HomeScreen() {
         <ProgressCard />
         <RewardsCard />
         <LeaderboardCard />
-        <SectionTitle icon={Sparkles}>{s.homeSections.opportunities}</SectionTitle>
-        <RoundUpCard />
-        <EntryCard icon={Handshake} title={s.jamTitle} sub={s.jamSub} onClick={() => setOverlay("jamiyah")} />
-        <EntryCard icon={Briefcase} title={s.jobsTitle} sub={s.jobsSub} onClick={() => setOverlay("jobs")} />
-        <EntryCard icon={Gift} title={s.cashTitle} sub={s.cashSub} onClick={() => setOverlay("cashback")} />
-        <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 22, padding: 16 }}>
-          <div style={{ display: "flex" }}>
-            {[c.accent, c.terra, c.green].map((col, i) => <span key={i} style={{ width: 28, height: 28, borderRadius: 999, background: col, marginInlineStart: i ? -9 : 0, border: `2px solid ${c.card}`, display: "grid", placeItems: "center" }}><Users size={12} color={c.onAccent} /></span>)}
-          </div>
-          <div style={{ fontWeight: 700, marginTop: 10 }}>{s.friends}</div>
-          <div style={{ color: c.accentText, fontSize: 12, fontWeight: 600 }}><Metric value={14} /> {s.online}</div>
-        </div>
         <div style={{ borderRadius: 22, padding: 16, position: "relative", overflow: "hidden", background: c.card, border: `1px solid ${c.line}` }}>
           <div style={{ fontWeight: 700, color: c.accentText }}>{s.keepUp}</div>
           <div style={{ fontSize: 11.5, color: c.muted, lineHeight: 1.6, marginTop: 4 }}>{s.keepUpSub}</div>
@@ -3167,6 +3155,26 @@ function HomeScreen() {
           <Divider /><Stat icon={<Trophy size={16} color={c.accentText} />} value={String(level)} label={s.stats.level} />
           <Divider /><Stat icon={<Target size={16} color={c.accentText} />} value="85%" label={s.stats.adhere} />
         </div>
+      </div>
+    </div>
+  );
+}
+
+function OpportunitiesSection() {
+  const { c, s, setOverlay } = useCtx();
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 6 }}>
+      <SectionTitle icon={Sparkles}>{s.homeSections.opportunities}</SectionTitle>
+      <RoundUpCard />
+      <EntryCard icon={Handshake} title={s.jamTitle} sub={s.jamSub} onClick={() => setOverlay("jamiyah")} />
+      <EntryCard icon={Briefcase} title={s.jobsTitle} sub={s.jobsSub} onClick={() => setOverlay("jobs")} />
+      <EntryCard icon={Gift} title={s.cashTitle} sub={s.cashSub} onClick={() => setOverlay("cashback")} />
+      <div style={{ background: c.card, border: `1px solid ${c.line}`, borderRadius: 22, padding: 16 }}>
+        <div style={{ display: "flex" }}>
+          {[c.accent, c.terra, c.green].map((col, i) => <span key={i} style={{ width: 28, height: 28, borderRadius: 999, background: col, marginInlineStart: i ? -9 : 0, border: `2px solid ${c.card}`, display: "grid", placeItems: "center" }}><Users size={12} color={c.onAccent} /></span>)}
+        </div>
+        <div style={{ fontWeight: 700, marginTop: 10 }}>{s.friends}</div>
+        <div style={{ color: c.accentText, fontSize: 12, fontWeight: 600 }}><Metric value={14} /> {s.online}</div>
       </div>
     </div>
   );
@@ -4136,6 +4144,7 @@ function Invest() {
   return (
     <div>
       <ScreenHead title={s.nav.invest} />
+      <OpportunitiesSection />
       <div style={{ borderRadius: 24, padding: 20, marginTop: 6, background: `linear-gradient(135deg, ${c.accent} 0%, ${c.accentText} 100%)`, color: c.onAccent }}>
         <div style={{ fontSize: 12.5, fontWeight: 600, opacity: .85 }}>{s.portfolio}</div>
         <div style={{ fontSize: 30, fontWeight: 700 }}><AnimatedNumber value={invested} formatter={fmt2} /> <RS size="0.6em" /></div>
