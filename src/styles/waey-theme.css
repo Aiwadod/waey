@@ -2,6 +2,7 @@
    src/lib/theme.js re-points every --waey-* token when the theme changes. */
 :root {
   color-scheme: light;
+  --waey-font-family: 'IBM Plex Sans Arabic', system-ui, sans-serif;
   --waey-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --waey-ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   --waey-ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
@@ -22,6 +23,7 @@ html,
 body,
 #root {
   min-height: 100%;
+  font-family: var(--waey-font-family);
 }
 
 body {
@@ -34,6 +36,17 @@ body {
 
 * {
   box-sizing: border-box;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+
+svg text {
+  font-family: var(--waey-font-family);
 }
 
 /* One focus ring for every surface — keyboard users must always see where
@@ -102,6 +115,47 @@ body {
   z-index: 0;
 }
 
+.waey-page-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0.82;
+}
+
+.waey-motion-page {
+  width: 100%;
+  min-width: 0;
+}
+
+[data-waey-shell] button,
+[role="dialog"] button {
+  transition:
+    background-color 180ms var(--waey-ease-out),
+    border-color 180ms var(--waey-ease-out),
+    box-shadow 180ms var(--waey-ease-out),
+    color 160ms var(--waey-ease-out),
+    opacity 140ms var(--waey-ease-out);
+}
+
+[data-waey-shell] button > svg,
+[role="dialog"] button > svg {
+  transition: transform 160ms var(--waey-ease-out), opacity 160ms var(--waey-ease-out);
+}
+
+[data-waey-shell] button:not(:disabled):active,
+[role="dialog"] button:not(:disabled):active {
+  opacity: 0.84;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  [data-waey-shell] button:not(:disabled):hover > svg,
+  [role="dialog"] button:not(:disabled):hover > svg {
+    transform: scale(1.08);
+  }
+}
+
 .waey-flow-line,
 .waey-flow-dot,
 .waey-flow-orb {
@@ -132,7 +186,9 @@ body {
   }
 
   .waey-pressable:active,
-  .waey-hover-lift:hover {
+  .waey-hover-lift:hover,
+  [data-waey-shell] button > svg,
+  [role="dialog"] button > svg {
     transform: none;
   }
 }

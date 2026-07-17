@@ -81,6 +81,18 @@ test("opportunities live in investment instead of home", async ({ page }) => {
   await expect(page.getByText(/الأصدقاء|Friends/)).toBeVisible();
 });
 
+test("sitewide visual system covers public, student, and institutional pages", async ({ page }) => {
+  await page.goto("/#/landing");
+  await expect(page.locator("[data-waey-backdrop]")).toBeVisible();
+
+  await enterAsGuest(page);
+  await expect(page.locator("[data-waey-backdrop]")).toBeVisible();
+  await expect(page.locator("[data-waey-motion-page]")).toBeVisible();
+
+  await page.goto("/#/university");
+  await expect(page.locator("[data-waey-backdrop]")).toBeVisible();
+});
+
 test("loan success and insufficient-loan block are visible in the browser flow", async ({ page }) => {
   await enterAsGuest(page);
   await page.getByRole("button", { name: /التحليلات|Analytics/ }).click();

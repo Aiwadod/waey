@@ -21,6 +21,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import AnimatedNumber from "./components/motion/AnimatedNumber.jsx";
 import ScreenTransition from "./components/motion/ScreenTransition.jsx";
 import ScrollReveal from "./components/motion/ScrollReveal.jsx";
+import AmbientBackdrop from "./components/motion/AmbientBackdrop.jsx";
+import MotionPage from "./components/motion/MotionPage.jsx";
 import WaeyFlowField from "./components/motion/WaeyFlowField.jsx";
 import LandingImage from "./components/LandingImage.jsx";
 import { easeOut, hoverLift, pressProps, revealContainer, revealItem, sheetVariants, toastVariants, viewportOnce } from "./motion/presets.js";
@@ -927,18 +929,19 @@ export default function App() {
       <ScreenTransition screenKey={screen}>
       {screen === "splash" ? <Splash /> : screen === "role" ? <RoleSelect /> : screen === "uniDash" ? <UniDashScreen /> : screen === "bankDash" ? <BankDashScreen /> : screen === "assess" ? <Assessment /> : screen !== "app" ? <Marketing /> : (
       <div data-waey-theme={theme} data-waey-shell style={{ fontFamily: FONT_STACK, background: appBg, minHeight: "100dvh", display: "flex", justifyContent: "center", color: c.text, transition: "background .3s" }}>
-        <div dir={dir} style={{ width: "100%", height: "100dvh", position: "relative", overflow: "hidden", color: c.text, display: "flex", flexDirection: "row", background: appBg, transition: "background .3s" }}>
+        <div dir={dir} style={{ width: "100%", height: "100dvh", position: "relative", zIndex: 0, overflow: "hidden", color: c.text, display: "flex", flexDirection: "row", background: appBg, transition: "background .3s" }}>
+          <AmbientBackdrop tone={theme} />
           {sidebar && <Sidebar />}
           <div style={{ flex: 1, minWidth: 0, position: "relative", display: "flex", flexDirection: "column", overflow: "hidden" }}>
           <div className="wscroll" style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", alignItems: "center" }}>
             <div style={{ width: "100%", maxWidth: sidebar ? 780 : maxW, padding: sidebar ? "26px 26px 40px" : "calc(env(safe-area-inset-top,0px) + 14px) 18px 104px", ...(tab === "ai" ? { flex: 1, minHeight: 0, display: "flex", flexDirection: "column" } : {}) }}>
-              <motion.div key={tab} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.22, ease: easeOut }} style={{ width: "100%", ...(tab === "ai" ? { flex: 1, minHeight: 0, display: "flex", flexDirection: "column" } : {}) }}>
+              <MotionPage pageKey={tab} style={{ width: "100%", ...(tab === "ai" ? { flex: 1, minHeight: 0, display: "flex", flexDirection: "column" } : {}) }}>
               {tab === "home" && <HomeScreen />}
               {tab === "analytics" && <Analytics />}
               {tab === "ai" && <AIChat />}
               {tab === "invest" && <Invest />}
               {tab === "more" && <MoreScreen />}
-              </motion.div>
+              </MotionPage>
             </div>
           </div>
           {!sidebar && <BottomNav />}
@@ -1023,9 +1026,9 @@ function Splash() {
       data-waey-shell
       aria-label={`${s.brand} — ${s.splash.tagline}. ${s.splash.start}`}
       onClick={() => setScreen("landing")}
-      style={{ fontFamily: FONT_STACK, background: c.page, color: c.text, height: "100dvh", width: "100%", border: "none", padding: 0, display: "grid", placeItems: "center", cursor: "pointer", position: "relative", overflow: "hidden" }}
+      style={{ fontFamily: FONT_STACK, background: c.page, color: c.text, height: "100dvh", width: "100%", border: "none", padding: 0, display: "grid", placeItems: "center", cursor: "pointer", position: "relative", zIndex: 0, overflow: "hidden" }}
     >
-      <WaeyFlowField tone={theme} />
+      <AmbientBackdrop tone={theme} />
       <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 18 }}>
         <div className="splash-mark" style={{ borderRadius: 24, boxShadow: `0 32px 80px -34px ${c.accent}`, lineHeight: 0 }}>
           <WaeyMark size={104} />
@@ -1065,7 +1068,7 @@ function RoleShell({ title, sub, onBack, children, fill, navItems, tab, setTab, 
   if (wide && navItems) {
     return (
       <div dir={dir} data-waey-theme={theme} data-waey-shell style={{ fontFamily: FONT_STACK, background: c.page, color: c.text, height: "100dvh", display: "flex", flexDirection: "row", overflow: "hidden", position: "relative", zIndex: 0 }}>
-        <div style={{ position: "absolute", inset: 0, zIndex: -1, pointerEvents: "none" }}><WaeyFlowField tone={theme} /></div>
+        <AmbientBackdrop tone={theme} />
         <RoleSidebar items={navItems} value={tab} onChange={setTab} roleTitle={title} roleSub={sub} onBack={onBack} onLogout={onLogout} c={c} s={s} lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} />
         <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", overflow: "hidden" }}>{content}</div>
       </div>
@@ -1073,7 +1076,7 @@ function RoleShell({ title, sub, onBack, children, fill, navItems, tab, setTab, 
   }
   return (
     <div dir={dir} data-waey-theme={theme} data-waey-shell style={{ fontFamily: FONT_STACK, background: c.page, color: c.text, height: "100dvh", display: "flex", flexDirection: "column", overflow: "hidden", position: "relative", zIndex: 0 }}>
-      <div style={{ position: "absolute", inset: 0, zIndex: -1, pointerEvents: "none" }}><WaeyFlowField tone={theme} /></div>
+      <AmbientBackdrop tone={theme} />
       <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "calc(env(safe-area-inset-top,0px) + 16px) 18px 12px", flexShrink: 0 }}>
         {onBack && <button onClick={onBack} aria-label={s.role.back} style={{ width: 44, height: 44, borderRadius: 13, background: c.card, border: `1px solid ${c.line}`, color: c.text, display: "grid", placeItems: "center", cursor: "pointer" }}><Back size={20} aria-hidden="true" /></button>}
         <div style={{ flex: 1, minWidth: 0 }}><h1 style={{ fontSize: 19, fontWeight: 800, margin: 0 }}>{title}</h1>{sub && <div style={{ fontSize: 11.5, color: c.muted }}>{sub}</div>}</div>
@@ -1095,7 +1098,7 @@ function RoleSelect() {
   const Fwd = lang === "ar" ? ArrowLeft : ArrowRight;
   return (
     <div dir={dir} data-waey-theme={theme} data-waey-shell style={{ fontFamily: FONT_STACK, background: c.page, color: c.text, height: "100dvh", display: "flex", flexDirection: "column", overflow: "hidden", position: "relative", zIndex: 0 }}>
-      <div style={{ position: "absolute", inset: 0, zIndex: -1, pointerEvents: "none" }}><WaeyFlowField tone={theme} /></div>
+      <AmbientBackdrop tone={theme} />
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "calc(env(safe-area-inset-top,0px) + 16px) 18px 8px" }}>
         <button type="button" onClick={() => setScreen("landing")} aria-label={lang === "ar" ? "الصفحة الرئيسية" : "Home"} style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", background: "none", border: "none", color: c.text, fontFamily: "inherit", padding: 0 }}>
           <WaeyMark size={30} />
@@ -1941,13 +1944,14 @@ function RoleLogin({ scope, onLogin, onBack }) {
   const accent = scope === "bank" ? c.terra : c.accentText;
   const Back = ar ? ChevronRight : ChevronLeft;
   return (
-    <div dir={dir} data-waey-theme={theme} style={{ fontFamily: FONT_STACK, background: `linear-gradient(160deg, ${c.bg1}, ${c.bg0})`, color: c.text, minHeight: "100dvh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 18px", position: "relative" }}>
+    <div dir={dir} data-waey-theme={theme} data-waey-shell style={{ fontFamily: FONT_STACK, background: `linear-gradient(160deg, ${c.bg1}, ${c.bg0})`, color: c.text, minHeight: "100dvh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 18px", position: "relative", zIndex: 0 }}>
+      <AmbientBackdrop tone={theme} />
       <button onClick={onBack} aria-label={s.role.back} style={{ position: "absolute", top: "calc(env(safe-area-inset-top,0px) + 16px)", insetInlineStart: 18, width: 44, height: 44, borderRadius: 12, background: c.card, border: `1px solid ${c.line}`, color: c.text, display: "grid", placeItems: "center", cursor: "pointer" }}><Back size={20} aria-hidden="true" /></button>
       <div style={{ display: "flex", gap: 8, position: "absolute", top: "calc(env(safe-area-inset-top,0px) + 16px)", insetInlineEnd: 18 }}>
         <button onClick={() => setLang(ar ? "en" : "ar")} style={{ height: 44, padding: "0 14px", borderRadius: 12, background: c.card, border: `1px solid ${c.line}`, color: c.text, cursor: "pointer", fontFamily: "inherit", fontSize: 12.5, fontWeight: 700 }}>{ar ? "EN" : "ع"}</button>
         <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")} aria-label={ar ? "تغيير المظهر" : "Toggle theme"} style={{ width: 44, height: 44, borderRadius: 12, background: c.card, border: `1px solid ${c.line}`, color: c.text, cursor: "pointer", display: "grid", placeItems: "center" }}>{theme === "dark" ? <Sun size={17} aria-hidden="true" /> : <Moon size={17} aria-hidden="true" />}</button>
       </div>
-      <div style={{ width: "100%", maxWidth: 400 }}>
+      <MotionPage pageKey={`role-login-${scope}`} style={{ width: "100%", maxWidth: 400 }}>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 26 }}>
           <div style={{ width: 66, height: 66, borderRadius: 20, background: `linear-gradient(135deg, ${accent}, ${c.accent})`, display: "grid", placeItems: "center", marginBottom: 14, boxShadow: `0 14px 30px -8px ${accent}` }}>{scope === "bank" ? <Landmark size={30} color="#fff" aria-hidden="true" /> : <Building2 size={30} color="#fff" aria-hidden="true" />}</div>
           <h1 style={{ fontWeight: 800, fontSize: 22, margin: 0 }}>{scope === "bank" ? D.loginBank : D.loginUni}</h1>
@@ -1962,7 +1966,7 @@ function RoleLogin({ scope, onLogin, onBack }) {
           <div style={{ fontSize: 11, color: c.muted, textAlign: "center", marginTop: 12 }}>{D.loginDemo}</div>
         </form>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, marginTop: 16, fontSize: 11, color: c.muted }}><ShieldCheck size={13} color={c.green} aria-hidden="true" /> {D.secure}</div>
-      </div>
+      </MotionPage>
     </div>
   );
 }
@@ -2436,7 +2440,7 @@ function Assessment() {
   const body = { flex: 1, overflowY: "auto", padding: "8px 20px 28px", display: "flex", flexDirection: "column" };
   const inner = { width: "100%", maxWidth: 480, margin: "0 auto", flex: 1, display: "flex", flexDirection: "column" };
   // Hero flow-field background, layered behind the content (z-index -1) on every step.
-  const bgField = <div style={{ position: "absolute", inset: 0, zIndex: -1, pointerEvents: "none" }}><WaeyFlowField tone={theme} /></div>;
+  const bgField = <AmbientBackdrop tone={theme} />;
 
   if (step === "intro") {
     const last = slide === A.introTitle.length - 1;
@@ -2607,13 +2611,16 @@ function Marketing() {
   const { c, s, dir, screen, theme } = useCtx();
   const bg = `linear-gradient(180deg, ${c.bg1} 0%, ${c.bg0} 100%)`;
   return (
-    <div dir={dir} data-waey-theme={theme} data-waey-shell className="wscroll" style={{ fontFamily: FONT_STACK, background: bg, color: c.text, height: "100dvh", overflowY: "auto" }}>
+    <div dir={dir} data-waey-theme={theme} data-waey-shell className="wscroll" style={{ fontFamily: FONT_STACK, background: bg, color: c.text, height: "100dvh", overflowY: "auto", position: "relative", zIndex: 0 }}>
+      <AmbientBackdrop tone={theme} />
       <button type="button" className="waey-skip" onClick={() => document.getElementById("waey-main")?.focus()}>{s.mk.skip}</button>
       <MkNav />
       <main id="waey-main" tabIndex={-1} style={{ outline: "none" }}>
-        {screen === "landing" && <Landing />}
-        {screen === "about" && <AboutPage />}
-        {screen === "login" && <LoginPage />}
+        <MotionPage pageKey={screen}>
+          {screen === "landing" && <Landing />}
+          {screen === "about" && <AboutPage />}
+          {screen === "login" && <LoginPage />}
+        </MotionPage>
       </main>
       {screen !== "login" && <MkFooter />}
     </div>
@@ -3256,7 +3263,7 @@ function ChallengesCard() {
   );
 }
 function FullPage({ title, sub, onClose, children }) {
-  const { c, lang, s } = useCtx();
+  const { c, lang, s, theme } = useCtx();
   const Back = lang === "ar" ? ChevronRight : ChevronLeft;
   const backRef = useRef(null);
   useEffect(() => {
@@ -3266,13 +3273,14 @@ function FullPage({ title, sub, onClose, children }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
   return (
-    <div role="dialog" aria-modal="true" aria-label={typeof title === "string" ? title : undefined} style={{ position: "absolute", inset: 0, zIndex: 55, background: c.bg0, display: "flex", flexDirection: "column", animation: "wUp .3s ease both" }}>
+    <div role="dialog" aria-modal="true" aria-label={typeof title === "string" ? title : undefined} style={{ position: "absolute", inset: 0, zIndex: 55, background: c.bg0, display: "flex", flexDirection: "column" }}>
+      <AmbientBackdrop tone={theme} />
       <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "calc(env(safe-area-inset-top,0px) + 16px) 18px 12px", flexShrink: 0 }}>
         <button ref={backRef} onClick={onClose} aria-label={s.dash.back} style={{ width: 44, height: 44, borderRadius: 13, background: c.card, border: `1px solid ${c.line}`, color: c.text, display: "grid", placeItems: "center", cursor: "pointer" }}><Back size={20} aria-hidden="true" /></button>
         <div><div style={{ fontSize: 19, fontWeight: 800 }}>{title}</div>{sub && <div style={{ fontSize: 11.5, color: c.muted }}>{sub}</div>}</div>
       </div>
       <div className="wscroll" style={{ flex: 1, overflowY: "auto", padding: "4px 18px 28px" }}>
-        <div style={{ maxWidth: 560, margin: "0 auto" }}>{children}</div>
+        <MotionPage pageKey={title} style={{ maxWidth: 560, margin: "0 auto" }}>{children}</MotionPage>
       </div>
     </div>
   );
@@ -3750,7 +3758,7 @@ function LeaderboardCard() {
   );
 }
 function LeaderboardPage() {
-  const { c, s, lang, setShowLeaderboard } = useCtx();
+  const { c, s, lang, theme, setShowLeaderboard } = useCtx();
   const [period, setPeriod] = useState(0);
   const myRank = LB.findIndex((r) => r.you) + 1;
   const me = LB[myRank - 1];
@@ -3764,13 +3772,14 @@ function LeaderboardPage() {
     return () => window.removeEventListener("keydown", onKey);
   }, [setShowLeaderboard]);
   return (
-    <div role="dialog" aria-modal="true" aria-label={s.leader} style={{ position: "absolute", inset: 0, zIndex: 55, background: c.bg0, display: "flex", flexDirection: "column", animation: "wUp .3s ease both" }}>
+    <div role="dialog" aria-modal="true" aria-label={s.leader} style={{ position: "absolute", inset: 0, zIndex: 55, background: c.bg0, display: "flex", flexDirection: "column" }}>
+      <AmbientBackdrop tone={theme} />
       <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "calc(env(safe-area-inset-top,0px) + 16px) 18px 12px", flexShrink: 0 }}>
         <button ref={backRef} onClick={() => setShowLeaderboard(false)} aria-label={s.dash.back} style={{ width: 44, height: 44, borderRadius: 13, background: c.card, border: `1px solid ${c.line}`, color: c.text, display: "grid", placeItems: "center", cursor: "pointer" }}><Back size={20} aria-hidden="true" /></button>
         <div><div style={{ fontSize: 19, fontWeight: 800 }}>{s.leader}</div><div style={{ fontSize: 11.5, color: c.muted }}>{s.lbMetric}</div></div>
       </div>
       <div className="wscroll" style={{ flex: 1, overflowY: "auto", padding: "4px 18px 28px" }}>
-        <div style={{ maxWidth: 560, margin: "0 auto" }}>
+        <MotionPage pageKey={`leaderboard-${period}`} style={{ maxWidth: 560, margin: "0 auto" }}>
           <div style={{ display: "flex", background: c.card, border: `1px solid ${c.line}`, borderRadius: 14, padding: 4, marginBottom: 14 }}>
             {[s.periodW, s.periodM].map((o, i) => <button key={o} onClick={() => setPeriod(i)} style={{ flex: 1, padding: "9px 0", borderRadius: 10, border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 13, fontWeight: 600, background: period === i ? c.accent : "transparent", color: period === i ? c.onAccent : c.muted }}>{o}</button>)}
           </div>
@@ -3787,7 +3796,7 @@ function LeaderboardPage() {
           </div>
 
           {LB.map((r, i) => <LbRow key={i} rank={i + 1} row={r} c={c} s={s} lang={lang} />)}
-        </div>
+        </MotionPage>
       </div>
     </div>
   );
