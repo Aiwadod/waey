@@ -155,6 +155,24 @@ test("mobile viewport renders the student app", async ({ page }) => {
   expect(overflow).toBe(false);
 });
 
+test("mobile landing moves secondary navigation into a collapsible sidebar", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/#/landing");
+
+  const menuButton = page.getByRole("button", { name: /فتح القائمة|Open menu/ });
+  await expect(menuButton).toBeVisible();
+  await expect(page.getByText(/Waey · .*2030/)).toHaveCount(0);
+
+  await menuButton.click();
+  const sidebar = page.getByRole("dialog", { name: /القائمة الرئيسية|Main menu/ });
+  await expect(sidebar).toBeVisible();
+  await expect(sidebar.getByRole("button", { name: /^عن وعي$|^About$/ })).toBeVisible();
+  await expect(sidebar.getByRole("button", { name: /تغيير اللغة|Change language/ })).toBeVisible();
+  await expect(sidebar.getByRole("button", { name: /تغيير المظهر|Change theme/ })).toBeVisible();
+  await expect(sidebar.getByRole("button", { name: /تسجيل الدخول|Sign in/ })).toBeVisible();
+  await expect(page.locator("header").getByRole("button", { name: /تسجيل الدخول|Sign in/ })).toHaveCount(0);
+});
+
 test("landing opens in Waey light mode by default", async ({ page }) => {
   await page.goto("/#/landing");
 

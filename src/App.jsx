@@ -15,7 +15,7 @@ import {
   Laptop, Palette, Camera, School, Fuel, ShoppingCart, Pill, Lightbulb, Briefcase,
   GraduationCap, Building2, Medal, CircleDollarSign, Search, Utensils,
   ShieldCheck, Handshake, Printer, CupSoda, Wrench, CreditCard, FileSpreadsheet,
-  Star, Trash2, Hourglass, ClipboardList, Video, ShoppingBag, User,
+  Star, Trash2, Hourglass, ClipboardList, Video, ShoppingBag, User, Menu, X,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import AnimatedNumber from "./components/motion/AnimatedNumber.jsx";
@@ -2628,23 +2628,75 @@ function Marketing() {
 }
 
 function MkNav() {
-  const { c, s, theme, setTheme, lang, setLang, screen, setScreen } = useCtx();
+  const { c, s, theme, setTheme, lang, setLang, screen, setScreen, vw, dir } = useCtx();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuButtonRef = useRef(null);
+  const firstMenuItemRef = useRef(null);
+  const compact = vw < 620;
+  const reduceMotion = prefersReducedMotion();
   const ic = { width: 44, height: 44, borderRadius: 13, background: c.card, border: `1px solid ${c.line}`, color: c.text, display: "grid", placeItems: "center", cursor: "pointer" };
   const link = (k, label) => <button onClick={() => setScreen(k)} aria-current={screen === k ? "page" : undefined} style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 14, fontWeight: screen === k ? 700 : 500, color: screen === k ? c.text : c.muted, padding: "12px 6px", whiteSpace: "nowrap" }}>{label}</button>;
+  useEffect(() => {
+    if (!menuOpen) return undefined;
+    firstMenuItemRef.current?.focus();
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") {
+        setMenuOpen(false);
+        menuButtonRef.current?.focus();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [menuOpen]);
+  useEffect(() => {
+    if (!compact) setMenuOpen(false);
+  }, [compact]);
+  const closeMenu = () => {
+    setMenuOpen(false);
+    menuButtonRef.current?.focus();
+  };
+  const openAbout = () => {
+    setScreen("about");
+    setMenuOpen(false);
+  };
+  const openLogin = () => {
+    setScreen("login");
+    setMenuOpen(false);
+  };
+  const menuRow = { width: "100%", minHeight: 48, display: "flex", alignItems: "center", gap: 12, padding: "0 14px", borderRadius: 14, background: c.card2, border: `1px solid ${c.line}`, color: c.text, cursor: "pointer", fontFamily: "inherit", fontSize: 14, fontWeight: 700, textAlign: "start" };
   return (
-    <header style={{ position: "sticky", top: 0, zIndex: 20, backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", background: c.bg0 + "cc", borderBottom: `1px solid ${c.line}` }}>
-      <div style={{ maxWidth: 1120, margin: "0 auto", padding: "10px 18px", display: "flex", alignItems: "center", gap: 12 }}>
-        <button type="button" onClick={() => setScreen("landing")} aria-label={lang === "ar" ? "الصفحة الرئيسية" : "Home"} style={{ display: "flex", alignItems: "center", gap: 9, cursor: "pointer", background: "none", border: "none", color: c.text, fontFamily: "inherit", padding: 0 }}>
-          <WaeyMark size={34} />
-          <span style={{ fontWeight: 800, fontSize: 18 }}>{s.brand}</span>
-        </button>
-        <nav aria-label={lang === "ar" ? "التنقل الرئيسي" : "Main navigation"} style={{ display: "flex", gap: 10, marginInlineStart: 8 }}>{link("about", s.mk.about)}</nav>
-        <div style={{ flex: 1 }} />
-        <button aria-label={lang === "ar" ? "تغيير المظهر" : "Change theme"} onClick={() => setTheme(theme === "dark" ? "light" : "dark")} style={ic}>{theme === "dark" ? <Sun size={18} aria-hidden="true" /> : <Moon size={18} aria-hidden="true" />}</button>
-        <button aria-label={lang === "ar" ? "تغيير اللغة" : "Change language"} onClick={() => setLang(lang === "ar" ? "en" : "ar")} style={ic}><Globe size={18} aria-hidden="true" /></button>
-        <button onClick={() => setScreen("login")} style={{ ...mkBtn(c.accent, c.onAccent), padding: "9px 16px", fontSize: 13.5, minHeight: 44 }}>{s.mk.login}</button>
-      </div>
-    </header>
+    <>
+      <header style={{ position: "sticky", top: 0, zIndex: 20, backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", background: c.bg0 + "cc", borderBottom: `1px solid ${c.line}` }}>
+        <div style={{ maxWidth: 1120, margin: "0 auto", padding: compact ? "8px 12px" : "10px 18px", display: "flex", alignItems: "center", gap: compact ? 8 : 12 }}>
+          <button type="button" onClick={() => setScreen("landing")} aria-label={lang === "ar" ? "الصفحة الرئيسية" : "Home"} style={{ display: "flex", alignItems: "center", gap: 9, cursor: "pointer", background: "none", border: "none", color: c.text, fontFamily: "inherit", padding: 0 }}>
+            <WaeyMark size={compact ? 32 : 34} />
+            <span style={{ fontWeight: 800, fontSize: compact ? 17 : 18 }}>{s.brand}</span>
+          </button>
+          {!compact && <nav aria-label={lang === "ar" ? "التنقل الرئيسي" : "Main navigation"} style={{ display: "flex", gap: 10, marginInlineStart: 8 }}>{link("about", s.mk.about)}</nav>}
+          <div style={{ flex: 1 }} />
+          {!compact && <button aria-label={lang === "ar" ? "تغيير المظهر" : "Change theme"} onClick={() => setTheme(theme === "dark" ? "light" : "dark")} style={ic}>{theme === "dark" ? <Sun size={18} aria-hidden="true" /> : <Moon size={18} aria-hidden="true" />}</button>}
+          {!compact && <button aria-label={lang === "ar" ? "تغيير اللغة" : "Change language"} onClick={() => setLang(lang === "ar" ? "en" : "ar")} style={ic}><Globe size={18} aria-hidden="true" /></button>}
+          {compact && <button ref={menuButtonRef} type="button" aria-label={menuOpen ? (lang === "ar" ? "إغلاق القائمة" : "Close menu") : (lang === "ar" ? "فتح القائمة" : "Open menu")} aria-expanded={menuOpen} aria-controls="waey-mobile-menu" onClick={() => setMenuOpen((open) => !open)} style={{ ...ic, width: 40, height: 40, borderRadius: 12 }}>{menuOpen ? <X size={19} aria-hidden="true" /> : <Menu size={19} aria-hidden="true" />}</button>}
+          {!compact && <button onClick={() => setScreen("login")} style={{ ...mkBtn(c.accent, c.onAccent), padding: "9px 16px", fontSize: 13.5, minHeight: 44, whiteSpace: "nowrap", lineHeight: 1.25 }}>{s.mk.login}</button>}
+        </div>
+      </header>
+      <AnimatePresence>
+        {compact && menuOpen && (
+          <motion.div key="mobile-menu-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: reduceMotion ? 0.01 : 0.16, ease: easeOut }} onClick={closeMenu} style={{ position: "fixed", inset: 0, zIndex: 40, background: "rgba(15,34,48,0.34)", backdropFilter: "blur(3px)", WebkitBackdropFilter: "blur(3px)" }}>
+            <motion.aside id="waey-mobile-menu" role="dialog" aria-modal="true" aria-label={lang === "ar" ? "القائمة الرئيسية" : "Main menu"} initial={{ transform: reduceMotion ? "translateX(0)" : `translateX(${dir === "rtl" ? "100%" : "-100%"})` }} animate={{ transform: "translateX(0)" }} exit={{ transform: reduceMotion ? "translateX(0)" : `translateX(${dir === "rtl" ? "100%" : "-100%"})` }} transition={{ duration: reduceMotion ? 0.01 : 0.22, ease: easeOut }} onClick={(event) => event.stopPropagation()} style={{ position: "absolute", insetBlock: 0, insetInlineStart: 0, width: "min(82vw, 304px)", background: c.bg0, borderInlineEnd: `1px solid ${c.line}`, boxShadow: c.shadow, padding: "18px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 9 }}><WaeyMark size={34} /><span style={{ fontWeight: 800 }}>{s.brand}</span></div>
+                <button type="button" onClick={closeMenu} aria-label={lang === "ar" ? "إغلاق القائمة" : "Close menu"} style={{ ...ic, width: 40, height: 40 }}><X size={18} aria-hidden="true" /></button>
+              </div>
+              <button type="button" onClick={openLogin} style={{ ...mkBtn(c.accent, c.onAccent), width: "100%", minHeight: 48, padding: "10px 16px", fontSize: 14 }}>{s.mk.login}</button>
+              <button ref={firstMenuItemRef} type="button" onClick={openAbout} aria-current={screen === "about" ? "page" : undefined} style={menuRow}><Sparkles size={18} color={c.accentText} aria-hidden="true" />{s.mk.about}</button>
+              <button type="button" aria-label={lang === "ar" ? "تغيير اللغة" : "Change language"} onClick={() => setLang(lang === "ar" ? "en" : "ar")} style={menuRow}><Globe size={18} color={c.accentText} aria-hidden="true" />{lang === "ar" ? "English" : "العربية"}</button>
+              <button type="button" aria-label={lang === "ar" ? "تغيير المظهر" : "Change theme"} onClick={() => setTheme(theme === "dark" ? "light" : "dark")} style={menuRow}>{theme === "dark" ? <Sun size={18} color={c.accentText} aria-hidden="true" /> : <Moon size={18} color={c.accentText} aria-hidden="true" />}{theme === "dark" ? (lang === "ar" ? "المظهر الفاتح" : "Light theme") : (lang === "ar" ? "المظهر الداكن" : "Dark theme")}</button>
+            </motion.aside>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }
 
@@ -2762,7 +2814,6 @@ function Landing() {
         <WaeyFlowField tone={theme} />
         <div style={{ maxWidth: 1180, margin: "0 auto", padding: "clamp(26px,5vw,60px) 20px clamp(36px,5vw,72px)", display: "grid", gridTemplateColumns: narrow ? "1fr" : "1.02fr 0.98fr", alignItems: "center", gap: "clamp(30px,5vw,54px)", position: "relative", zIndex: 1 }}>
           <ScrollReveal style={{ textAlign: narrow ? "center" : "start" }}>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 12.5, fontWeight: 700, color: c.accentText, background: c.card, border: `1px solid ${c.line}`, borderRadius: 999, padding: "7px 14px", marginBottom: 20 }}><Sparkles size={13} aria-hidden="true" /> Waey · {s.mk.visionTitle} 2030</div>
             <h1 style={{ fontSize: "clamp(36px,6vw,66px)", fontWeight: 850, lineHeight: 1.04, letterSpacing: "-0.03em", margin: 0 }}>{s.mk.heroTitle}</h1>
             <p style={{ fontSize: "clamp(15px,1.6vw,20px)", color: c.textSoft, lineHeight: 1.7, marginTop: 20, maxWidth: 540, marginInline: narrow ? "auto" : 0 }}>{s.mk.heroSub}</p>
             <div style={{ display: "flex", gap: 12, marginTop: 28, flexWrap: "wrap", justifyContent: narrow ? "center" : "flex-start" }}>
