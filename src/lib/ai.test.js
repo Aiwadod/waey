@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { callConfiguredAi } from "./ai.js";
+import { callConfiguredAi, isVendorEndpoint } from "./ai.js";
 
 describe("AI endpoint boundary", () => {
   it("does not call a vendor API when no endpoint is configured", async () => {
@@ -27,5 +27,9 @@ describe("AI endpoint boundary", () => {
       "/api/waey-ai",
       expect.objectContaining({ method: "POST" }),
     );
+  });
+
+  it("blocks direct Gemini vendor endpoints from the browser", () => {
+    expect(isVendorEndpoint("https://generativelanguage.googleapis.com/v1beta/models/gemini:generateContent")).toBe(true);
   });
 });

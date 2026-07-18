@@ -1,4 +1,4 @@
-const VENDOR_HOSTS = ["api.anthropic.com", "api.openai.com"];
+const VENDOR_HOSTS = ["generativelanguage.googleapis.com", "api.anthropic.com", "api.openai.com"];
 
 export async function callConfiguredAi({ endpoint, fetcher = fetch, payload, signal }) {
   const cleanEndpoint = String(endpoint ?? "").trim();
