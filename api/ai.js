@@ -1,12 +1,10 @@
 // وسيط الذكاء لوعي — Vercel Function.
-// المفتاح السرّي (ANTHROPIC_API_KEY) يعيش هنا على الخادم فقط ولا يصل للمتصفح أبداً.
+// المفتاح السرّي (GEMINI_API_KEY) يعيش هنا على الخادم فقط ولا يصل للمتصفح أبداً.
 //
 // العقد: POST { kind: "student"|"uni"|"bank", lang: "ar"|"en", snapshot, messages: [{role, content}] } → { text }.
 // برومبتات النظام تُبنى هنا على الخادم — العميل لا يرسل system إطلاقاً، فلا يمكن استخدام
 // النقطة كوسيط عام لأي غرض: كل ما تقدر تحصل عليه هو إجابة "وعي" بأحد قوالبها الثلاثة.
-import Anthropic from "@anthropic-ai/sdk";
-
-const MODEL = process.env.AI_MODEL || "claude-opus-4-8";
+import { generateGeminiText, isGeminiRateLimitError } from "./gemini.js";
 // حدود متحفّظة: شات العرض قصير، وأي payload أكبر غالباً إساءة استخدام.
 const MAX_MESSAGES = 24;
 const MAX_MESSAGE_CHARS = 2000;
@@ -68,12 +66,15 @@ USER SNAPSHOT (amounts in SAR): ${JSON.stringify(snapshot)}`;
   return `You are "Waey" (وعي), an analytics assistant embedded in ${who} for a Saudi behavioral-finance platform for university students. IMPORTANT CONTEXT: this is a PROTOTYPE DEMO — the snapshot below is synthetic illustrative data, NOT real institutional data. Use its numbers when answering, but never present them as verified real-world statistics; if asked about data sources, say these are illustrative demo figures. In the real product, data would be aggregated & anonymized (never individual). You help the institution with insights and actions. Be concise (2-5 short lines), concrete, no markdown/asterisks. Suggest actionable plans (savings plans for the university; products/opportunities for the bank). ALWAYS reply in ${ar ? "Saudi Arabic (Gulf dialect)" : "English"}. Use "ر.س" for riyal. ILLUSTRATIVE DEMO SNAPSHOT: ${JSON.stringify(snapshot)}`;
 }
 
-export default async function handler(req, res) {
+export async function handleAiRequest(req, res, {
+  env = process.env,
+  generateText = generateGeminiText,
+} = {}) {
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
     return res.status(405).json({ error: "method_not_allowed" });
   }
-  if (!process.env.ANTHROPIC_API_KEY) {
+  if (!env.GEMINI_API_KEY) {
     // بدون مفتاح، الواجهة تتراجع تلقائياً للإجابات التجريبية غير المتصلة.
     return res.status(503).json({ error: "ai_not_configured" });
   }
@@ -114,31 +115,27 @@ export default async function handler(req, res) {
   const upstream = new AbortController();
   req.on?.("close", () => { if (!res.writableEnded) upstream.abort(); });
 
-  const client = new Anthropic();
   inflight++;
   try {
-    const response = await client.messages.create({
-      model: MODEL,
-      max_tokens: MAX_OUTPUT_TOKENS,
-      thinking: { type: "adaptive" },
-      system: buildSystem(kind, cleanLang, snapshot),
+    const text = await generateText({
+      apiKey: env.GEMINI_API_KEY,
+      fastModel: env.GEMINI_FAST_MODEL,
+      fallbackModel: env.GEMINI_FALLBACK_MODEL,
+      systemInstruction: buildSystem(kind, cleanLang, snapshot),
       messages: clean,
-    }, { signal: upstream.signal });
-    if (response.stop_reason === "refusal") {
-      return res.status(200).json({ text: null });
-    }
-    const text = response.content
-      .filter((b) => b.type === "text")
-      .map((b) => b.text)
-      .join("\n")
-      .trim();
+      maxOutputTokens: MAX_OUTPUT_TOKENS,
+      signal: upstream.signal,
+    });
     return res.status(200).json({ text: text || null });
   } catch (error) {
     if (upstream.signal.aborted) return; // العميل انسحب — لا أحد يقرأ الرد
-    if (error instanceof Anthropic.RateLimitError) { res.setHeader("Retry-After", "30"); return res.status(429).json({ error: "rate_limited" }); }
-    if (error instanceof Anthropic.APIError) return res.status(502).json({ error: "upstream_error" });
-    return res.status(500).json({ error: "server_error" });
+    if (isGeminiRateLimitError(error)) { res.setHeader("Retry-After", "30"); return res.status(429).json({ error: "rate_limited" }); }
+    return res.status(502).json({ error: "upstream_error" });
   } finally {
     inflight--;
   }
+}
+
+export default function handler(req, res) {
+  return handleAiRequest(req, res);
 }
