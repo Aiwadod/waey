@@ -31,5 +31,6 @@ describe("AI endpoint boundary", () => {
 
   it("blocks direct Gemini vendor endpoints from the browser", () => {
     expect(isVendorEndpoint("https://generativelanguage.googleapis.com/v1beta/models/gemini:generateContent")).toBe(true);
+    expect(isVendorEndpoint("https://generativelanguage.googleapis.com./v1beta/models/gemini:generateContent")).toBe(true);
   });
 });

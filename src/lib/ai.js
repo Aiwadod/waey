@@ -19,7 +19,8 @@ export async function callConfiguredAi({ endpoint, fetcher = fetch, payload, sig
 export function isVendorEndpoint(endpoint) {
   try {
     const url = new URL(endpoint, "http://waey.local");
-    return VENDOR_HOSTS.includes(url.hostname);
+    const hostname = url.hostname.toLowerCase().replace(/\.$/, "");
+    return VENDOR_HOSTS.includes(hostname);
   } catch {
     return true;
   }
